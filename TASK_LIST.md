@@ -67,15 +67,15 @@
 ### P1.2: User Management API
 
 #### P1.2.1: User Service
-- ⏳ Create get current user service function
-- ⏳ Create update current user service function
-- ⏳ Create change password service function
-- ⏳ Create list users service function
-- ⏳ Create get user by ID service function
-- ⏳ Create create user service function
-- ⏳ Create update user service function
-- ⏳ Create deactivate user service function
-- ⏳ Create admin password reset service function
+- ✅ Create get current user service function
+- ✅ Create update current user service function
+- ✅ Create change password service function
+- ✅ Create list users service function
+- ✅ Create get user by ID service function
+- ✅ Create create user service function
+- ✅ Create update user service function
+- ✅ Create deactivate user service function
+- ✅ Create admin password reset service function
 
 #### P1.2.2: User Validators
 - ⏳ Create update profile validator
