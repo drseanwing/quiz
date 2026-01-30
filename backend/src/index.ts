@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import { config } from './config';
 import logger from './config/logger';
 import { errorHandler } from './middleware/errorHandler';
+import { generalRateLimiter } from './middleware/rateLimiter';
 import routes from './routes';
 
 const app = express();
@@ -37,6 +38,9 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// General rate limiting
+app.use('/api', generalRateLimiter);
 
 // Routes
 app.use('/api', routes);

@@ -15,6 +15,7 @@ import {
 } from '@/validators/authValidators';
 import { handleValidationErrors } from '@/middleware/validation';
 import { validateEmailDomain } from '@/middleware/emailDomain';
+import { authRateLimiter, passwordResetRateLimiter } from '@/middleware/rateLimiter';
 import logger from '@/config/logger';
 
 const router = Router();
@@ -34,6 +35,7 @@ const router = Router();
  */
 router.post(
   '/register',
+  authRateLimiter,
   registerValidator,
   handleValidationErrors,
   validateEmailDomain,
@@ -69,6 +71,7 @@ router.post(
  */
 router.post(
   '/login',
+  authRateLimiter,
   loginValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -165,6 +168,7 @@ router.post('/logout', async (req: Request, res: Response, next: NextFunction) =
  */
 router.post(
   '/forgot-password',
+  passwordResetRateLimiter,
   forgotPasswordValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
