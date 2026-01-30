@@ -111,11 +111,11 @@
 ### P1.4: Frontend Authentication
 
 #### P1.4.1: Auth Types
-- ⏳ Create User interface
-- ⏳ Create LoginRequest interface
-- ⏳ Create RegisterRequest interface
-- ⏳ Create AuthResponse interface
-- ⏳ Create PasswordResetRequest interface
+- ✅ Create User interface
+- ✅ Create LoginRequest interface
+- ✅ Create RegisterRequest interface
+- ✅ Create AuthResponse interface
+- ✅ Create PasswordResetRequest interface
 
 #### P1.4.2: Auth Context
 - ⏳ Create AuthContext definition
