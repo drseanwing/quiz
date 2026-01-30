@@ -14,17 +14,17 @@ import {
   updateUserValidator,
   userQueryValidator,
   userIdParamValidator,
+  adminResetPasswordValidator,
 } from '@/validators/userValidators';
 import { handleValidationErrors } from '@/middleware/validation';
 import { authenticate, requireAdmin } from '@/middleware/auth';
-import { generalRateLimiter } from '@/middleware/rateLimiter';
 import logger from '@/config/logger';
 
 const router = Router();
 
 // All user routes require authentication
+// Note: generalRateLimiter is applied at app level for all /api routes
 router.use(authenticate);
-router.use(generalRateLimiter);
 
 // ─── Current User (Self) ────────────────────────────────────────────────────
 
@@ -318,7 +318,7 @@ router.delete(
 router.post(
   '/:id/reset-password',
   requireAdmin,
-  userIdParamValidator,
+  adminResetPasswordValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {

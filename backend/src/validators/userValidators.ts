@@ -206,3 +206,21 @@ export const userIdParamValidator = [
     .isUUID()
     .withMessage('Invalid user ID format'),
 ];
+
+/**
+ * Admin reset password validator
+ * Validates POST /api/users/:id/reset-password request body
+ */
+export const adminResetPasswordValidator = [
+  param('id')
+    .isUUID()
+    .withMessage('Invalid user ID format'),
+
+  body('password')
+    .isString()
+    .withMessage('Password is required')
+    .isLength({ min: config.password.minLength, max: 128 })
+    .withMessage(
+      `Password must be between ${config.password.minLength} and 128 characters`
+    ),
+];

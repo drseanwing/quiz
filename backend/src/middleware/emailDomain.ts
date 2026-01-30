@@ -12,7 +12,7 @@ import logger from '@/config/logger';
 /**
  * Validate email domain middleware
  * Ensures non-admin users have email addresses from allowed domain
- * Admin users can use any email domain
+ * Only skips validation for authenticated admins (verified via JWT, not request body)
  *
  * @param req - Express request
  * @param res - Express response
@@ -29,17 +29,19 @@ export function validateEmailDomain(
   next: NextFunction
 ): void {
   try {
-    const { email, role } = req.body;
+    const { email } = req.body;
 
     if (!email) {
       // Let express-validator handle missing email
       return next();
     }
 
-    // Admin users can use any email domain
-    if (role === 'ADMIN') {
-      logger.debug('Email domain validation skipped for admin', {
+    // Only skip domain validation for authenticated admin users (from JWT token),
+    // never based on user-supplied body fields to prevent bypass attacks
+    if (req.user?.role === 'ADMIN') {
+      logger.debug('Email domain validation skipped for authenticated admin', {
         email,
+        adminUserId: req.user.userId,
       });
       return next();
     }
@@ -50,7 +52,6 @@ export function validateEmailDomain(
     if (!emailDomain) {
       throw new ValidationError('Invalid email format', {
         field: 'email',
-        value: email,
       });
     }
 
@@ -69,9 +70,7 @@ export function validateEmailDomain(
         `Email must be from @${allowedDomain} domain`,
         {
           field: 'email',
-          value: email,
           allowed: allowedDomain,
-          provided: emailDomain,
         }
       );
     }
@@ -89,23 +88,18 @@ export function validateEmailDomain(
 
 /**
  * Check if email is from allowed domain
- * Utility function for use outside middleware
+ * Utility function for use outside middleware (e.g., validators)
+ * Always enforces domain check during self-registration
  *
  * @param email - Email address to check
- * @param role - User role (ADMIN exempted from restriction)
  * @returns True if email domain is allowed
  *
  * @example
- * if (isEmailDomainAllowed('user@health.qld.gov.au', 'USER')) {
+ * if (isEmailDomainAllowed('user@health.qld.gov.au')) {
  *   // Email is valid
  * }
  */
-export function isEmailDomainAllowed(email: string, role?: string): boolean {
-  // Admin users can use any email domain
-  if (role === 'ADMIN') {
-    return true;
-  }
-
+export function isEmailDomainAllowed(email: string): boolean {
   const emailDomain = email.toLowerCase().split('@')[1];
   const allowedDomain = config.email.allowedDomain.toLowerCase();
 

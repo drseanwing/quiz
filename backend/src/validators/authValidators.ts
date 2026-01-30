@@ -18,9 +18,9 @@ export const registerValidator = [
     .isEmail()
     .withMessage('Valid email address is required')
     .normalizeEmail()
-    .custom((email, { req }) => {
-      const role = req.body.role || 'USER';
-      if (!isEmailDomainAllowed(email, role)) {
+    .custom((email) => {
+      // Self-registration always enforces domain restriction
+      if (!isEmailDomainAllowed(email)) {
         throw new Error(`Email must be from @${config.email.allowedDomain} domain`);
       }
       return true;
@@ -131,28 +131,3 @@ export const tokenLoginValidator = [
   // Validation handled in route handler
 ];
 
-/**
- * Change password validator
- * Validates change password request (requires current password)
- */
-export const changePasswordValidator = [
-  body('currentPassword')
-    .isString()
-    .withMessage('Current password is required')
-    .notEmpty()
-    .withMessage('Current password cannot be empty'),
-
-  body('newPassword')
-    .isString()
-    .withMessage('New password is required')
-    .isLength({ min: config.password.minLength, max: 128 })
-    .withMessage(
-      `New password must be between ${config.password.minLength} and 128 characters`
-    )
-    .custom((value, { req }) => {
-      if (value === req.body.currentPassword) {
-        throw new Error('New password must be different from current password');
-      }
-      return true;
-    }),
-];

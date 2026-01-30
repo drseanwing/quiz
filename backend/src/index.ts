@@ -45,6 +45,17 @@ app.use('/api', generalRateLimiter);
 // Routes
 app.use('/api', routes);
 
+// 404 handler for undefined routes
+app.use((_req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'NOT_FOUND',
+      message: 'The requested endpoint does not exist',
+    },
+  });
+});
+
 // Error handling
 app.use(errorHandler);
 

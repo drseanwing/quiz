@@ -40,17 +40,18 @@ export function handleValidationErrors(
     logger.debug('Validation failed', {
       path: req.path,
       method: req.method,
-      errors: errorArray,
-      body: req.body,
+      errors: errorArray.map((e: ExpressValidationError) =>
+        e.type === 'field' ? { field: e.path, message: e.msg } : { message: e.msg }
+      ),
     });
 
     // Format errors for response
+    // Do not include submitted values in error response to prevent data leakage
     const formattedErrors = errorArray.map((error: ExpressValidationError) => {
       if (error.type === 'field') {
         return {
           field: error.path,
           message: error.msg,
-          value: error.value,
         };
       }
       return {

@@ -33,7 +33,6 @@ export interface IRegisterRequest {
   firstName: string;
   surname: string;
   idNumber?: string;
-  role?: UserRole;
 }
 
 /**
@@ -99,9 +98,13 @@ export interface IPasswordResetResponse {
  * });
  */
 export async function registerUser(data: IRegisterRequest): Promise<IAuthResponse> {
+  // Self-registration always creates USER role - admin accounts must be created
+  // by an existing admin via the admin user management endpoints
+  const role = UserRole.USER;
+
   logger.info('User registration initiated', {
     email: data.email,
-    role: data.role || 'USER',
+    role,
   });
 
   // Validate password strength
@@ -139,7 +142,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
       firstName: data.firstName,
       surname: data.surname,
       idNumber: data.idNumber,
-      role: data.role || UserRole.USER,
+      role,
       isActive: true,
     },
   });
@@ -592,8 +595,21 @@ export async function loginWithToken(
     where: { email: inviteRecord.email.toLowerCase() },
   });
 
-  if (!user && password) {
-    // Validate password strength before creating account
+  if (user) {
+    // Existing user: require password verification to prevent auth bypass
+    if (!password) {
+      throw new AuthenticationError('Password is required');
+    }
+
+    const isPasswordValid = await verifyPassword(password, user.passwordHash);
+    if (!isPasswordValid) {
+      logger.warn('Token login failed: Invalid password for existing user', {
+        email: inviteRecord.email,
+      });
+      throw new AuthenticationError('Invalid password');
+    }
+  } else if (password) {
+    // New user: validate password strength and create account
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.valid) {
       logger.debug('Token login failed: Weak password', {
@@ -605,7 +621,6 @@ export async function loginWithToken(
       });
     }
 
-    // Auto-create user account
     logger.info('Auto-creating user account from invite token', {
       email: inviteRecord.email,
     });
@@ -622,7 +637,7 @@ export async function loginWithToken(
         isActive: true,
       },
     });
-  } else if (!user) {
+  } else {
     throw new AuthenticationError('Password required for new account');
   }
 

@@ -16,6 +16,7 @@ import {
 import { handleValidationErrors } from '@/middleware/validation';
 import { validateEmailDomain } from '@/middleware/emailDomain';
 import { authRateLimiter, passwordResetRateLimiter } from '@/middleware/rateLimiter';
+import { authenticate } from '@/middleware/auth';
 import logger from '@/config/logger';
 
 const router = Router();
@@ -137,19 +138,16 @@ router.post(
  * @returns {200} Logout successful
  * @returns {401} Not authenticated
  */
-router.post('/logout', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/logout', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // User ID comes from auth middleware (added later)
-    const userId = req.user?.userId;
+    const userId = req.user!.userId;
 
-    if (userId) {
-      await authService.logoutUser(userId);
+    await authService.logoutUser(userId);
 
-      logger.info('Logout successful', {
-        userId,
-        ip: req.ip,
-      });
-    }
+    logger.info('Logout successful', {
+      userId,
+      ip: req.ip,
+    });
 
     res.json({
       success: true,
@@ -236,7 +234,7 @@ router.post(
  * @returns {200} Login successful with user data and tokens
  * @returns {401} Invalid or expired invite token
  */
-router.get('/token-login', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/token-login', authRateLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token, password } = req.query;
 
