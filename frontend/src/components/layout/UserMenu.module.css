@@ -1,0 +1,117 @@
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--redi-dark-gray);
+}
+
+.trigger:hover {
+  background-color: var(--redi-light-gray);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--redi-teal);
+  color: var(--redi-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.name {
+  font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: var(--text-xs);
+  transition: transform var(--transition-fast);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-xs));
+  min-width: 200px;
+  background-color: var(--redi-white);
+  border: 1px solid #eee;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
+  padding: var(--space-xs) 0;
+}
+
+.userInfo {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid #eee;
+  margin-bottom: var(--space-xs);
+}
+
+.userEmail {
+  font-size: var(--text-xs);
+  color: var(--redi-medium-gray);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userRole {
+  font-size: var(--text-xs);
+  color: var(--redi-teal);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--redi-dark-gray);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: background-color var(--transition-fast);
+}
+
+.menuItem:hover {
+  background-color: var(--redi-light-gray);
+  text-decoration: none;
+}
+
+.divider {
+  height: 1px;
+  background-color: #eee;
+  margin: var(--space-xs) 0;
+}
+
+.logoutItem {
+  color: var(--redi-error);
+}

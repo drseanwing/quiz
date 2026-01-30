@@ -1,0 +1,79 @@
+.header {
+  height: var(--header-height);
+  background-color: var(--redi-white);
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--redi-navy);
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brandName {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--redi-navy);
+  line-height: 1;
+}
+
+.brandAccent {
+  color: var(--redi-coral);
+}
+
+.brandSub {
+  font-size: var(--text-xs);
+  color: var(--redi-medium-gray);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.navLink {
+  color: var(--redi-medium-gray);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--redi-navy);
+  text-decoration: none;
+}
+
+.navLinkActive {
+  color: var(--redi-teal);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
