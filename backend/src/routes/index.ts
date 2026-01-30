@@ -6,6 +6,7 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import authRoutes from './auth';
 
 const router = Router();
 
@@ -38,8 +39,10 @@ router.get('/', (_req: Request, res: Response) => {
   });
 });
 
-// TODO: Add route modules here
-// router.use('/auth', authRoutes);
+// Route modules
+router.use('/auth', authRoutes);
+
+// TODO: Add remaining route modules
 // router.use('/users', userRoutes);
 // router.use('/question-banks', questionBankRoutes);
 // router.use('/questions', questionRoutes);
