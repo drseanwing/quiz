@@ -16,6 +16,12 @@ import {
   NotFoundError,
   AppError,
 } from '@/middleware/errorHandler';
+import {
+  isLockedOut,
+  recordFailedAttempt,
+  clearFailedAttempts,
+  getLockoutRemaining,
+} from '@/utils/lockout';
 import crypto from 'crypto';
 
 /**
@@ -179,6 +185,19 @@ export async function loginUser(
     ip: ipAddress,
   });
 
+  // Check account lockout before attempting login
+  if (isLockedOut(data.email)) {
+    const remaining = getLockoutRemaining(data.email);
+    logger.warn('Login blocked: Account locked', {
+      email: data.email,
+      ip: ipAddress,
+      remainingSeconds: remaining,
+    });
+    throw new AuthenticationError(
+      `Account is temporarily locked. Try again in ${Math.ceil(remaining / 60)} minutes`
+    );
+  }
+
   // Find user by email
   const user = await prisma.user.findUnique({
     where: { email: data.email.toLowerCase() },
@@ -191,6 +210,9 @@ export async function loginUser(
 
   // Check all conditions after password verification to maintain timing consistency
   if (!user || !isPasswordValid) {
+    // Record failed attempt for lockout tracking
+    recordFailedAttempt(data.email);
+
     logger.warn('Login failed', {
       email: data.email,
       ip: ipAddress,
@@ -208,6 +230,9 @@ export async function loginUser(
     });
     throw new AuthenticationError('User account is deactivated');
   }
+
+  // Clear failed attempts on successful login
+  clearFailedAttempts(data.email);
 
   // Update last login timestamp
   await prisma.user.update({
