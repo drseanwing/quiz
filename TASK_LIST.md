@@ -85,15 +85,15 @@
 - ✅ Create user query filters validator
 
 #### P1.2.3: User Routes
-- ⏳ Create GET /api/users/me endpoint
-- ⏳ Create PATCH /api/users/me endpoint
-- ⏳ Create PATCH /api/users/me/password endpoint
-- ⏳ Create GET /api/users endpoint
-- ⏳ Create GET /api/users/:id endpoint
-- ⏳ Create POST /api/users endpoint
-- ⏳ Create PATCH /api/users/:id endpoint
-- ⏳ Create DELETE /api/users/:id endpoint
-- ⏳ Create POST /api/users/:id/reset-password endpoint
+- ✅ Create GET /api/users/me endpoint
+- ✅ Create PATCH /api/users/me endpoint
+- ✅ Create PATCH /api/users/me/password endpoint
+- ✅ Create GET /api/users endpoint
+- ✅ Create GET /api/users/:id endpoint
+- ✅ Create POST /api/users endpoint
+- ✅ Create PATCH /api/users/:id endpoint
+- ✅ Create DELETE /api/users/:id endpoint
+- ✅ Create POST /api/users/:id/reset-password endpoint
 
 ### P1.3: Rate Limiting
 
@@ -105,7 +105,7 @@
 
 #### P1.3.2: Rate Limit Integration
 - ✅ Apply rate limiting to auth routes
-- ⏳ Apply rate limiting to user routes
+- ✅ Apply rate limiting to user routes
 - ✅ Add rate limit headers to responses
 
 ### P1.4: Frontend Authentication
