@@ -78,11 +78,11 @@
 - ✅ Create admin password reset service function
 
 #### P1.2.2: User Validators
-- ⏳ Create update profile validator
-- ⏳ Create change password validator
-- ⏳ Create create user validator
-- ⏳ Create update user validator
-- ⏳ Create user query filters validator
+- ✅ Create update profile validator
+- ✅ Create change password validator
+- ✅ Create create user validator
+- ✅ Create update user validator
+- ✅ Create user query filters validator
 
 #### P1.2.3: User Routes
 - ⏳ Create GET /api/users/me endpoint
