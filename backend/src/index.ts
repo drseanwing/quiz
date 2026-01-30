@@ -65,7 +65,7 @@ app.use(errorHandler);
 
 // Start server
 const port = config.port;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   logger.info(`REdI Quiz Platform API started`, {
     port,
     environment: config.nodeEnv,
@@ -74,14 +74,15 @@ app.listen(port, () => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
+function shutdown(signal: string) {
+  logger.info(`${signal} signal received: closing HTTP server`);
+  server.close(() => {
+    logger.info('HTTP server closed');
+    process.exit(0);
+  });
+}
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT signal received: closing HTTP server');
-  process.exit(0);
-});
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 export default app;

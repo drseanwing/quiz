@@ -72,6 +72,7 @@ export function QuestionBankListPage() {
             setPage(1);
           }}
           className={styles.statusFilter}
+          aria-label="Filter by status"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

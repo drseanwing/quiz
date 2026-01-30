@@ -25,8 +25,8 @@ export async function listQuestions(
   params: IQuestionListParams = {}
 ): Promise<IQuestionListResponse> {
   const searchParams = new URLSearchParams();
-  if (params.page) searchParams.set('page', String(params.page));
-  if (params.pageSize) searchParams.set('pageSize', String(params.pageSize));
+  if (params.page !== undefined) searchParams.set('page', String(params.page));
+  if (params.pageSize !== undefined) searchParams.set('pageSize', String(params.pageSize));
 
   const query = searchParams.toString();
   const body = (await api.get(

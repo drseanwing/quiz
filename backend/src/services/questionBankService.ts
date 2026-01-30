@@ -10,7 +10,6 @@ import logger from '@/config/logger';
 import {
   AppError,
   NotFoundError,
-  AuthorizationError,
 } from '@/middleware/errorHandler';
 
 /**
@@ -149,37 +148,41 @@ export async function listQuestionBanks(
   const { page, pageSize } = pagination;
   const skip = (page - 1) * pageSize;
 
-  // Build where clause based on role
-  const where: Record<string, unknown> = {};
+  // Build where clause with proper AND composition to prevent RBAC bypass
+  const conditions: Record<string, unknown>[] = [];
 
-  // Users can only see OPEN/PUBLIC banks
-  // Editors can see their own + OPEN/PUBLIC
-  // Admins can see all
+  // Access control filter (role-based visibility)
   if (userRole === UserRole.USER) {
-    where.status = { in: [QuestionBankStatus.OPEN, QuestionBankStatus.PUBLIC] };
+    conditions.push({ status: { in: [QuestionBankStatus.OPEN, QuestionBankStatus.PUBLIC] } });
   } else if (userRole === UserRole.EDITOR) {
-    where.OR = [
-      { createdById: userId },
-      { status: { in: [QuestionBankStatus.OPEN, QuestionBankStatus.PUBLIC] } },
-    ];
+    conditions.push({
+      OR: [
+        { createdById: userId },
+        { status: { in: [QuestionBankStatus.OPEN, QuestionBankStatus.PUBLIC] } },
+      ],
+    });
   }
-  // ADMIN: no status filter needed
+  // ADMIN: no access control filter needed
 
+  // Search filter
   if (filters.search) {
-    where.OR = [
-      ...(Array.isArray(where.OR) ? where.OR : []),
-      { title: { contains: filters.search, mode: 'insensitive' } },
-      { description: { contains: filters.search, mode: 'insensitive' } },
-    ];
+    conditions.push({
+      OR: [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ],
+    });
   }
 
   if (filters.status) {
-    where.status = filters.status;
+    conditions.push({ status: filters.status });
   }
 
   if (filters.createdById) {
-    where.createdById = filters.createdById;
+    conditions.push({ createdById: filters.createdById });
   }
+
+  const where = conditions.length > 0 ? { AND: conditions } : {};
 
   const [data, totalCount] = await Promise.all([
     prisma.questionBank.findMany({
@@ -216,12 +219,8 @@ export async function getQuestionBank(
     select: questionBankSelect,
   });
 
-  if (!bank) {
-    throw new NotFoundError('Question bank not found');
-  }
-
-  if (!canAccessBank(bank, userId, userRole)) {
-    throw new AuthorizationError('You do not have access to this question bank');
+  if (!bank || !canAccessBank(bank, userId, userRole)) {
+    throw new NotFoundError('Question bank');
   }
 
   return bank as unknown as QuestionBankWithCreator;
@@ -275,12 +274,8 @@ export async function updateQuestionBank(
     select: { id: true, createdById: true, status: true },
   });
 
-  if (!existing) {
-    throw new NotFoundError('Question bank not found');
-  }
-
-  if (!canModifyBank(existing, userId, userRole)) {
-    throw new AuthorizationError('You do not have permission to modify this question bank');
+  if (!existing || !canModifyBank(existing, userId, userRole)) {
+    throw new NotFoundError('Question bank');
   }
 
   const bank = await prisma.questionBank.update({
@@ -310,12 +305,8 @@ export async function deleteQuestionBank(
     select: { id: true, createdById: true, status: true, _count: { select: { attempts: true } } },
   });
 
-  if (!existing) {
-    throw new NotFoundError('Question bank not found');
-  }
-
-  if (!canModifyBank(existing, userId, userRole)) {
-    throw new AuthorizationError('You do not have permission to delete this question bank');
+  if (!existing || !canModifyBank(existing, userId, userRole)) {
+    throw new NotFoundError('Question bank');
   }
 
   if (existing._count.attempts > 0) {
@@ -363,12 +354,8 @@ export async function duplicateQuestionBank(
     },
   });
 
-  if (!existing) {
-    throw new NotFoundError('Question bank not found');
-  }
-
-  if (!canAccessBank(existing, userId, userRole)) {
-    throw new AuthorizationError('You do not have access to this question bank');
+  if (!existing || !canAccessBank(existing, userId, userRole)) {
+    throw new NotFoundError('Question bank');
   }
 
   const bank = await prisma.questionBank.create({

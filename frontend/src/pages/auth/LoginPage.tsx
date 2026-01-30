@@ -13,7 +13,8 @@ import styles from './AuthPage.module.css';
 export function LoginPage() {
   const { isAuthenticated, isRestoring } = useAuth();
   const location = useLocation();
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+  const rawFrom = (location.state as { from?: { pathname: string } })?.from?.pathname;
+  const from = rawFrom && rawFrom.startsWith('/') && !rawFrom.startsWith('//') ? rawFrom : '/dashboard';
 
   if (isRestoring) {
     return (

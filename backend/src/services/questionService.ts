@@ -61,7 +61,7 @@ async function verifyBankModifyAccess(bankId: string, userId: string, userRole: 
   });
 
   if (!bank) {
-    throw new NotFoundError('Question bank not found');
+    throw new NotFoundError('Question bank');
   }
 
   if (!canModifyBank(bank, userId, userRole)) {
@@ -81,7 +81,7 @@ async function verifyBankReadAccess(bankId: string, userId: string, userRole: Us
   });
 
   if (!bank) {
-    throw new NotFoundError('Question bank not found');
+    throw new NotFoundError('Question bank');
   }
 
   if (!canAccessBank(bank, userId, userRole)) {
@@ -127,7 +127,7 @@ export async function getQuestion(
   });
 
   if (!question) {
-    throw new NotFoundError('Question not found');
+    throw new NotFoundError('Question');
   }
 
   if (!canAccessBank(question.bank, userId, userRole)) {
@@ -196,7 +196,7 @@ export async function updateQuestion(
   });
 
   if (!existing) {
-    throw new NotFoundError('Question not found');
+    throw new NotFoundError('Question');
   }
 
   await verifyBankModifyAccess(existing.bankId, userId, userRole);
@@ -239,7 +239,7 @@ export async function deleteQuestion(
   });
 
   if (!existing) {
-    throw new NotFoundError('Question not found');
+    throw new NotFoundError('Question');
   }
 
   await verifyBankModifyAccess(existing.bankId, userId, userRole);
@@ -279,7 +279,7 @@ export async function duplicateQuestion(
   });
 
   if (!existing) {
-    throw new NotFoundError('Question not found');
+    throw new NotFoundError('Question');
   }
 
   await verifyBankModifyAccess(existing.bankId, userId, userRole);

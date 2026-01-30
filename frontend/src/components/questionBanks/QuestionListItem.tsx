@@ -38,9 +38,8 @@ export function QuestionListItem({
   const [showConfirm, setShowConfirm] = useState(false);
 
   function stripHtml(html: string): string {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return div.textContent || div.innerText || '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
   }
 
   const promptPreview = stripHtml(question.prompt).slice(0, 120);

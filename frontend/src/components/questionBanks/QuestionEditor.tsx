@@ -103,7 +103,7 @@ interface McOptionEditorProps {
 
 function McOptionEditor({ options, correctAnswer, isMulti, onChange }: McOptionEditorProps) {
   function addOption() {
-    const newId = String(options.length + 1);
+    const newId = crypto.randomUUID();
     onChange(
       [...options, { id: newId, text: `Option ${String.fromCharCode(65 + options.length)}` }],
       correctAnswer

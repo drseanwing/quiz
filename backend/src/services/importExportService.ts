@@ -9,7 +9,10 @@ import { QuestionType } from '@prisma/client';
 import { NotFoundError, ValidationError } from '@/middleware/errorHandler';
 import { canAccessBank } from '@/services/questionBankService';
 import type { ITokenPayload } from '@/utils/jwt';
+import { sanitizeHtml } from '@/services/sanitizer';
 import logger from '@/config/logger';
+
+const MAX_IMPORT_QUESTIONS = 500;
 
 // ─── Export Types ──────────────────────────────────────────────────────────
 
@@ -131,6 +134,12 @@ function validateImportData(data: unknown): IExportedQuestionBank {
     throw new ValidationError('Invalid import data: questions must be an array');
   }
 
+  if (obj.questions.length > MAX_IMPORT_QUESTIONS) {
+    throw new ValidationError(
+      `Import exceeds maximum of ${MAX_IMPORT_QUESTIONS} questions`
+    );
+  }
+
   const validTypes = Object.values(QuestionType);
   const errors: string[] = [];
 
@@ -180,7 +189,7 @@ export async function importQuestionBank(
         randomQuestions: validated.bank.randomQuestions ?? true,
         randomAnswers: validated.bank.randomAnswers ?? true,
         passingScore: validated.bank.passingScore ?? 80,
-        feedbackTiming: validated.bank.feedbackTiming as 'IMMEDIATE' | 'END' | 'NONE' ?? 'END',
+        feedbackTiming: (validated.bank.feedbackTiming ?? 'END') as 'IMMEDIATE' | 'END' | 'NONE',
         questionCount: validated.bank.questionCount ?? 10,
         maxAttempts: validated.bank.maxAttempts ?? 0,
         createdById: userId,
@@ -194,11 +203,11 @@ export async function importQuestionBank(
         data: validated.questions.map((q, index) => ({
           bankId: bank.id,
           type: q.type,
-          prompt: q.prompt,
+          prompt: sanitizeHtml(q.prompt),
           promptImage: q.promptImage,
           options: q.options as object,
           correctAnswer: q.correctAnswer as object,
-          feedback: q.feedback,
+          feedback: sanitizeHtml(q.feedback),
           feedbackImage: q.feedbackImage,
           referenceLink: q.referenceLink,
           order: q.order ?? index,

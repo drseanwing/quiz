@@ -14,7 +14,8 @@ import logger from '@/config/logger';
  * Get the public URL path for an uploaded image
  */
 export function getImageUrl(filename: string): string {
-  return `/uploads/images/${filename}`;
+  const sanitized = path.basename(filename);
+  return `/uploads/images/${sanitized}`;
 }
 
 /**

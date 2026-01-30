@@ -12,23 +12,34 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
+  const isValidUrl = useCallback((url: string): boolean => {
+    return /^https?:\/\//i.test(url);
+  }, []);
+
   const addImage = useCallback(() => {
-    const url = window.prompt('Enter image URL');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+    const url = window.prompt('Enter image URL (must start with http:// or https://)');
+    if (!url) return;
+    if (!isValidUrl(url)) {
+      window.alert('Only http:// and https:// URLs are allowed.');
+      return;
     }
-  }, [editor]);
+    editor.chain().focus().setImage({ src: url }).run();
+  }, [editor, isValidUrl]);
 
   const addLink = useCallback(() => {
     const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('Enter URL', previousUrl);
+    const url = window.prompt('Enter URL (must start with http:// or https://)', previousUrl);
     if (url === null) return;
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
+    if (!isValidUrl(url)) {
+      window.alert('Only http:// and https:// URLs are allowed.');
+      return;
+    }
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  }, [editor]);
+  }, [editor, isValidUrl]);
 
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Text formatting">
