@@ -23,6 +23,7 @@ import {
   getLockoutRemaining,
 } from '@/utils/lockout';
 import crypto from 'crypto';
+import { sendPasswordResetEmail } from '@/services/emailService';
 
 /**
  * User registration request data
@@ -439,12 +440,19 @@ export async function requestPasswordReset(
     expiresAt,
   });
 
-  // TODO: Send password reset email via Power Automate
-  // For now, return token in development/test mode
+  // Send password reset email (fire-and-forget)
+  sendPasswordResetEmail(user.email, resetToken).catch((err) => {
+    logger.error('Failed to send password reset email', {
+      userId: user.id,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    });
+  });
+
   const response: IPasswordResetResponse = {
     message: 'If an account exists with this email, a password reset link has been sent',
   };
 
+  // Also return token in development/test for testing convenience
   if (config.isDevelopment || config.isTest) {
     response.resetToken = resetToken;
   }

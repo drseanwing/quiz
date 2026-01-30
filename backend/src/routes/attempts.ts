@@ -13,6 +13,10 @@ import {
 } from '@/validators/quizValidators';
 import { handleValidationErrors } from '@/middleware/validation';
 import { authenticate } from '@/middleware/auth';
+import prisma from '@/config/database';
+import { sendCompletionNotification } from '@/services/emailService';
+import { logQuizSubmission } from '@/services/auditService';
+import logger from '@/config/logger';
 
 const router = Router();
 
@@ -116,6 +120,46 @@ router.post(
         req.params.id,
         req.user!.userId
       );
+
+      // Fire-and-forget: send completion email + audit log
+      (async () => {
+        try {
+          const [bank, user] = await Promise.all([
+            prisma.questionBank.findUnique({
+              where: { id: results.bankId },
+              select: { notificationEmail: true },
+            }),
+            prisma.user.findUnique({
+              where: { id: req.user!.userId },
+              select: { firstName: true, surname: true },
+            }),
+          ]);
+
+          // Audit log
+          await logQuizSubmission(results.id, results.bankId, results.score, results.passed, {
+            userId: req.user!.userId,
+            ipAddress: req.ip || undefined,
+            userAgent: req.get('user-agent') || undefined,
+          });
+
+          // Email notification
+          if (bank?.notificationEmail && user) {
+            await sendCompletionNotification(results.id, bank.notificationEmail, {
+              userName: `${user.firstName} ${user.surname}`,
+              bankTitle: results.bankTitle,
+              score: results.score,
+              maxScore: results.maxScore,
+              percentage: results.percentage,
+              passed: results.passed,
+            });
+          }
+        } catch (err) {
+          logger.error('Post-submission side effects failed', {
+            attemptId: results.id,
+            error: err instanceof Error ? err.message : 'Unknown error',
+          });
+        }
+      })();
 
       res.json({
         success: true,

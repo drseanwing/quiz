@@ -552,8 +552,8 @@
 - ✅ Add error details storage
 
 #### P4.1.5: Email Integration
-- ⏳ Add notification to quiz submission
-- ⏳ Add notification to password reset
+- ✅ Add notification to quiz submission
+- ✅ Add notification to password reset
 - ✅ Add notification to invite creation
 
 ### P4.2: Audit Logging Service
