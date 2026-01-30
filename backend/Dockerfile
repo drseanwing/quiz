@@ -9,10 +9,12 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including OpenSSL for Prisma
 RUN apk add --no-cache \
     dumb-init \
-    curl
+    curl \
+    openssl \
+    openssl-dev
 
 # Copy package files
 COPY package*.json ./

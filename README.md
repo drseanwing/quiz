@@ -69,9 +69,10 @@ The REdI Quiz Platform enables healthcare staff to complete knowledge assessment
    ```
 
 5. **Access the application**
-   - Frontend: http://localhost (or configured APP_URL)
-   - Backend API: http://localhost/api
-   - API Health: http://localhost/api/health
+   - Frontend: http://localhost:9473
+   - Backend API: http://localhost:9471/api
+   - API Health: http://localhost:9471/api/health
+   - Database: localhost:9470
 
 ### Default Admin Account
 

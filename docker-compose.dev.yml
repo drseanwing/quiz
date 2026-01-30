@@ -6,7 +6,7 @@ version: '3.9'
 services:
   db:
     ports:
-      - "5432:5432"  # Expose PostgreSQL for local database tools
+      - "9470:5432"  # PostgreSQL - mapped to 9470 (range: 9470-9490)
 
   backend:
     build:
@@ -24,8 +24,8 @@ services:
       - logs:/app/logs
     command: npm run dev
     ports:
-      - "3000:3000"  # Expose backend directly for API testing
-      - "9229:9229"  # Node.js debugger port
+      - "9471:3000"  # Backend API - mapped to 9471
+      - "9472:9229"  # Node.js debugger - mapped to 9472
 
   frontend:
     build:
@@ -38,13 +38,13 @@ services:
       - /app/node_modules
     command: npm run dev
     ports:
-      - "5173:5173"  # Vite dev server
+      - "9473:5173"  # Frontend Vite dev server - mapped to 9473
 
   nginx:
     volumes:
       - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8080:80"  # Use 8080 in dev to avoid conflicts
+      - "9476:80"  # Nginx (optional in dev) - mapped to 9476
 
   # Prisma Studio for database management
   prisma-studio:
@@ -57,7 +57,7 @@ services:
       - ./backend:/app
     command: sh -c "npm install && npx prisma studio"
     ports:
-      - "5555:5555"
+      - "9474:5555"  # Prisma Studio - mapped to 9474
     depends_on:
       - db
     networks:
@@ -71,7 +71,7 @@ services:
     container_name: redi-quiz-adminer
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "9475:8080"  # Adminer - mapped to 9475
     environment:
       ADMINER_DEFAULT_SERVER: db
       ADMINER_DESIGN: nette
