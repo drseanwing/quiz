@@ -8,6 +8,8 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import authRoutes from './auth';
 import userRoutes from './users';
+import questionBankRoutes from './questionBanks';
+import questionRoutes from './questions';
 
 const router = Router();
 
@@ -43,8 +45,8 @@ router.get('/', (_req: Request, res: Response) => {
 // Route modules
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-// router.use('/question-banks', questionBankRoutes);
-// router.use('/questions', questionRoutes);
+router.use('/question-banks', questionBankRoutes);
+router.use('/', questionRoutes);
 // router.use('/quizzes', quizRoutes);
 // router.use('/attempts', attemptRoutes);
 // router.use('/admin', adminRoutes);

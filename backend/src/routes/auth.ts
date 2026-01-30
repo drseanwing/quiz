@@ -225,18 +225,19 @@ router.post(
 );
 
 /**
- * GET /api/auth/token-login
+ * POST /api/auth/token-login
  * Auto-login using invite token
+ * Uses POST to keep password out of URL/query string/logs
  *
- * @query {string} token - Invite token
- * @query {string} [password] - Password for new account creation
+ * @body {string} token - Invite token
+ * @body {string} [password] - Password for new/existing account
  *
  * @returns {200} Login successful with user data and tokens
  * @returns {401} Invalid or expired invite token
  */
-router.get('/token-login', authRateLimiter, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/token-login', authRateLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { token, password } = req.query;
+    const { token, password } = req.body;
 
     if (!token || typeof token !== 'string') {
       res.status(400).json({
