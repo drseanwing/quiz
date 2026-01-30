@@ -1,0 +1,10 @@
+.card {
+  background-color: var(--redi-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-xl);
+}
+
+.accent {
+  border-top: 4px solid var(--redi-coral);
+}

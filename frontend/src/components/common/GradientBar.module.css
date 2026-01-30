@@ -1,0 +1,5 @@
+.bar {
+  height: 6px;
+  background: var(--gradient-brand);
+  width: 100%;
+}

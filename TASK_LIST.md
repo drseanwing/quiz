@@ -133,13 +133,13 @@
 - ✅ Add error state handling
 
 #### P1.4.4: Common Components
-- ⏳ Create Button component
-- ⏳ Create Input component
-- ⏳ Create Card component
-- ⏳ Create Alert component
-- ⏳ Create Spinner component
-- ⏳ Create Modal component
-- ⏳ Create GradientBar component
+- ✅ Create Button component
+- ✅ Create Input component
+- ✅ Create Card component
+- ✅ Create Alert component
+- ✅ Create Spinner component
+- ✅ Create Modal component
+- ✅ Create GradientBar component
 
 #### P1.4.5: Layout Components
 - ⏳ Create Header component
