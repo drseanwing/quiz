@@ -7,6 +7,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { QuestionBankStatus } from '@prisma/client';
 import * as questionBankService from '@/services/questionBankService';
+import * as importExportService from '@/services/importExportService';
 import {
   createQuestionBankValidator,
   updateQuestionBankValidator,
@@ -210,6 +211,61 @@ router.post(
       res.status(201).json({
         success: true,
         data: bank,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/question-banks/:id/export
+ * Export a question bank as JSON
+ */
+router.get(
+  '/:id/export',
+  questionBankIdValidator,
+  handleValidationErrors,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await importExportService.exportQuestionBank(
+        req.params.id,
+        req.user!
+      );
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/question-banks/import
+ * Import a question bank from JSON
+ */
+router.post(
+  '/import',
+  requireEditor,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await importExportService.importQuestionBank(
+        req.body,
+        req.user!.userId
+      );
+
+      logger.info('Question bank imported via API', {
+        bankId: result.id,
+        userId: req.user!.userId,
+        ip: req.ip,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: result,
       });
     } catch (error) {
       next(error);
