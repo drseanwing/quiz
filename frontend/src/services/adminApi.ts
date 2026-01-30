@@ -158,3 +158,76 @@ export async function listInvites(page = 1, pageSize = 20): Promise<{
   const body = (await api.get(`/admin/invite-tokens?page=${page}&pageSize=${pageSize}`)) as unknown as IApiResponse<IInviteTokenRow[]>;
   return { data: body.data, meta: body.meta! };
 }
+
+// Users
+export interface IUserRow {
+  id: string;
+  email: string;
+  firstName: string;
+  surname: string;
+  idNumber: string | null;
+  role: 'USER' | 'EDITOR' | 'ADMIN';
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+export interface IUserFilters {
+  search?: string;
+  role?: string;
+  isActive?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ICreateUserRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  surname: string;
+  idNumber?: string;
+  role?: string;
+}
+
+export interface IUpdateUserRequest {
+  firstName?: string;
+  surname?: string;
+  idNumber?: string | null;
+  role?: string;
+  isActive?: boolean;
+}
+
+export async function listUsers(filters: IUserFilters): Promise<{
+  data: IUserRow[];
+  meta: { page: number; pageSize: number; totalCount: number; totalPages: number };
+}> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.role) params.set('role', filters.role);
+  if (filters.isActive) params.set('isActive', filters.isActive);
+  params.set('page', String(filters.page || 1));
+  params.set('pageSize', String(filters.pageSize || 20));
+
+  const body = (await api.get(`/users?${params}`)) as unknown as IApiResponse<IUserRow[]>;
+  return { data: body.data, meta: body.meta! };
+}
+
+export async function createUser(data: ICreateUserRequest): Promise<IUserRow> {
+  const body = (await api.post('/users', data)) as unknown as IApiResponse<IUserRow>;
+  return body.data;
+}
+
+export async function updateUser(userId: string, data: IUpdateUserRequest): Promise<IUserRow> {
+  const body = (await api.patch(`/users/${userId}`, data)) as unknown as IApiResponse<IUserRow>;
+  return body.data;
+}
+
+export async function deactivateUser(userId: string): Promise<IUserRow> {
+  const body = (await api.delete(`/users/${userId}`)) as unknown as IApiResponse<IUserRow>;
+  return body.data;
+}
+
+export async function adminResetPassword(userId: string, password: string): Promise<{ message: string }> {
+  const body = (await api.post(`/users/${userId}/reset-password`, { password })) as unknown as IApiResponse<{ message: string }>;
+  return body.data;
+}

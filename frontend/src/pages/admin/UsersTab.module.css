@@ -1,0 +1,184 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.searchInput {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  min-width: 220px;
+}
+
+.filters select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.table th {
+  text-align: left;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table tbody tr:hover {
+  background: var(--color-surface);
+}
+
+.roleUSER {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.roleEDITOR {
+  color: var(--color-teal);
+  font-weight: 600;
+}
+
+.roleADMIN {
+  color: var(--color-coral);
+  font-weight: 600;
+}
+
+.active {
+  color: var(--color-teal);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.inactive {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.actionBtn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-teal);
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  background: var(--color-surface);
+}
+
+.empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xl) !important;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+}
+
+/* Modal form styles */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.modalForm label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.modalForm input,
+.modalForm select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+.modalForm input:disabled {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.formRow {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.formRow > label {
+  flex: 1;
+}
+
+.checkboxLabel {
+  flex-direction: row !important;
+  align-items: center;
+  gap: var(--spacing-sm) !important;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: auto;
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+}
+
+.modalNote {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
