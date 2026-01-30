@@ -1,0 +1,44 @@
+{
+  "allowedPrompts": [
+    {
+      "type": "always_allowed",
+      "description": "Allow all Git operations including commits and pushes"
+    },
+    {
+      "type": "always_allowed",
+      "description": "Allow running npm/pnpm install and package management"
+    },
+    {
+      "type": "always_allowed",
+      "description": "Allow running tests and test coverage"
+    },
+    {
+      "type": "always_allowed",
+      "description": "Allow running linters and formatters (eslint, prettier)"
+    },
+    {
+      "type": "always_allowed",
+      "description": "Allow running database migrations with Prisma"
+    },
+    {
+      "type": "always_allowed",
+      "description": "Allow starting development servers (npm run dev)"
+    },
+    {
+      "type": "ask",
+      "description": "Ask before running Docker commands (build, compose)"
+    },
+    {
+      "type": "ask",
+      "description": "Ask before deploying to production"
+    },
+    {
+      "type": "ask",
+      "description": "Ask before modifying database in production"
+    }
+  ],
+  "taskSettings": {
+    "maxTurns": 50,
+    "preferredModel": "sonnet"
+  }
+}

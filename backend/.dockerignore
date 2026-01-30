@@ -1,0 +1,34 @@
+# Node
+node_modules/
+npm-debug.log*
+.npm
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Tests
+coverage/
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Development
+.vscode
+.idea
+*.swp
+
+# Database migrations (will be in image)
+# prisma/migrations/*
+
+# Uploads
+uploads/

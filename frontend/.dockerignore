@@ -1,0 +1,30 @@
+# Node
+node_modules/
+npm-debug.log*
+.npm
+
+# Build
+dist/
+.vite
+
+# Tests
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Development
+.vscode
+.idea
+*.swp
+
+# Storybook
+.storybook
+storybook-static

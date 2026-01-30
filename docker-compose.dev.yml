@@ -1,0 +1,83 @@
+version: '3.9'
+
+# Development override configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  db:
+    ports:
+      - "5432:5432"  # Expose PostgreSQL for local database tools
+
+  backend:
+    build:
+      target: development
+    container_name: redi-quiz-backend-dev
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      ENABLE_DEBUG: "true"
+      MOCK_EMAIL: "true"  # Mock email sending in development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules  # Anonymous volume to prevent overwriting node_modules
+      - uploads:/app/uploads
+      - logs:/app/logs
+    command: npm run dev
+    ports:
+      - "3000:3000"  # Expose backend directly for API testing
+      - "9229:9229"  # Node.js debugger port
+
+  frontend:
+    build:
+      target: development
+    container_name: redi-quiz-frontend-dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "5173:5173"  # Vite dev server
+
+  nginx:
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"  # Use 8080 in dev to avoid conflicts
+
+  # Prisma Studio for database management
+  prisma-studio:
+    image: node:20-alpine
+    container_name: redi-quiz-prisma-studio
+    working_dir: /app
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install && npx prisma studio"
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+    networks:
+      - redi-network
+    profiles:
+      - tools  # Only start with --profile tools
+
+  # Adminer for database administration
+  adminer:
+    image: adminer:latest
+    container_name: redi-quiz-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: nette
+    depends_on:
+      - db
+    networks:
+      - redi-network
+    profiles:
+      - tools  # Only start with --profile tools

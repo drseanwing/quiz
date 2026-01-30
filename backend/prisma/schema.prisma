@@ -1,0 +1,236 @@
+// =============================================================================
+// REdI Quiz Platform - Prisma Database Schema
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum UserRole {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum QuestionBankStatus {
+  DRAFT
+  OPEN
+  PUBLIC
+  ARCHIVED
+}
+
+enum FeedbackTiming {
+  IMMEDIATE
+  END
+  NONE
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE_SINGLE
+  MULTIPLE_CHOICE_MULTI
+  TRUE_FALSE
+  DRAG_ORDER
+  IMAGE_MAP
+  SLIDER
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  TIMED_OUT
+  ABANDONED
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  firstName     String    @map("first_name")
+  surname       String
+  idNumber      String?   @map("id_number")
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+
+  // Relations
+  questionBanks  QuestionBank[]
+  attempts       QuizAttempt[]
+  auditLogs      AuditLog[]
+  passwordResets PasswordReset[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model QuestionBank {
+  id                String              @id @default(uuid())
+  title             String
+  description       String?
+  status            QuestionBankStatus  @default(DRAFT)
+  timeLimit         Int                 @default(0) @map("time_limit")
+  randomQuestions   Boolean             @default(true) @map("random_questions")
+  randomAnswers     Boolean             @default(true) @map("random_answers")
+  passingScore      Int                 @default(80) @map("passing_score")
+  feedbackTiming    FeedbackTiming      @default(END) @map("feedback_timing")
+  notificationEmail String?             @map("notification_email")
+  questionCount     Int                 @default(10) @map("question_count")
+  maxAttempts       Int                 @default(0) @map("max_attempts")
+  createdById       String              @map("created_by_id")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy    User           @relation(fields: [createdById], references: [id])
+  questions    Question[]
+  attempts     QuizAttempt[]
+  inviteTokens InviteToken[]
+
+  @@index([status])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("question_banks")
+}
+
+model Question {
+  id            String       @id @default(uuid())
+  bankId        String       @map("bank_id")
+  type          QuestionType
+  prompt        String       @db.Text
+  promptImage   String?      @map("prompt_image")
+  options       Json
+  correctAnswer Json         @map("correct_answer")
+  feedback      String       @db.Text
+  feedbackImage String?      @map("feedback_image")
+  referenceLink String?      @map("reference_link")
+  order         Int          @default(0)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  bank QuestionBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  @@index([bankId])
+  @@index([bankId, order])
+  @@map("questions")
+}
+
+model QuizAttempt {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  bankId        String        @map("bank_id")
+  status        AttemptStatus @default(IN_PROGRESS)
+  score         Float         @default(0)
+  maxScore      Float         @default(0) @map("max_score")
+  percentage    Float         @default(0)
+  passed        Boolean       @default(false)
+  startedAt     DateTime      @default(now()) @map("started_at")
+  completedAt   DateTime?     @map("completed_at")
+  timeSpent     Int           @default(0) @map("time_spent")
+  questionOrder Json          @map("question_order")
+  responses     Json
+
+  // Relations
+  user      User        @relation(fields: [userId], references: [id])
+  bank      QuestionBank @relation(fields: [bankId], references: [id])
+  emailLogs EmailLog[]
+
+  @@index([userId])
+  @@index([bankId])
+  @@index([userId, bankId])
+  @@index([status])
+  @@index([completedAt])
+  @@map("quiz_attempts")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  details    Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model EmailLog {
+  id        String      @id @default(uuid())
+  attemptId String      @map("attempt_id")
+  recipient String
+  subject   String
+  status    String
+  sentAt    DateTime    @default(now()) @map("sent_at")
+  error     String?     @db.Text
+
+  // Relations
+  attempt QuizAttempt @relation(fields: [attemptId], references: [id])
+
+  @@index([attemptId])
+  @@index([status])
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model InviteToken {
+  id        String        @id @default(uuid())
+  token     String        @unique
+  email     String
+  firstName String?       @map("first_name")
+  surname   String?
+  bankId    String?       @map("bank_id")
+  expiresAt DateTime      @map("expires_at")
+  usedAt    DateTime?     @map("used_at")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  bank QuestionBank? @relation(fields: [bankId], references: [id])
+
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+  @@map("invite_tokens")
+}
