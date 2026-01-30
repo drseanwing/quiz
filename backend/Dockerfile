@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 # Base Stage - Common for all stages
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS base
+FROM node:25-alpine AS base
 
 WORKDIR /app
 
@@ -66,7 +66,7 @@ RUN npm prune --production
 # -----------------------------------------------------------------------------
 # Production Stage
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS production
+FROM node:25-alpine AS production
 
 WORKDIR /app
 
