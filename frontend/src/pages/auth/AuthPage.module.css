@@ -1,0 +1,47 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--redi-light-gray);
+  padding: var(--space-lg);
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--redi-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.gradientBar {
+  height: 6px;
+}
+
+.cardBody {
+  padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+}
+
+.heading {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  color: var(--redi-navy);
+  margin-bottom: var(--space-xs);
+}
+
+.brand {
+  font-size: var(--text-sm);
+  color: var(--redi-medium-gray);
+}
+
+.brandAccent {
+  color: var(--redi-coral);
+  font-weight: 600;
+}
