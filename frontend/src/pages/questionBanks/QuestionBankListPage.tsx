@@ -12,6 +12,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { ImportModal } from '@/components/questionBanks/ImportModal';
 import { QuestionBankStatus } from '@/types';
 import styles from './QuestionBankListPage.module.css';
 
@@ -27,6 +28,7 @@ export function QuestionBankListPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [importOpen, setImportOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['questionBanks', { search, status: statusFilter, page }],
@@ -43,9 +45,14 @@ export function QuestionBankListPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Question Banks</h1>
-        <Link to="/question-banks/new">
-          <Button>Create New</Button>
-        </Link>
+        <div className={styles.headerActions}>
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            Import
+          </Button>
+          <Link to="/question-banks/new">
+            <Button>Create New</Button>
+          </Link>
+        </div>
       </div>
 
       <div className={styles.filters}>
@@ -129,6 +136,7 @@ export function QuestionBankListPage() {
           )}
         </>
       )}
+      <ImportModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   );
 }

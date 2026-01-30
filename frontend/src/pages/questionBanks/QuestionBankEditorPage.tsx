@@ -21,6 +21,7 @@ import { Alert } from '@/components/common/Alert';
 import { Spinner } from '@/components/common/Spinner';
 import { QuestionList } from '@/components/questionBanks/QuestionList';
 import { QuestionEditor } from '@/components/questionBanks/QuestionEditor';
+import { ExportButton } from '@/components/questionBanks/ExportButton';
 import { QuestionBankStatus, FeedbackTiming } from '@/types';
 import type { IQuestion } from '@/types';
 import styles from './QuestionBankEditorPage.module.css';
@@ -161,9 +162,14 @@ export function QuestionBankEditorPage() {
         <h1 className={styles.title}>
           {isNew ? 'Create Question Bank' : 'Edit Question Bank'}
         </h1>
-        <Button variant="outline" onClick={() => navigate('/question-banks')}>
-          Back to list
-        </Button>
+        <div className={styles.headerActions}>
+          {!isNew && bank && (
+            <ExportButton bankId={id!} bankTitle={bank.title} />
+          )}
+          <Button variant="outline" onClick={() => navigate('/question-banks')}>
+            Back to list
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>

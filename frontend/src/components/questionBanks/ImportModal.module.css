@@ -1,0 +1,65 @@
+.content {
+  min-width: 400px;
+}
+
+.description {
+  color: var(--redi-dark-gray);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-lg) 0;
+  line-height: 1.5;
+}
+
+.uploadArea {
+  margin-bottom: var(--space-lg);
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.uploadLabel {
+  display: block;
+  padding: var(--space-lg);
+  border: 2px dashed var(--redi-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  color: var(--redi-medium-gray);
+  font-size: var(--text-sm);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.uploadLabel:hover {
+  border-color: var(--redi-teal);
+  color: var(--redi-teal);
+}
+
+.fileInput:focus + .uploadLabel {
+  outline: 2px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
+.alert {
+  margin-bottom: var(--space-md);
+}
+
+.errorList {
+  margin: var(--space-sm) 0 0 0;
+  padding-left: var(--space-lg);
+  font-size: var(--text-xs);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--redi-border);
+}

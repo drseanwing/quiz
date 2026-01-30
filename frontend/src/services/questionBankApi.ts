@@ -65,3 +65,19 @@ export async function duplicateQuestionBank(id: string): Promise<IQuestionBank> 
   const body = (await api.post(`/question-banks/${id}/duplicate`)) as unknown as IApiResponse<IQuestionBank>;
   return body.data;
 }
+
+export async function exportQuestionBank(id: string): Promise<unknown> {
+  const body = (await api.get(`/question-banks/${id}/export`)) as unknown as IApiResponse<unknown>;
+  return body.data;
+}
+
+interface IImportResult {
+  id: string;
+  title: string;
+  questionCount: number;
+}
+
+export async function importQuestionBank(data: unknown): Promise<IImportResult> {
+  const body = (await api.post('/question-banks/import', data)) as unknown as IApiResponse<IImportResult>;
+  return body.data;
+}
