@@ -11,6 +11,8 @@ import userRoutes from './users';
 import questionBankRoutes from './questionBanks';
 import questionRoutes from './questions';
 import uploadRoutes from './uploads';
+import quizRoutes from './quizzes';
+import attemptRoutes from './attempts';
 
 const router = Router();
 
@@ -49,8 +51,8 @@ router.use('/users', userRoutes);
 router.use('/question-banks', questionBankRoutes);
 router.use('/', questionRoutes);
 router.use('/uploads', uploadRoutes);
-// router.use('/quizzes', quizRoutes);
-// router.use('/attempts', attemptRoutes);
+router.use('/quizzes', quizRoutes);
+router.use('/attempts', attemptRoutes);
 // router.use('/admin', adminRoutes);
 
 export default router;
