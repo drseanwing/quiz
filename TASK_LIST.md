@@ -635,11 +635,11 @@
 - ✅ Add password reset button
 
 #### P4.4.4: Question Bank Management UI
-- ⏳ Create QuestionBanks admin page
-- ⏳ Add all banks view
-- ⏳ Add status change controls
-- ⏳ Add ownership display
-- ⏳ Add deletion controls
+- ✅ Create QuestionBanks admin page
+- ✅ Add all banks view
+- ✅ Add status change controls
+- ✅ Add ownership display
+- ✅ Add deletion controls
 
 #### P4.4.5: Completions Dashboard
 - ✅ Create CompletionsTab page

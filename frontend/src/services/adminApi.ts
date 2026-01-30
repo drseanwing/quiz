@@ -231,3 +231,48 @@ export async function adminResetPassword(userId: string, password: string): Prom
   const body = (await api.post(`/users/${userId}/reset-password`, { password })) as unknown as IApiResponse<{ message: string }>;
   return body.data;
 }
+
+// Question Banks (admin view - uses the existing question-banks API)
+export interface IQuestionBankRow {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  questionCount: number;
+  maxAttempts: number;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: string; firstName: string; surname: string; email: string };
+  _count: { questions: number; attempts: number };
+}
+
+export interface IQuestionBankFilters {
+  search?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function listAllBanks(filters: IQuestionBankFilters): Promise<{
+  data: IQuestionBankRow[];
+  meta: { page: number; pageSize: number; totalCount: number; totalPages: number };
+}> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.status) params.set('status', filters.status);
+  params.set('page', String(filters.page || 1));
+  params.set('pageSize', String(filters.pageSize || 20));
+
+  const body = (await api.get(`/question-banks?${params}`)) as unknown as IApiResponse<IQuestionBankRow[]>;
+  return { data: body.data, meta: body.meta! };
+}
+
+export async function updateBankStatus(bankId: string, status: string): Promise<IQuestionBankRow> {
+  const body = (await api.patch(`/question-banks/${bankId}`, { status })) as unknown as IApiResponse<IQuestionBankRow>;
+  return body.data;
+}
+
+export async function deleteBank(bankId: string): Promise<void> {
+  await api.delete(`/question-banks/${bankId}`);
+}
