@@ -18,6 +18,7 @@ import { QuestionBankEditorPage } from '@/pages/questionBanks/QuestionBankEditor
 import { QuizListPage } from '@/pages/quiz/QuizListPage';
 import { QuizPlayerPage } from '@/pages/quiz/QuizPlayerPage';
 import { QuizResultsPage } from '@/pages/quiz/QuizResultsPage';
+import { AdminPage } from '@/pages/admin/AdminPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { UserRole } from '@/types';
 
@@ -110,6 +111,18 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <QuizResultsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin routes (admin only) */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+                  <Layout>
+                    <AdminPage />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -36,6 +36,14 @@ export function Header() {
             >
               Dashboard
             </NavLink>
+            <NavLink
+              to="/quizzes"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+              }
+            >
+              Quizzes
+            </NavLink>
             {(user.role === UserRole.EDITOR || user.role === UserRole.ADMIN) && (
               <NavLink
                 to="/question-banks"
