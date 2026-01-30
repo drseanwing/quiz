@@ -3,6 +3,7 @@
  * @description Multiple choice question player (single and multi select)
  */
 
+import { sanitizeHtml } from '@/utils/sanitize';
 import styles from './MCPlayer.module.css';
 
 interface MCPlayerProps {
@@ -55,7 +56,7 @@ export function MCPlayer({ options, answer, onChange, multi, disabled }: MCPlaye
           <span className={styles.indicator} />
           <span
             className={styles.text}
-            dangerouslySetInnerHTML={{ __html: option.text }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(option.text) }}
           />
         </label>
       ))}

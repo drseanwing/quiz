@@ -6,6 +6,7 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, requireEditor } from '@/middleware/auth';
+import { uploadRateLimiter } from '@/middleware/rateLimiter';
 import { imageUpload } from '@/config/upload';
 import { getImageUrl, deleteImage } from '@/services/uploadService';
 import { ValidationError } from '@/middleware/errorHandler';
@@ -27,6 +28,7 @@ router.post(
   '/images',
   authenticate,
   requireEditor,
+  uploadRateLimiter,
   (req: Request, res: Response, next: NextFunction) => {
     imageUpload.single('image')(req, res, (err) => {
       if (err) {

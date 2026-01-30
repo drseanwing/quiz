@@ -4,6 +4,7 @@
  */
 
 import { QuestionType, type IQuizQuestion, type IImmediateFeedback } from '@/types';
+import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import { MCPlayer } from './MCPlayer';
 import { TFPlayer } from './TFPlayer';
 import { SliderPlayer } from './SliderPlayer';
@@ -42,12 +43,12 @@ export function QuestionRenderer({
 
       <div
         className={styles.prompt}
-        dangerouslySetInnerHTML={{ __html: question.prompt }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(question.prompt) }}
       />
 
-      {question.promptImage && (
+      {question.promptImage && safeUrl(question.promptImage) && (
         <img
-          src={question.promptImage}
+          src={safeUrl(question.promptImage)}
           alt="Question illustration"
           className={styles.promptImage}
         />

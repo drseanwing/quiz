@@ -30,14 +30,19 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bankId = req.query.bankId as string | undefined;
-      const attempts = await quizService.listUserAttempts(
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 50;
+      const result = await quizService.listUserAttempts(
         req.user!.userId,
-        bankId
+        bankId,
+        page,
+        pageSize
       );
 
       res.json({
         success: true,
-        data: attempts,
+        data: result.data,
+        meta: result.meta,
       });
     } catch (error) {
       next(error);

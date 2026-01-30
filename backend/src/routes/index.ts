@@ -13,6 +13,7 @@ import questionRoutes from './questions';
 import uploadRoutes from './uploads';
 import quizRoutes from './quizzes';
 import attemptRoutes from './attempts';
+import adminRoutes from './admin';
 
 const router = Router();
 
@@ -53,6 +54,6 @@ router.use('/', questionRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/quizzes', quizRoutes);
 router.use('/attempts', attemptRoutes);
-// router.use('/admin', adminRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

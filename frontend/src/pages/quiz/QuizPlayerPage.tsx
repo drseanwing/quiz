@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QuestionRenderer } from '@/components/quiz/QuestionRenderer';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
+import { Modal } from '@/components/common/Modal';
 import * as quizApi from '@/services/quizApi';
 import type { IQuizQuestion, IImmediateFeedback, FeedbackTiming } from '@/types';
 import { AttemptStatus } from '@/types';
@@ -39,9 +40,10 @@ export function QuizPlayerPage() {
   // Timer state
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-  // Refs for auto-save
+  // Refs for auto-save and timer
   const responsesRef = useRef(responses);
   const elapsedRef = useRef(0);
+  const handleSubmitRef = useRef<() => void>(() => {});
   responsesRef.current = responses;
 
   // Load attempt
@@ -76,7 +78,7 @@ export function QuizPlayerPage() {
     load();
   }, [attemptId, navigate]);
 
-  // Timer countdown
+  // Timer countdown (uses ref to avoid stale closure)
   useEffect(() => {
     if (!startedAt || timeLimit <= 0) return;
 
@@ -87,7 +89,7 @@ export function QuizPlayerPage() {
       setTimeRemaining(remaining);
 
       if (remaining <= 0) {
-        handleSubmit();
+        handleSubmitRef.current();
       }
     }
 
@@ -158,6 +160,9 @@ export function QuizPlayerPage() {
     }
   }, [attemptId, submitting, navigate]);
 
+  // Keep ref in sync with latest handleSubmit
+  handleSubmitRef.current = handleSubmit;
+
   // Navigation
   const currentQuestion = questions[currentIndex];
   const answeredCount = questions.filter(q => q.id in responses).length;
@@ -173,7 +178,7 @@ export function QuizPlayerPage() {
   if (error) {
     return (
       <div className={styles.page}>
-        <Alert type="error">{error}</Alert>
+        <Alert variant="error">{error}</Alert>
         <Button onClick={() => navigate('/quizzes')}>Back to Quizzes</Button>
       </div>
     );
@@ -203,7 +208,7 @@ export function QuizPlayerPage() {
         <div className={styles.progressBar}>
           <div
             className={styles.progressFill}
-            style={{ width: `${(answeredCount / questions.length) * 100}%` }}
+            style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
           />
         </div>
         <span className={styles.progressText}>
@@ -273,28 +278,23 @@ export function QuizPlayerPage() {
       </footer>
 
       {/* Submit confirmation */}
-      {showConfirm && (
-        <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
-          <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
-            <h2>Submit Quiz?</h2>
-            {answeredCount < questions.length && (
-              <p className={styles.warning}>
-                You have answered {answeredCount} of {questions.length} questions.
-                Unanswered questions will be scored as incorrect.
-              </p>
-            )}
-            <p>Are you sure you want to submit your answers?</p>
-            <div className={styles.confirmActions}>
-              <Button variant="secondary" onClick={() => setShowConfirm(false)}>
-                Continue Quiz
-              </Button>
-              <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
-                {submitting ? 'Submitting...' : 'Submit'}
-              </Button>
-            </div>
-          </div>
+      <Modal isOpen={showConfirm} onClose={() => setShowConfirm(false)} title="Submit Quiz?">
+        {answeredCount < questions.length && (
+          <p className={styles.warning}>
+            You have answered {answeredCount} of {questions.length} questions.
+            Unanswered questions will be scored as incorrect.
+          </p>
+        )}
+        <p>Are you sure you want to submit your answers?</p>
+        <div className={styles.confirmActions}>
+          <Button variant="secondary" onClick={() => setShowConfirm(false)}>
+            Continue Quiz
+          </Button>
+          <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Submit'}
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

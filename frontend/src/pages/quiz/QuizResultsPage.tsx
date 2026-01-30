@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import * as quizApi from '@/services/quizApi';
+import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import { QuestionType, FeedbackTiming, type IQuestionResult } from '@/types';
 import styles from './QuizResultsPage.module.css';
 
@@ -28,7 +29,7 @@ export function QuizResultsPage() {
   if (error || !results) {
     return (
       <div className={styles.page}>
-        <Alert type="error">{error instanceof Error ? error.message : 'Failed to load results'}</Alert>
+        <Alert variant="error">{error instanceof Error ? error.message : 'Failed to load results'}</Alert>
         <Button onClick={() => navigate('/quizzes')}>Back to Quizzes</Button>
       </div>
     );
@@ -95,10 +96,10 @@ function QuestionReviewCard({ question, index }: { question: IQuestionResult; in
         </span>
       </div>
 
-      <div className={styles.reviewPrompt} dangerouslySetInnerHTML={{ __html: question.prompt }} />
+      <div className={styles.reviewPrompt} dangerouslySetInnerHTML={{ __html: sanitizeHtml(question.prompt) }} />
 
-      {question.promptImage && (
-        <img src={question.promptImage} alt="" className={styles.reviewImage} />
+      {question.promptImage && safeUrl(question.promptImage) && (
+        <img src={safeUrl(question.promptImage)} alt="" className={styles.reviewImage} />
       )}
 
       {/* User's answer */}
@@ -118,17 +119,17 @@ function QuestionReviewCard({ question, index }: { question: IQuestionResult; in
       {/* Feedback */}
       {question.feedback && (
         <div className={styles.reviewFeedback}>
-          <div dangerouslySetInnerHTML={{ __html: question.feedback }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(question.feedback) }} />
         </div>
       )}
 
-      {question.feedbackImage && (
-        <img src={question.feedbackImage} alt="Feedback illustration" className={styles.reviewImage} />
+      {question.feedbackImage && safeUrl(question.feedbackImage) && (
+        <img src={safeUrl(question.feedbackImage)} alt="Feedback illustration" className={styles.reviewImage} />
       )}
 
-      {question.referenceLink && (
+      {question.referenceLink && safeUrl(question.referenceLink) && (
         <a
-          href={question.referenceLink}
+          href={safeUrl(question.referenceLink)}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.reviewLink}
@@ -174,6 +175,7 @@ function formatAnswer(type: QuestionType, response: unknown, options: unknown): 
       return ids.map((id, i) => `${i + 1}. ${optMap.get(id) || id}`).join(', ');
     }
     case QuestionType.IMAGE_MAP:
+      if (resp.x == null || resp.y == null) return 'Not answered';
       return `(${resp.x}, ${resp.y})`;
     case QuestionType.SLIDER:
       return String(resp.value ?? '');
@@ -207,6 +209,8 @@ function formatCorrectAnswer(type: QuestionType, answer: unknown, options: unkno
       const tol = correct.tolerance as number;
       return tol > 0 ? `${val} (±${tol})` : String(val);
     }
+    case QuestionType.IMAGE_MAP:
+      return 'Target region on image';
     default:
       return JSON.stringify(answer);
   }

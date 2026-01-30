@@ -4,6 +4,7 @@
  * @description Quiz attempt management: starting, saving progress, submitting, results
  */
 
+import crypto from 'crypto';
 import { QuestionType, QuestionBankStatus, AttemptStatus, FeedbackTiming } from '@prisma/client';
 import prisma from '@/config/database';
 import logger from '@/config/logger';
@@ -116,11 +117,11 @@ export interface IAttemptSummary {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Fisher-Yates shuffle */
+/** Fisher-Yates shuffle using crypto-secure PRNG */
 function shuffle<T>(array: T[]): T[] {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = crypto.randomInt(i + 1);
     const temp = result[i] as T;
     result[i] = result[j] as T;
     result[j] = temp;
@@ -210,75 +211,72 @@ export async function startQuiz(
     throw new AppError('BANK_NOT_AVAILABLE', 'This quiz is not currently available', 403);
   }
 
-  // Check attempt limit
-  if (bank.maxAttempts > 0) {
-    const attemptCount = await prisma.quizAttempt.count({
-      where: {
-        userId,
-        bankId,
-        status: { in: [AttemptStatus.COMPLETED, AttemptStatus.TIMED_OUT] },
-      },
-    });
-
-    if (attemptCount >= bank.maxAttempts) {
-      throw new AppError(
-        'MAX_ATTEMPTS_REACHED',
-        `You have reached the maximum number of attempts (${bank.maxAttempts}) for this quiz`,
-        403
-      );
-    }
-  }
-
-  // Check for an existing in-progress attempt
-  const existingAttempt = await prisma.quizAttempt.findFirst({
-    where: { userId, bankId, status: AttemptStatus.IN_PROGRESS },
-  });
-
-  if (existingAttempt) {
-    // If timed out, mark it and continue; otherwise return error
-    if (bank.timeLimit > 0 && isTimedOut(existingAttempt.startedAt, bank.timeLimit)) {
-      await prisma.quizAttempt.update({
-        where: { id: existingAttempt.id },
-        data: { status: AttemptStatus.TIMED_OUT, completedAt: new Date() },
-      });
-    } else {
-      throw new AppError(
-        'ATTEMPT_IN_PROGRESS',
-        'You already have an in-progress attempt for this quiz',
-        409
-      );
-    }
-  }
-
   if (bank.questions.length === 0) {
     throw new AppError('NO_QUESTIONS', 'This quiz has no questions', 400);
   }
 
-  // Select questions
+  // Select questions (before transaction to avoid holding locks during shuffle)
   let selectedQuestions = [...bank.questions];
   if (bank.randomQuestions) {
     selectedQuestions = shuffle(selectedQuestions);
   }
-  // Limit to questionCount (0 = all questions)
   const limit = bank.questionCount > 0 ? bank.questionCount : selectedQuestions.length;
   selectedQuestions = selectedQuestions.slice(0, limit);
-
-  // Store question IDs in order
   const questionOrder = selectedQuestions.map(q => q.id);
-
-  // Prepare quiz questions for the player
   const quizQuestions = selectedQuestions.map(q => toQuizQuestion(q, bank.randomAnswers));
 
-  // Create attempt
-  const attempt = await prisma.quizAttempt.create({
-    data: {
-      userId,
-      bankId,
-      status: AttemptStatus.IN_PROGRESS,
-      questionOrder: questionOrder,
-      responses: {},
-    },
-  });
+  // Use serializable transaction to prevent race conditions on attempt limits
+  const attempt = await prisma.$transaction(async (tx) => {
+    // Check attempt limit
+    if (bank.maxAttempts > 0) {
+      const attemptCount = await tx.quizAttempt.count({
+        where: {
+          userId,
+          bankId,
+          status: { in: [AttemptStatus.COMPLETED, AttemptStatus.TIMED_OUT] },
+        },
+      });
+
+      if (attemptCount >= bank.maxAttempts) {
+        throw new AppError(
+          'MAX_ATTEMPTS_REACHED',
+          `You have reached the maximum number of attempts (${bank.maxAttempts}) for this quiz`,
+          403
+        );
+      }
+    }
+
+    // Check for an existing in-progress attempt
+    const existingAttempt = await tx.quizAttempt.findFirst({
+      where: { userId, bankId, status: AttemptStatus.IN_PROGRESS },
+    });
+
+    if (existingAttempt) {
+      if (bank.timeLimit > 0 && isTimedOut(existingAttempt.startedAt, bank.timeLimit)) {
+        await tx.quizAttempt.update({
+          where: { id: existingAttempt.id },
+          data: { status: AttemptStatus.TIMED_OUT, completedAt: new Date() },
+        });
+      } else {
+        throw new AppError(
+          'ATTEMPT_IN_PROGRESS',
+          'You already have an in-progress attempt for this quiz',
+          409
+        );
+      }
+    }
+
+    // Create attempt within transaction
+    return tx.quizAttempt.create({
+      data: {
+        userId,
+        bankId,
+        status: AttemptStatus.IN_PROGRESS,
+        questionOrder: questionOrder,
+        responses: {},
+      },
+    });
+  }, { isolationLevel: 'Serializable' });
 
   logger.info('Quiz attempt started', {
     attemptId: attempt.id,
@@ -695,34 +693,46 @@ export async function getResults(
  */
 export async function listUserAttempts(
   userId: string,
-  bankId?: string
-): Promise<IAttemptSummary[]> {
+  bankId?: string,
+  page = 1,
+  pageSize = 50
+): Promise<{ data: IAttemptSummary[]; meta: { page: number; pageSize: number; totalCount: number; totalPages: number } }> {
   const where: Record<string, unknown> = { userId };
   if (bankId) {
     where.bankId = bankId;
   }
 
-  const attempts = await prisma.quizAttempt.findMany({
-    where,
-    include: {
-      bank: { select: { title: true } },
-    },
-    orderBy: { startedAt: 'desc' },
-  });
+  const skip = (page - 1) * pageSize;
 
-  return attempts.map(a => ({
-    id: a.id,
-    bankId: a.bankId,
-    bankTitle: a.bank.title,
-    status: a.status,
-    score: a.score,
-    maxScore: a.maxScore,
-    percentage: a.percentage,
-    passed: a.passed,
-    startedAt: a.startedAt,
-    completedAt: a.completedAt,
-    timeSpent: a.timeSpent,
-  }));
+  const [attempts, totalCount] = await Promise.all([
+    prisma.quizAttempt.findMany({
+      where,
+      include: {
+        bank: { select: { title: true } },
+      },
+      orderBy: { startedAt: 'desc' },
+      skip,
+      take: pageSize,
+    }),
+    prisma.quizAttempt.count({ where }),
+  ]);
+
+  return {
+    data: attempts.map(a => ({
+      id: a.id,
+      bankId: a.bankId,
+      bankTitle: a.bank.title,
+      status: a.status,
+      score: a.score,
+      maxScore: a.maxScore,
+      percentage: a.percentage,
+      passed: a.passed,
+      startedAt: a.startedAt,
+      completedAt: a.completedAt,
+      timeSpent: a.timeSpent,
+    })),
+    meta: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },
+  };
 }
 
 /**

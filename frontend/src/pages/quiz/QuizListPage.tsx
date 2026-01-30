@@ -63,7 +63,7 @@ export function QuizListPage() {
       </header>
 
       {startError && (
-        <Alert type="error" onDismiss={() => setStartError(null)}>{startError}</Alert>
+        <Alert variant="error" onDismiss={() => setStartError(null)}>{startError}</Alert>
       )}
 
       {/* Resume in-progress attempts */}

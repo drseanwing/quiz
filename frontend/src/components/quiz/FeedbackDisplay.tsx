@@ -4,6 +4,7 @@
  */
 
 import type { IImmediateFeedback } from '@/types';
+import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import styles from './FeedbackDisplay.module.css';
 
 interface FeedbackDisplayProps {
@@ -22,11 +23,11 @@ export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
       {feedback.feedback && (
         <div
           className={styles.text}
-          dangerouslySetInnerHTML={{ __html: feedback.feedback }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(feedback.feedback) }}
         />
       )}
-      {feedback.feedbackImage && (
-        <img src={feedback.feedbackImage} alt="Feedback illustration" className={styles.image} />
+      {feedback.feedbackImage && safeUrl(feedback.feedbackImage) && (
+        <img src={safeUrl(feedback.feedbackImage)} alt="Feedback illustration" className={styles.image} />
       )}
     </div>
   );

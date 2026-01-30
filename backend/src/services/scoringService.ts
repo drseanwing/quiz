@@ -91,8 +91,11 @@ function scoreMCMulti(response: unknown, correctAnswer: unknown): IScoringResult
   const correctSet = new Set(correct.optionIds);
   const totalCorrect = correctSet.size;
 
+  // Deduplicate user selections to prevent score inflation
+  const uniqueSelections = [...new Set(resp.optionIds)];
+
   let points = 0;
-  for (const id of resp.optionIds) {
+  for (const id of uniqueSelections) {
     if (correctSet.has(id)) {
       points += 1 / totalCorrect;
     } else {

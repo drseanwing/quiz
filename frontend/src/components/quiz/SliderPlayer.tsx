@@ -3,7 +3,7 @@
  * @description Slider question player
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './SliderPlayer.module.css';
 
 interface SliderPlayerProps {
@@ -16,6 +16,13 @@ interface SliderPlayerProps {
 export function SliderPlayer({ options, answer, onChange, disabled }: SliderPlayerProps) {
   const { min, max, step, unit } = options;
   const [localValue, setLocalValue] = useState(answer?.value ?? (min + max) / 2);
+
+  // Sync local value when answer prop changes (e.g., navigating back to this question)
+  useEffect(() => {
+    if (answer?.value !== undefined) {
+      setLocalValue(answer.value);
+    }
+  }, [answer?.value]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = Number(e.target.value);
