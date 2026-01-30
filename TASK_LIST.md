@@ -516,9 +516,10 @@
 - ✅ Add /results/:attemptId route
 
 #### P3.4.8: User Dashboard
-- ⏳ Update Dashboard with quiz links
-- ⏳ Add recent attempts section
-- ⏳ Add available quizzes preview
+- ✅ Update Dashboard with quiz links
+- ✅ Add recent attempts section
+- ✅ Add stats cards (completed, passed, avg score)
+- ✅ Add in-progress resume section
 
 ---
 

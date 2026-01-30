@@ -1,0 +1,85 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.page h1 {
+  color: var(--navy);
+  margin: 0;
+}
+
+.welcome {
+  font-size: var(--font-lg);
+  color: var(--gray-600);
+}
+
+.section h2 {
+  color: var(--navy);
+  margin-bottom: var(--space-md);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-lg);
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.statValue {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--teal);
+}
+
+.statLabel {
+  font-size: var(--font-sm);
+  color: var(--gray-500);
+}
+
+.quickLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.attemptsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.attemptRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--gray-50, #f9fafb);
+  border-radius: var(--radius-sm);
+}
+
+.attemptTitle {
+  font-weight: 500;
+}
+
+.attemptScore {
+  font-weight: 600;
+}
+
+.passed { color: var(--teal); }
+.failed { color: var(--coral); }
+
+.attemptDate {
+  font-size: var(--font-sm);
+  color: var(--gray-400);
+}
+
+.emptyState {
+  color: var(--gray-400);
+  font-style: italic;
+}
