@@ -53,7 +53,7 @@
 - ✅ Create password reset request service function
 - ✅ Create password reset completion service function
 - ✅ Create token-based login service function
-- ⏳ Add login attempt auditing
+- ✅ Add login attempt auditing
 
 #### P1.1.6: Auth Routes
 - ✅ Create POST /api/auth/register endpoint

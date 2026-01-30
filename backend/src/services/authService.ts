@@ -178,7 +178,8 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
  */
 export async function loginUser(
   data: ILoginRequest,
-  ipAddress?: string
+  ipAddress?: string,
+  userAgent?: string
 ): Promise<IAuthResponse> {
   logger.info('Login attempt', {
     email: data.email,
@@ -213,6 +214,21 @@ export async function loginUser(
     // Record failed attempt for lockout tracking
     recordFailedAttempt(data.email);
 
+    // Audit log: failed login attempt
+    await prisma.auditLog.create({
+      data: {
+        userId: user?.id ?? null,
+        action: 'LOGIN_FAILED',
+        entityType: 'User',
+        entityId: user?.id ?? null,
+        details: { email: data.email, reason: !user ? 'user_not_found' : 'invalid_password' },
+        ipAddress: ipAddress ?? null,
+        userAgent: userAgent ?? null,
+      },
+    }).catch((err) => {
+      logger.error('Failed to create audit log for login failure', { error: err });
+    });
+
     logger.warn('Login failed', {
       email: data.email,
       ip: ipAddress,
@@ -238,6 +254,21 @@ export async function loginUser(
   await prisma.user.update({
     where: { id: user.id },
     data: { lastLoginAt: new Date() },
+  });
+
+  // Audit log: successful login
+  await prisma.auditLog.create({
+    data: {
+      userId: user.id,
+      action: 'LOGIN_SUCCESS',
+      entityType: 'User',
+      entityId: user.id,
+      details: { email: user.email },
+      ipAddress: ipAddress ?? null,
+      userAgent: userAgent ?? null,
+    },
+  }).catch((err) => {
+    logger.error('Failed to create audit log for login success', { error: err });
   });
 
   logger.info('Login successful', {

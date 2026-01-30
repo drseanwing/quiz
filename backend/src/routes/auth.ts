@@ -76,7 +76,11 @@ router.post(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await authService.loginUser(req.body, req.ip);
+      const result = await authService.loginUser(
+        req.body,
+        req.ip,
+        req.headers['user-agent']
+      );
 
       logger.info('Login successful', {
         userId: result.user.id,
