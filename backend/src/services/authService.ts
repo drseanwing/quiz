@@ -184,10 +184,17 @@ export async function loginUser(
     where: { email: data.email.toLowerCase() },
   });
 
-  if (!user) {
-    logger.warn('Login failed: User not found', {
+  // Always perform bcrypt operation to prevent timing attacks
+  // Use dummy hash if user doesn't exist to maintain consistent timing
+  const passwordHash = user?.passwordHash || '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYAJZTQQe/G';
+  const isPasswordValid = await verifyPassword(data.password, passwordHash);
+
+  // Check all conditions after password verification to maintain timing consistency
+  if (!user || !isPasswordValid) {
+    logger.warn('Login failed', {
       email: data.email,
       ip: ipAddress,
+      reason: !user ? 'user_not_found' : 'invalid_password',
     });
     throw new AuthenticationError('Invalid email or password');
   }
@@ -200,18 +207,6 @@ export async function loginUser(
       ip: ipAddress,
     });
     throw new AuthenticationError('User account is deactivated');
-  }
-
-  // Verify password
-  const isPasswordValid = await verifyPassword(data.password, user.passwordHash);
-
-  if (!isPasswordValid) {
-    logger.warn('Login failed: Invalid password', {
-      userId: user.id,
-      email: user.email,
-      ip: ipAddress,
-    });
-    throw new AuthenticationError('Invalid email or password');
   }
 
   // Update last login timestamp
@@ -367,11 +362,14 @@ export async function requestPasswordReset(
   const resetToken = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-  // Store reset token
+  // Hash token before storing (security: prevents token exposure if DB compromised)
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  // Store hashed reset token
   await prisma.passwordReset.create({
     data: {
       userId: user.id,
-      token: resetToken,
+      token: hashedToken,
       expiresAt,
     },
   });
@@ -425,9 +423,12 @@ export async function resetPassword(
     });
   }
 
+  // Hash incoming token to match stored hash
+  const hashedToken = crypto.createHash('sha256').update(data.token).digest('hex');
+
   // Find valid reset token
   const resetRecord = await prisma.passwordReset.findUnique({
-    where: { token: data.token },
+    where: { token: hashedToken },
     include: { user: true },
   });
 
@@ -536,6 +537,18 @@ export async function loginWithToken(
   });
 
   if (!user && password) {
+    // Validate password strength before creating account
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.valid) {
+      logger.debug('Token login failed: Weak password', {
+        email: inviteRecord.email,
+        errors: passwordValidation.errors,
+      });
+      throw new ValidationError(passwordValidation.errors[0] || 'Password is too weak', {
+        errors: passwordValidation.errors,
+      });
+    }
+
     // Auto-create user account
     logger.info('Auto-creating user account from invite token', {
       email: inviteRecord.email,

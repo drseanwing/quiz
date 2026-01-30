@@ -59,7 +59,7 @@ export const authRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false,
+  skipSuccessfulRequests: true, // Only count failed attempts toward rate limit
   handler: (req, res) => {
     logger.warn('Auth rate limit exceeded', {
       ip: req.ip,
