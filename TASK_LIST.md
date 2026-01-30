@@ -284,55 +284,55 @@
 - ✅ Create question bank status enums
 
 #### P2.6.2: Rich Text Editor
-- ⏳ Configure TipTap editor
-- ⏳ Create RichTextEditor component
-- ⏳ Add image insertion support
-- ⏳ Add toolbar configuration
+- ✅ Configure TipTap editor
+- ✅ Create RichTextEditor component
+- ✅ Add image insertion support
+- ✅ Add toolbar configuration
 - ⏳ Add HTML output sanitization
 
 #### P2.6.3: Question Bank List UI
-- ⏳ Create QuestionBankList page
-- ⏳ Create QuestionBankCard component
-- ⏳ Add filtering controls
+- ✅ Create QuestionBankList page
+- ✅ Create QuestionBankCard component
+- ✅ Add filtering controls
 - ⏳ Add sorting controls
-- ⏳ Add create new button
+- ✅ Add create new button
 
 #### P2.6.4: Question Bank Editor UI
-- ⏳ Create QuestionBankEditor page
-- ⏳ Create QuestionBankSettings component
-- ⏳ Add status selector
-- ⏳ Add timing configuration
-- ⏳ Add scoring configuration
-- ⏳ Add feedback timing selector
-- ⏳ Add notification email input
+- ✅ Create QuestionBankEditor page
+- ✅ Create QuestionBankSettings component
+- ✅ Add status selector
+- ✅ Add timing configuration
+- ✅ Add scoring configuration
+- ✅ Add feedback timing selector
+- ✅ Add notification email input
 
 #### P2.6.5: Question List UI
-- ⏳ Create QuestionList component
-- ⏳ Create QuestionListItem component
+- ✅ Create QuestionList component
+- ✅ Create QuestionListItem component
 - ⏳ Add drag-to-reorder functionality
-- ⏳ Add question count display
-- ⏳ Add delete confirmation modal
+- ✅ Add question count display
+- ✅ Add delete confirmation modal
 
 #### P2.6.6: Question Editor Shell
-- ⏳ Create QuestionEditor component
-- ⏳ Create question type selector
-- ⏳ Create prompt editor
-- ⏳ Create feedback editor
-- ⏳ Create reference link input
+- ✅ Create QuestionEditor component
+- ✅ Create question type selector
+- ✅ Create prompt editor
+- ✅ Create feedback editor
+- ✅ Create reference link input
 - ⏳ Add image upload for prompt
 - ⏳ Add image upload for feedback
 
 #### P2.6.7: Multiple Choice Editor
-- ⏳ Create MultipleChoiceEditor component
-- ⏳ Add option list management
-- ⏳ Add option text editing
+- ✅ Create MultipleChoiceEditor component
+- ✅ Add option list management
+- ✅ Add option text editing
 - ⏳ Add option image upload
-- ⏳ Add correct answer selection
-- ⏳ Add multi-select mode toggle
+- ✅ Add correct answer selection
+- ✅ Add multi-select mode toggle
 
 #### P2.6.8: True/False Editor
-- ⏳ Create TrueFalseEditor component
-- ⏳ Add correct answer radio buttons
+- ✅ Create TrueFalseEditor component
+- ✅ Add correct answer radio buttons
 
 #### P2.6.9: Drag Order Editor
 - ⏳ Create DragOrderEditor component
@@ -348,12 +348,12 @@
 - ⏳ Add correct region marking
 
 #### P2.6.11: Slider Editor
-- ⏳ Create SliderEditor component
-- ⏳ Add min/max inputs
-- ⏳ Add step input
-- ⏳ Add unit input
-- ⏳ Add correct value input
-- ⏳ Add tolerance input
+- ✅ Create SliderEditor component
+- ✅ Add min/max inputs
+- ✅ Add step input
+- ✅ Add unit input
+- ✅ Add correct value input
+- ✅ Add tolerance input
 - ⏳ Add tick marks configuration
 
 #### P2.6.12: Import/Export UI

@@ -13,7 +13,10 @@ import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { QuestionBankListPage } from '@/pages/questionBanks/QuestionBankListPage';
+import { QuestionBankEditorPage } from '@/pages/questionBanks/QuestionBankEditorPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { UserRole } from '@/types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +46,37 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <DashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/question-banks"
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.EDITOR, UserRole.ADMIN]}>
+                  <Layout>
+                    <QuestionBankListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/question-banks/new"
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.EDITOR, UserRole.ADMIN]}>
+                  <Layout>
+                    <QuestionBankEditorPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/question-banks/:id"
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.EDITOR, UserRole.ADMIN]}>
+                  <Layout>
+                    <QuestionBankEditorPage />
                   </Layout>
                 </ProtectedRoute>
               }

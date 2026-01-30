@@ -1,0 +1,158 @@
+.modal {
+  max-width: 720px;
+  width: 90vw;
+}
+
+.field {
+  margin-bottom: var(--space-lg);
+}
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  color: var(--redi-dark-gray);
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-md);
+  background-color: var(--redi-white);
+  font-size: var(--text-base);
+  color: var(--redi-dark-gray);
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: 2px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--redi-coral);
+  font-size: var(--text-sm);
+  margin-top: var(--space-xs);
+}
+
+.alert {
+  margin-bottom: var(--space-lg);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--redi-border);
+  margin-top: var(--space-lg);
+}
+
+/* ─── Option Editor ────────────────────────────────────────────────────── */
+
+.optionEditor {
+  margin-bottom: var(--space-lg);
+}
+
+.optionLabel {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--redi-dark-gray);
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.optionRadio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--redi-teal);
+  cursor: pointer;
+}
+
+.optionInput {
+  flex: 1;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.optionInput:focus {
+  outline: 2px solid var(--redi-teal);
+  outline-offset: 1px;
+}
+
+.removeOption {
+  background: none;
+  border: none;
+  font-size: var(--text-xl);
+  color: var(--redi-medium-gray);
+  cursor: pointer;
+  padding: 0 var(--space-xs);
+  line-height: 1;
+}
+
+.removeOption:hover {
+  color: var(--redi-coral);
+}
+
+/* ─── True/False ───────────────────────────────────────────────────────── */
+
+.tfGroup {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.tfOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+/* ─── Slider ───────────────────────────────────────────────────────────── */
+
+.sliderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.sliderField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.smallLabel {
+  font-size: var(--text-xs);
+  color: var(--redi-medium-gray);
+}
+
+/* ─── Placeholder ──────────────────────────────────────────────────────── */
+
+.placeholder {
+  padding: var(--space-lg);
+  border: 2px dashed var(--redi-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--redi-medium-gray);
+  margin-bottom: var(--space-lg);
+}

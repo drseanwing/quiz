@@ -1,0 +1,76 @@
+.editor {
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.editorContent {
+  padding: var(--space-md);
+  min-height: 120px;
+  outline: none;
+}
+
+.editorContent p {
+  margin-bottom: var(--space-sm);
+}
+
+.editorContent p:last-child {
+  margin-bottom: 0;
+}
+
+.editorContent h2,
+.editorContent h3 {
+  margin-bottom: var(--space-sm);
+}
+
+.editorContent ul,
+.editorContent ol {
+  padding-left: var(--space-lg);
+  margin-bottom: var(--space-sm);
+}
+
+.editorContent blockquote {
+  border-left: 3px solid var(--redi-teal);
+  padding-left: var(--space-md);
+  margin: var(--space-sm) 0;
+  color: var(--redi-medium-gray);
+}
+
+.editorContent code {
+  background-color: var(--redi-light-gray);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.editorContent pre {
+  background-color: var(--redi-light-gray);
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: var(--space-sm) 0;
+}
+
+.editorContent pre code {
+  background: none;
+  padding: 0;
+}
+
+.editorContent img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+
+.editorContent a {
+  color: var(--redi-teal);
+  text-decoration: underline;
+}
+
+.editorContent[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--redi-medium-gray);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

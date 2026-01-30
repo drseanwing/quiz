@@ -1,0 +1,123 @@
+.page {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  font-size: var(--text-3xl);
+  margin: 0;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2xl);
+}
+
+.alert {
+  margin-bottom: var(--space-lg);
+}
+
+.section {
+  margin-bottom: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.sectionTitle {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-lg) 0;
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--redi-border);
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-md);
+}
+
+.field {
+  margin-bottom: var(--space-md);
+}
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+  color: var(--redi-dark-gray);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--text-base);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  outline: 2px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-md);
+  background-color: var(--redi-white);
+  font-size: var(--text-base);
+  color: var(--redi-dark-gray);
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: 2px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--redi-teal);
+  cursor: pointer;
+}
+
+.error {
+  color: var(--redi-coral);
+  font-size: var(--text-sm);
+  margin-top: var(--space-xs);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+}
