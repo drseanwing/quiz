@@ -5,14 +5,14 @@
 
 import styles from './Footer.module.css';
 
-export function Footer() {
-  const year = new Date().getFullYear();
+const CURRENT_YEAR = new Date().getFullYear();
 
+export function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <span className={styles.copyright}>
-          &copy; {year} Resuscitation EDucation Initiative (REdI)
+          &copy; {CURRENT_YEAR} Resuscitation EDucation Initiative (REdI)
         </span>
         <div className={styles.links}>
           <a

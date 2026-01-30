@@ -3,7 +3,7 @@
  * @description User login page
  */
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { GradientBar } from '@/components/common/GradientBar';
@@ -11,9 +11,11 @@ import { Spinner } from '@/components/common/Spinner';
 import styles from './AuthPage.module.css';
 
 export function LoginPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isRestoring } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
-  if (isLoading) {
+  if (isRestoring) {
     return (
       <div className={styles.page}>
         <Spinner size="lg" />
@@ -22,7 +24,7 @@ export function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={from} replace />;
   }
 
   return (

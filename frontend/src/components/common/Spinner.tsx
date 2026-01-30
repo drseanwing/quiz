@@ -17,7 +17,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
       role="status"
       aria-label="Loading"
     >
-      <span className="visually-hidden">Loading...</span>
+      <span className={styles.visuallyHidden}>Loading...</span>
     </div>
   );
 }

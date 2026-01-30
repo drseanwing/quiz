@@ -3,7 +3,7 @@
  * @description Accessible dialog overlay
  */
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import styles from './Modal.module.css';
 
 interface ModalProps {
@@ -15,6 +15,7 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, className = '' }: ModalProps) {
+  const titleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -54,11 +55,11 @@ export function Modal({ isOpen, onClose, title, children, className = '' }: Moda
       ref={dialogRef}
       className={`${styles.dialog} ${className}`}
       onClick={handleBackdropClick}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
     >
       <div className={styles.content}>
         <header className={styles.header}>
-          <h2 id="modal-title" className={styles.title}>{title}</h2>
+          <h2 id={titleId} className={styles.title}>{title}</h2>
           <button
             className={styles.close}
             onClick={onClose}

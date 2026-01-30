@@ -17,6 +17,7 @@ import type {
   ILoginRequest,
   IRegisterRequest,
   IAuthResponse,
+  IApiResponse,
 } from '@/types';
 
 // ─── Context shape ──────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ import type {
 export interface IAuthContext {
   user: IUser | null;
   isAuthenticated: boolean;
+  isRestoring: boolean;
   isLoading: boolean;
   error: string | null;
   login: (data: ILoginRequest) => Promise<void>;
@@ -42,29 +44,30 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<IUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isRestoring, setIsRestoring] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Restore session on mount
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
-      setIsLoading(false);
+      setIsRestoring(false);
       return;
     }
 
     api
       .get('/users/me')
       .then((response: unknown) => {
-        const res = response as { data: IUser };
-        setUser(res.data);
+        const body = response as IApiResponse<IUser>;
+        setUser(body.data);
       })
       .catch(() => {
         clearTokens();
         setUser(null);
       })
       .finally(() => {
-        setIsLoading(false);
+        setIsRestoring(false);
       });
   }, []);
 
@@ -81,16 +84,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const response = (await api.post('/auth/login', data)) as {
-        data: IAuthResponse;
-      };
-      const { user: loggedInUser, tokens } = response.data;
+      const body = (await api.post('/auth/login', data)) as unknown as IApiResponse<IAuthResponse>;
+      const { user: loggedInUser, tokens } = body.data;
       setTokens(tokens.accessToken, tokens.refreshToken);
       setUser(loggedInUser);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err);
-      setError(message);
-      throw err;
+      setError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -100,16 +99,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const response = (await api.post('/auth/register', data)) as {
-        data: IAuthResponse;
-      };
-      const { user: registeredUser, tokens } = response.data;
+      const body = (await api.post('/auth/register', data)) as unknown as IApiResponse<IAuthResponse>;
+      const { user: registeredUser, tokens } = body.data;
       setTokens(tokens.accessToken, tokens.refreshToken);
       setUser(registeredUser);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err);
-      setError(message);
-      throw err;
+      setError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -133,6 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     () => ({
       user,
       isAuthenticated: user !== null,
+      isRestoring,
       isLoading,
       error,
       login,
@@ -140,7 +136,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       clearError,
     }),
-    [user, isLoading, error, login, register, logout, clearError]
+    [user, isRestoring, isLoading, error, login, register, logout, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

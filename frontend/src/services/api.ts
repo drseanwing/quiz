@@ -4,8 +4,7 @@
  */
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import { API_URL } from '@/utils/constants';
 
 const TOKEN_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';

@@ -17,6 +17,10 @@
   overflow: hidden;
 }
 
+.cardWide {
+  max-width: 520px;
+}
+
 .gradientBar {
   height: 6px;
 }

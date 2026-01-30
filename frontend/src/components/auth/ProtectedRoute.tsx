@@ -7,6 +7,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/common/Spinner';
 import type { UserRole } from '@/types';
+import styles from './ProtectedRoute.module.css';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,12 +15,12 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isRestoring, user } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isRestoring) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+      <div className={styles.loading}>
         <Spinner size="lg" />
       </div>
     );

@@ -22,7 +22,6 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const {
@@ -34,13 +33,12 @@ export function ForgotPasswordForm() {
   });
 
   async function onSubmit(data: ForgotPasswordFormData) {
-    setError(null);
     setIsLoading(true);
 
     try {
       await api.post('/auth/forgot-password', data);
       setIsSubmitted(true);
-    } catch (err) {
+    } catch {
       // Always show success to prevent email enumeration
       setIsSubmitted(true);
     } finally {
@@ -70,12 +68,6 @@ export function ForgotPasswordForm() {
       <p className={styles.description}>
         Enter your email address and we will send you a link to reset your password.
       </p>
-
-      {error && (
-        <Alert variant="error" onDismiss={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
 
       <Input
         label="Email"

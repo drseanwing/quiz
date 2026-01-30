@@ -11,9 +11,9 @@ import { Spinner } from '@/components/common/Spinner';
 import styles from './AuthPage.module.css';
 
 export function RegisterPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isRestoring } = useAuth();
 
-  if (isLoading) {
+  if (isRestoring) {
     return (
       <div className={styles.page}>
         <Spinner size="lg" />
@@ -27,7 +27,7 @@ export function RegisterPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card} style={{ maxWidth: 520 }}>
+      <div className={`${styles.card} ${styles.cardWide}`}>
         <GradientBar className={styles.gradientBar} />
         <div className={styles.cardBody}>
           <div className={styles.heading}>

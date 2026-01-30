@@ -5,6 +5,7 @@
 
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { UserRole } from '@/types';
 import { GradientBar } from '@/components/common/GradientBar';
 import { UserMenu } from './UserMenu';
 import styles from './Header.module.css';
@@ -35,7 +36,7 @@ export function Header() {
             >
               Dashboard
             </NavLink>
-            {(user.role === 'EDITOR' || user.role === 'ADMIN') && (
+            {(user.role === UserRole.EDITOR || user.role === UserRole.ADMIN) && (
               <NavLink
                 to="/question-banks"
                 className={({ isActive }) =>
@@ -45,7 +46,7 @@ export function Header() {
                 Question Banks
               </NavLink>
             )}
-            {user.role === 'ADMIN' && (
+            {user.role === UserRole.ADMIN && (
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>

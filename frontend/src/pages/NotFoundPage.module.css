@@ -1,0 +1,36 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--redi-light-gray);
+  padding: var(--space-lg);
+}
+
+.content {
+  text-align: center;
+}
+
+.code {
+  font-size: 6rem;
+  font-weight: 700;
+  color: var(--redi-navy);
+  margin-bottom: var(--space-sm);
+  line-height: 1;
+}
+
+.message {
+  font-size: var(--text-lg);
+  color: var(--redi-medium-gray);
+  margin-bottom: var(--space-xl);
+}
+
+.link {
+  color: var(--redi-coral);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

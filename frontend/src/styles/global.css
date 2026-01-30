@@ -132,18 +132,3 @@ img {
   padding: 0 var(--space-lg);
 }
 
-/* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spinner {
-  border: 3px solid var(--redi-light-gray);
-  border-top-color: var(--redi-teal);
-  border-radius: var(--radius-full);
-  width: 40px;
-  height: 40px;
-  animation: spin 0.8s linear infinite;
-}
