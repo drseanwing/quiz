@@ -157,12 +157,95 @@ export interface IQuestion {
   updatedAt: string;
 }
 
-// ─── Quiz Attempt Types ─────────────────────────────────────────────────────
+// ─── Quiz Types ─────────────────────────────────────────────────────────────
 
-export interface IQuizAttempt {
+/** Question as presented during quiz play (no correct answers) */
+export interface IQuizQuestion {
   id: string;
-  userId: string;
+  type: QuestionType;
+  prompt: string;
+  promptImage: string | null;
+  options: unknown;
+}
+
+/** Response from starting a new quiz */
+export interface IStartQuizResult {
+  attemptId: string;
+  bankTitle: string;
+  timeLimit: number;
+  questionCount: number;
+  feedbackTiming: FeedbackTiming;
+  questions: IQuizQuestion[];
+}
+
+/** Current state of an in-progress attempt */
+export interface IAttemptState {
+  id: string;
   bankId: string;
+  bankTitle: string;
+  status: AttemptStatus;
+  startedAt: string;
+  timeSpent: number;
+  timeLimit: number;
+  feedbackTiming: FeedbackTiming;
+  questionCount: number;
+  questions: IQuizQuestion[];
+  responses: Record<string, unknown>;
+}
+
+/** Per-question result after scoring */
+export interface IQuestionResult {
+  id: string;
+  type: QuestionType;
+  prompt: string;
+  promptImage: string | null;
+  options: unknown;
+  correctAnswer: unknown;
+  feedback: string;
+  feedbackImage: string | null;
+  referenceLink: string | null;
+  userResponse: unknown;
+  score: number;
+  isCorrect: boolean;
+}
+
+/** Full quiz results */
+export interface IQuizResults {
+  id: string;
+  bankId: string;
+  bankTitle: string;
+  status: AttemptStatus;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  passed: boolean;
+  timeSpent: number;
+  startedAt: string;
+  completedAt: string | null;
+  feedbackTiming: FeedbackTiming;
+  questions: IQuestionResult[];
+}
+
+/** Response from save-progress */
+export interface ISaveProgressResult {
+  savedAt: string;
+  immediateFeedback?: IImmediateFeedback[];
+}
+
+export interface IImmediateFeedback {
+  questionId: string;
+  correctAnswer: unknown;
+  feedback: string;
+  feedbackImage: string | null;
+  score: number;
+  isCorrect: boolean;
+}
+
+/** Attempt summary for listings */
+export interface IAttemptSummary {
+  id: string;
+  bankId: string;
+  bankTitle: string;
   status: AttemptStatus;
   score: number;
   maxScore: number;
@@ -171,18 +254,4 @@ export interface IQuizAttempt {
   startedAt: string;
   completedAt: string | null;
   timeSpent: number;
-  questionOrder: string[];
-  responses: IQuizResponse[];
-}
-
-export interface IQuizResponse {
-  questionId: string;
-  answer: unknown;
-  answeredAt: string;
-}
-
-export interface IQuizResult {
-  attempt: IQuizAttempt;
-  bank: IQuestionBank;
-  questions: IQuestion[];
 }

@@ -1,0 +1,196 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-height: 100vh;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--gray-500);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.title {
+  font-size: var(--font-xl);
+  color: var(--navy);
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.timer {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--gray-100);
+  color: var(--navy);
+}
+
+.timerWarning {
+  background: var(--coral);
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.saveStatus {
+  font-size: var(--font-sm);
+  color: var(--gray-400);
+}
+
+/* Progress */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: var(--radius-sm);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: var(--font-sm);
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+/* Navigation dots */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.navDot {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: white;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  color: var(--gray-600);
+}
+
+.navDot:hover {
+  border-color: var(--teal);
+}
+
+.navDot.navCurrent {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: white;
+}
+
+.navDot.navAnswered:not(.navCurrent) {
+  border-color: var(--teal);
+  background: rgba(43, 158, 158, 0.1);
+  color: var(--teal);
+}
+
+/* Question card */
+.questionCard {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  padding: var(--space-xl);
+  flex: 1;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--gray-200);
+}
+
+.footerCenter {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.footerRight {
+  font-size: var(--font-sm);
+  color: var(--gray-500);
+}
+
+/* Submit confirmation overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmDialog {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  max-width: 440px;
+  width: 90%;
+}
+
+.confirmDialog h2 {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--navy);
+}
+
+.warning {
+  color: var(--coral);
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+  margin-top: var(--space-lg);
+}

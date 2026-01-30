@@ -1,0 +1,49 @@
+.container {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+}
+
+.container.correct {
+  border-color: var(--teal);
+  background: rgba(43, 158, 158, 0.06);
+}
+
+.container.incorrect {
+  border-color: var(--coral);
+  background: rgba(229, 91, 100, 0.06);
+}
+
+.badge {
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.correct .badge {
+  color: var(--teal);
+}
+
+.incorrect .badge {
+  color: var(--coral);
+}
+
+.partial {
+  font-weight: 400;
+  font-size: var(--font-sm);
+}
+
+.text {
+  line-height: 1.6;
+}
+
+.text img {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+}
+
+.image {
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-sm);
+}

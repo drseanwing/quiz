@@ -1,0 +1,137 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.header h1 {
+  color: var(--navy);
+  margin: 0;
+}
+
+.loading, .empty {
+  color: var(--gray-500);
+  text-align: center;
+  padding: var(--space-xl);
+}
+
+/* Sections */
+.section h2 {
+  color: var(--navy);
+  margin-bottom: var(--space-lg);
+}
+
+/* Card grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+}
+
+.cardBody h3 {
+  margin: 0;
+  color: var(--navy);
+}
+
+.description {
+  font-size: var(--font-sm);
+  color: var(--gray-600);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+  color: var(--gray-500);
+}
+
+.cardMeta span::before {
+  content: '\2022 ';
+  color: var(--gray-300);
+}
+
+.cardMeta span:first-child::before {
+  content: '';
+}
+
+.bestScore {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--teal);
+}
+
+.meta {
+  font-size: var(--font-sm);
+  color: var(--gray-500);
+}
+
+.cardActions {
+  margin-top: auto;
+  padding-top: var(--space-md);
+}
+
+/* Attempt history table */
+.table {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 1fr 0.5fr;
+  padding: var(--space-sm) var(--space-md);
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.tableHeader {
+  background: var(--gray-50, #f9fafb);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.tableRow {
+  border-top: 1px solid var(--gray-200);
+  font-size: var(--font-sm);
+}
+
+.tableTitle {
+  font-weight: 500;
+}
+
+.tableStatus {
+  font-weight: 600;
+}
+
+.statusPassed { color: var(--teal); }
+.statusFailed { color: var(--coral); }
+
+.tableLink {
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tableLink:hover {
+  text-decoration: underline;
+}

@@ -458,112 +458,67 @@
 ### P3.4: Frontend Quiz Player
 
 #### P3.4.1: Quiz Types
-- ⏳ Create QuizAttempt interface
-- ⏳ Create QuizQuestion interface
-- ⏳ Create QuizResponse interface
-- ⏳ Create QuizResult interface
+- ✅ Create QuizQuestion interface
+- ✅ Create IStartQuizResult interface
+- ✅ Create IAttemptState interface
+- ✅ Create IQuizResults interface
+- ✅ Create ISaveProgressResult interface
+- ✅ Create IAttemptSummary interface
 
-#### P3.4.2: Quiz Context
-- ⏳ Create QuizContext definition
-- ⏳ Create QuizProvider component
-- ⏳ Add attempt state management
-- ⏳ Add current question tracking
-- ⏳ Add response tracking
-- ⏳ Add timer state
+#### P3.4.2: Quiz API Service
+- ✅ Create startQuiz function
+- ✅ Create getAttempt function
+- ✅ Create saveProgress function
+- ✅ Create submitAttempt function
+- ✅ Create getResults function
+- ✅ Create listMyAttempts function
 
-#### P3.4.3: Quiz Hooks
-- ⏳ Create useQuiz hook
-- ⏳ Create useTimer hook
-- ⏳ Add auto-save hook integration
-- ⏳ Add timer expiry handler
+#### P3.4.3: Quiz Player Page
+- ✅ Create QuizPlayerPage component
+- ✅ Add attempt state management
+- ✅ Add current question tracking
+- ✅ Add response tracking
+- ✅ Add timer countdown
+- ✅ Add auto-save (30s interval)
+- ✅ Add progress bar
+- ✅ Add question navigation dots
+- ✅ Add previous/next buttons
+- ✅ Add submit confirmation dialog
 
-#### P3.4.4: Quiz Player Shell
-- ⏳ Create QuizPlayer page
-- ⏳ Create QuizHeader component
-- ⏳ Create QuizFooter component
-- ⏳ Add navigation buttons
-- ⏳ Add save button
+#### P3.4.4: Question Renderers
+- ✅ Create QuestionRenderer router component
+- ✅ Create MCPlayer (radio + checkbox)
+- ✅ Create TFPlayer (true/false buttons)
+- ✅ Create DragOrderPlayer (@dnd-kit sortable)
+- ✅ Create ImageMapPlayer (click on image)
+- ✅ Create SliderPlayer (range input)
+- ✅ Create FeedbackDisplay component
 
-#### P3.4.5: Timer Component
-- ⏳ Create Timer component
-- ⏳ Add countdown display
-- ⏳ Add warning states
-- ⏳ Add expiry notification
+#### P3.4.5: Results Page
+- ✅ Create QuizResultsPage component
+- ✅ Create score card with pass/fail
+- ✅ Create question review cards
+- ✅ Add answer comparison display
+- ✅ Add feedback text rendering
+- ✅ Add reference link display
 
-#### P3.4.6: Progress Component
-- ⏳ Create ProgressBar component
-- ⏳ Add question counter
-- ⏳ Add completion percentage
+#### P3.4.6: Quiz List Page
+- ✅ Create QuizListPage component
+- ✅ Add available quizzes grid
+- ✅ Add in-progress resume section
+- ✅ Add attempt history table
+- ✅ Add start quiz functionality
+- ✅ Add best score display
 
-#### P3.4.7: Question Navigation
-- ⏳ Create QuestionNavigation component
-- ⏳ Add question number buttons
-- ⏳ Add answered status indicators
-- ⏳ Add current question highlight
+#### P3.4.7: Route Registration
+- ✅ Add /quizzes route
+- ✅ Add /quiz/:attemptId route
+- ✅ Add /results/:attemptId route
 
-#### P3.4.8: Multiple Choice Player
-- ⏳ Create MultipleChoicePlayer component
-- ⏳ Add radio button rendering
-- ⏳ Add checkbox rendering
-- ⏳ Add option images
-- ⏳ Add selection state
-
-#### P3.4.9: True/False Player
-- ⏳ Create TrueFalsePlayer component
-- ⏳ Add true/false buttons
-- ⏳ Add selection highlighting
-
-#### P3.4.10: Drag Order Player
-- ⏳ Create DragOrderPlayer component
-- ⏳ Configure @dnd-kit integration
-- ⏳ Add draggable items
-- ⏳ Add drop zones
-- ⏳ Add reorder handler
-
-#### P3.4.11: Image Map Player
-- ⏳ Create ImageMapPlayer component
-- ⏳ Add image rendering
-- ⏳ Add click detection
-- ⏳ Add region highlighting
-- ⏳ Add selection marker
-
-#### P3.4.12: Slider Player
-- ⏳ Create SliderPlayer component
-- ⏳ Add range input
-- ⏳ Add value display
-- ⏳ Add unit label
-- ⏳ Add tick marks
-
-#### P3.4.13: Feedback Display
-- ⏳ Create FeedbackDisplay component
-- ⏳ Add correct/incorrect indicator
-- ⏳ Add feedback text rendering
-- ⏳ Add feedback image rendering
-- ⏳ Add reference link
-- ⏳ Add timing-based visibility
-
-#### P3.4.14: Results Page
-- ⏳ Create QuizResults page
-- ⏳ Create ScoreSummary component
-- ⏳ Create PassFailBanner component
-- ⏳ Create QuestionReview component
-- ⏳ Add retry button
-- ⏳ Add return to dashboard button
-
-#### P3.4.15: Quiz List
-- ⏳ Create QuizList page
-- ⏳ Create QuizCard component
-- ⏳ Add available banks display
-- ⏳ Add attempt count display
-- ⏳ Add best score display
-- ⏳ Add start button
-
-#### P3.4.16: User Dashboard
-- ⏳ Create Dashboard page
-- ⏳ Add welcome message
-- ⏳ Add available quizzes section
+#### P3.4.8: User Dashboard
+- ⏳ Update Dashboard with quiz links
 - ⏳ Add recent attempts section
-- ⏳ Create AttemptHistoryTable component
+- ⏳ Add available quizzes preview
 
 ---
 

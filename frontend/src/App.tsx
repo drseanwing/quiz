@@ -15,6 +15,9 @@ import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { QuestionBankListPage } from '@/pages/questionBanks/QuestionBankListPage';
 import { QuestionBankEditorPage } from '@/pages/questionBanks/QuestionBankEditorPage';
+import { QuizListPage } from '@/pages/quiz/QuizListPage';
+import { QuizPlayerPage } from '@/pages/quiz/QuizPlayerPage';
+import { QuizResultsPage } from '@/pages/quiz/QuizResultsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { UserRole } from '@/types';
 
@@ -77,6 +80,36 @@ function App() {
                 <ProtectedRoute requiredRoles={[UserRole.EDITOR, UserRole.ADMIN]}>
                   <Layout>
                     <QuestionBankEditorPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Quiz routes (all authenticated users) */}
+            <Route
+              path="/quizzes"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuizListPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quiz/:attemptId"
+              element={
+                <ProtectedRoute>
+                  <QuizPlayerPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/results/:attemptId"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuizResultsPage />
                   </Layout>
                 </ProtectedRoute>
               }
