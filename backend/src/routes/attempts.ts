@@ -121,7 +121,19 @@ router.post(
         req.user!.userId
       );
 
-      // Fire-and-forget: send completion email + audit log
+      // Fire-and-forget: audit log (independent of email)
+      logQuizSubmission(results.id, results.bankId, results.score, results.passed, {
+        userId: req.user!.userId,
+        ipAddress: req.ip || undefined,
+        userAgent: req.get('user-agent') || undefined,
+      }).catch(err => {
+        logger.error('Post-submission audit log failed', {
+          attemptId: results.id,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      });
+
+      // Fire-and-forget: email notification (separate from audit log)
       (async () => {
         try {
           const [bank, user] = await Promise.all([
@@ -135,14 +147,6 @@ router.post(
             }),
           ]);
 
-          // Audit log
-          await logQuizSubmission(results.id, results.bankId, results.score, results.passed, {
-            userId: req.user!.userId,
-            ipAddress: req.ip || undefined,
-            userAgent: req.get('user-agent') || undefined,
-          });
-
-          // Email notification
           if (bank?.notificationEmail && user) {
             await sendCompletionNotification(results.id, bank.notificationEmail, {
               userName: `${user.firstName} ${user.surname}`,
@@ -154,7 +158,7 @@ router.post(
             });
           }
         } catch (err) {
-          logger.error('Post-submission side effects failed', {
+          logger.error('Post-submission email notification failed', {
             attemptId: results.id,
             error: err instanceof Error ? err.message : 'Unknown error',
           });

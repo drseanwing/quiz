@@ -9,6 +9,7 @@ import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Modal } from '@/components/common/Modal';
+import { useAuth } from '@/hooks/useAuth';
 import * as adminApi from '@/services/adminApi';
 import styles from './UsersTab.module.css';
 
@@ -190,7 +191,7 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
   }
 
   return (
-    <Modal open onClose={onClose} title="Create User">
+    <Modal isOpen onClose={onClose} title="Create User">
       <form className={styles.modalForm} onSubmit={handleSubmit}>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
@@ -229,6 +230,8 @@ function EditUserModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const { user: currentUser } = useAuth();
+  const isSelf = currentUser?.id === user.id;
   const [form, setForm] = useState({
     firstName: user.firstName,
     surname: user.surname,
@@ -263,7 +266,7 @@ function EditUserModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Edit: ${user.firstName} ${user.surname}`}>
+    <Modal isOpen onClose={onClose} title={`Edit: ${user.firstName} ${user.surname}`}>
       <form className={styles.modalForm} onSubmit={handleSubmit}>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
@@ -274,15 +277,16 @@ function EditUserModal({
         <div className={styles.formRow}>
           <label>ID Number <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))} /></label>
           <label>Role
-            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} disabled={isSelf}>
               {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </label>
         </div>
         <label className={styles.checkboxLabel}>
-          <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
+          <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} disabled={isSelf} />
           Active
         </label>
+        {isSelf && <p className={styles.modalNote}>You cannot change your own role or active status.</p>}
         <div className={styles.modalActions}>
           <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Saving...' : 'Save'}</Button>
           <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
@@ -337,7 +341,7 @@ function ResetPasswordModal({
   }
 
   return (
-    <Modal open onClose={onClose} title={`Reset Password: ${user.firstName} ${user.surname}`}>
+    <Modal isOpen onClose={onClose} title={`Reset Password: ${user.firstName} ${user.surname}`}>
       <form className={styles.modalForm} onSubmit={handleSubmit}>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         {successMsg && <Alert variant="success">{successMsg}</Alert>}

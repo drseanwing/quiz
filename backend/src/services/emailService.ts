@@ -15,6 +15,18 @@ interface IEmailPayload {
 }
 
 /**
+ * Escape HTML special characters to prevent XSS in email templates
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Send an email via Power Automate webhook (or mock in dev)
  */
 async function sendEmail(payload: IEmailPayload): Promise<boolean> {
@@ -114,7 +126,7 @@ export async function sendCompletionNotification(
         </div>
         <div style="padding: 24px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1B3A5F; margin-top: 0;">Quiz Completion Notification</h2>
-          <p><strong>${data.userName}</strong> has completed <strong>${data.bankTitle}</strong>.</p>
+          <p><strong>${escapeHtml(data.userName)}</strong> has completed <strong>${escapeHtml(data.bankTitle)}</strong>.</p>
           <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin: 16px 0;">
             <p style="margin: 0 0 8px 0;"><strong>Result:</strong> <span style="color: ${statusColor}; font-weight: 700;">${passStatus}</span></p>
             <p style="margin: 0 0 8px 0;"><strong>Score:</strong> ${data.score.toFixed(1)} / ${data.maxScore} (${Math.round(data.percentage)}%)</p>
@@ -134,10 +146,9 @@ export async function sendCompletionNotification(
 export async function sendPasswordResetEmail(
   email: string,
   resetToken: string
-): Promise<void> {
+): Promise<boolean> {
   const resetUrl = `${config.appUrl}/reset-password?token=${resetToken}`;
 
-  // No attemptId for password reset, use a placeholder for email logging
   const success = await sendEmail({
     recipient: email,
     subject: `${config.email.fromName} - Password Reset`,
@@ -163,6 +174,8 @@ export async function sendPasswordResetEmail(
   if (!success) {
     logger.warn('Password reset email failed', { email });
   }
+
+  return success;
 }
 
 /**
@@ -177,8 +190,8 @@ export async function sendInviteEmail(
   }
 ): Promise<void> {
   const registerUrl = `${config.appUrl}/register?invite=${data.inviteToken}`;
-  const greeting = data.firstName ? `Hello ${data.firstName}` : 'Hello';
-  const bankLine = data.bankTitle ? ` to take the quiz <strong>${data.bankTitle}</strong>` : '';
+  const greeting = data.firstName ? `Hello ${escapeHtml(data.firstName)}` : 'Hello';
+  const bankLine = data.bankTitle ? ` to take the quiz <strong>${escapeHtml(data.bankTitle)}</strong>` : '';
 
   const success = await sendEmail({
     recipient: email,

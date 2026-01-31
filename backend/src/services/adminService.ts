@@ -118,10 +118,15 @@ export async function exportCompletionsCSV(filters: ICompletionFilters): Promise
 }
 
 function csvEscape(value: string): string {
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`;
+  // Prevent CSV formula injection: prefix dangerous leading chars with a single quote
+  let safe = value;
+  if (/^[=+\-@\t\r]/.test(safe)) {
+    safe = `'${safe}`;
   }
-  return value;
+  if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe !== value) {
+    return `"${safe.replace(/"/g, '""')}"`;
+  }
+  return safe;
 }
 
 // ---------------------------------------------------------------------------

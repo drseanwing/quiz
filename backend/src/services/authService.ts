@@ -440,13 +440,21 @@ export async function requestPasswordReset(
     expiresAt,
   });
 
-  // Send password reset email (fire-and-forget)
-  sendPasswordResetEmail(user.email, resetToken).catch((err) => {
+  // Send password reset email - await to ensure delivery
+  try {
+    const emailSent = await sendPasswordResetEmail(user.email, resetToken);
+    if (!emailSent) {
+      logger.error('Password reset email delivery failed', {
+        userId: user.id,
+        email: user.email,
+      });
+    }
+  } catch (err) {
     logger.error('Failed to send password reset email', {
       userId: user.id,
       error: err instanceof Error ? err.message : 'Unknown error',
     });
-  });
+  }
 
   const response: IPasswordResetResponse = {
     message: 'If an account exists with this email, a password reset link has been sent',

@@ -12,13 +12,12 @@ import { Modal } from '@/components/common/Modal';
 import * as adminApi from '@/services/adminApi';
 import styles from './QuestionBanksTab.module.css';
 
-const STATUSES = ['DRAFT', 'OPEN', 'PUBLIC', 'CLOSED', 'ARCHIVED'] as const;
+const STATUSES = ['DRAFT', 'OPEN', 'PUBLIC', 'ARCHIVED'] as const;
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'statusDraft',
   OPEN: 'statusOpen',
   PUBLIC: 'statusPublic',
-  CLOSED: 'statusClosed',
   ARCHIVED: 'statusArchived',
 };
 
@@ -29,6 +28,7 @@ export function QuestionBanksTab() {
   const [statusFilter, setStatusFilter] = useState('');
   const [appliedFilters, setAppliedFilters] = useState<adminApi.IQuestionBankFilters>({});
   const [deleteTarget, setDeleteTarget] = useState<adminApi.IQuestionBankRow | null>(null);
+  const [mutationError, setMutationError] = useState('');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-banks', page, appliedFilters],
@@ -54,6 +54,11 @@ export function QuestionBanksTab() {
     mutationFn: ({ bankId, status }: { bankId: string; status: string }) =>
       adminApi.updateBankStatus(bankId, status),
     onSuccess: () => {
+      setMutationError('');
+      queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
+    },
+    onError: (err: unknown) => {
+      setMutationError(err instanceof Error ? err.message : 'Failed to update status');
       queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
     },
   });
@@ -61,8 +66,12 @@ export function QuestionBanksTab() {
   const deleteMutation = useMutation({
     mutationFn: (bankId: string) => adminApi.deleteBank(bankId),
     onSuccess: () => {
+      setMutationError('');
       queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
       setDeleteTarget(null);
+    },
+    onError: (err: unknown) => {
+      setMutationError(err instanceof Error ? err.message : 'Failed to delete question bank');
     },
   });
 
@@ -87,6 +96,7 @@ export function QuestionBanksTab() {
 
       {isLoading && <Spinner />}
       {error && <Alert variant="error">{error instanceof Error ? error.message : 'Failed to load'}</Alert>}
+      {mutationError && <Alert variant="error">{mutationError}</Alert>}
 
       {data && (
         <>
@@ -156,7 +166,7 @@ export function QuestionBanksTab() {
       )}
 
       {deleteTarget && (
-        <Modal open onClose={() => setDeleteTarget(null)} title="Confirm Deletion">
+        <Modal isOpen onClose={() => setDeleteTarget(null)} title="Confirm Deletion">
           <div className={styles.confirmContent}>
             <p>Are you sure you want to delete <strong>{deleteTarget.title}</strong>?</p>
             <p className={styles.confirmWarning}>
