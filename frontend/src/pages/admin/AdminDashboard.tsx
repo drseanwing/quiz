@@ -22,6 +22,7 @@ export function AdminDashboard() {
 
   return (
     <div className={styles.dashboard}>
+      <h2 className="visually-hidden">Platform Statistics</h2>
       <div className={styles.grid}>
         <StatCard label="Total Users" value={stats.totalUsers} subtitle={`${stats.activeUsers} active`} />
         <StatCard label="Question Banks" value={stats.totalBanks} subtitle={`${stats.activeBanks} active`} />

@@ -41,6 +41,7 @@ export function LogsTab() {
 
   return (
     <div className={styles.container}>
+      <h2 className="visually-hidden">Audit Logs</h2>
       <div className={styles.filters}>
         <div className={styles.filterGroup}>
           <label htmlFor="log-action-filter">Action</label>

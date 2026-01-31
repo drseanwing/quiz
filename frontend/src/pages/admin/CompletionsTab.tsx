@@ -62,6 +62,7 @@ export function CompletionsTab() {
 
   return (
     <div className={styles.container}>
+      <h2 className="visually-hidden">Completions</h2>
       {exportError && <Alert variant="error">{exportError}</Alert>}
       <div className={styles.filters}>
         <div className={styles.filterGroup}>

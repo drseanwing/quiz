@@ -77,6 +77,7 @@ export function QuestionBanksTab() {
 
   return (
     <div className={styles.container}>
+      <h2 className="visually-hidden">Question Banks</h2>
       <div className={styles.filters}>
         <input
           type="text"

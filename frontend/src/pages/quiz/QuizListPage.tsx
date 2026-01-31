@@ -98,6 +98,7 @@ export function QuizListPage() {
 
       {/* Available quizzes */}
       <section className={styles.section}>
+        <h2 className="visually-hidden">Available Quizzes</h2>
         {banksLoading || attemptsLoading ? (
           <p className={styles.loading}>Loading quizzes...</p>
         ) : banks.length === 0 ? (

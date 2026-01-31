@@ -82,7 +82,7 @@ export function InvitesTab() {
     <div className={styles.container}>
       {/* Create invite form */}
       <div className={styles.formSection}>
-        <h3>Create Invitation</h3>
+        <h2>Create Invitation</h2>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.field}>
@@ -113,7 +113,7 @@ export function InvitesTab() {
       </div>
 
       {/* Token list */}
-      <h3>Invite Tokens</h3>
+      <h2>Invite Tokens</h2>
       {isLoading && <Spinner />}
       {error && <Alert variant="error">{error instanceof Error ? error.message : 'Failed to load'}</Alert>}
 

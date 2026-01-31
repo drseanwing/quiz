@@ -56,6 +56,7 @@ export function UsersTab() {
 
   return (
     <div className={styles.container}>
+      <h2 className="visually-hidden">Users</h2>
       <div className={styles.toolbar}>
         <div className={styles.filters}>
           <input
