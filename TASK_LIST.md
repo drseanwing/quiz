@@ -784,6 +784,9 @@
 - ✅ Create lockout utility tests (18 tests: lockout tracking, case-insensitivity)
 - ✅ Create JWT utility tests (20 tests: generation, verification, header extraction)
 - ✅ Create CSV/email escape tests (26 tests: formula injection, escapeHtml, sanitizeSubject)
+- ✅ Create auth middleware tests (37 tests: authenticate, optionalAuth, requireRole, email domain validation)
+- ✅ Create error handling tests (28 tests: error classes, errorHandler middleware, validateRequiredFields)
+- ✅ Create admin service tests (28 tests: completions, CSV export, logs, stats, invite tokens)
 
 #### P5.5.2: Backend Integration Tests
 - ⏳ Create auth flow tests
@@ -824,7 +827,7 @@
 - ✅ Add request examples
 - ✅ Add response examples
 - ✅ Add error code reference
-- ⏳ Generate OpenAPI spec
+- ✅ Generate OpenAPI spec
 
 #### P5.6.2: Database Documentation
 - ✅ Document all tables
@@ -907,7 +910,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~75% complete (security headers, input validation, compression, indexes, 343 unit tests across 15 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, API docs, deployment docs, database docs, admin/user guides done, 6 code reviews completed)
+- Phase 5: ~80% complete (security headers, input validation, compression, indexes, 371 unit tests across 16 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 7 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -940,6 +943,12 @@
   RichTextEditor infinite loop prevention, URL encoding in quizApi, auto-save submit guard,
   delete button danger variant, DragOrderPlayer state updater side-effect fix, LogsTab
   JSON detail truncation
+- Review 7 (18 backend + 15 frontend issues found): Fixed file upload magic-byte validation
+  (CRITICAL MIME spoofing), submittingRef reset on quiz submit failure (CRITICAL auto-save
+  lockout), reset-password rate limiter, lockout store stale record purging, import field-length
+  validation, DragOrderPlayer stale closure on rapid drags, QuestionBankListPage missing Input
+  label, beforeunload guard for quiz progress, dead code removal (listAvailableQuizzes),
+  Footer year re-evaluation, CompletionsTab CSV download for Firefox, admin modal noValidate
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)
@@ -948,5 +957,6 @@
 - Answer option re-randomization on page reload (needs schema migration to store order)
 - Timer calculation using server timeSpent vs wall-clock (needs careful testing)
 - localStorage token storage (needs httpOnly cookie backend infrastructure)
+- ImageMapPlayer coordinate normalization (needs responsive layout coordinate system)
 
-**Last Updated**: 2026-01-30
+**Last Updated**: 2026-01-31
