@@ -5,7 +5,7 @@
  */
 
 import prisma from '@/config/database';
-import { QuestionType } from '@prisma/client';
+import { QuestionType, FeedbackTiming } from '@prisma/client';
 import { NotFoundError, ValidationError } from '@/middleware/errorHandler';
 import { canAccessBank } from '@/services/questionBankService';
 import type { ITokenPayload } from '@/utils/jwt';
@@ -145,6 +145,35 @@ function validateImportData(data: unknown): IExportedQuestionBank {
   }
   if (typeof bank.description === 'string' && bank.description.length > 2000) {
     throw new ValidationError('Invalid import data: bank description exceeds 2000 characters');
+  }
+
+  // Validate numeric bank configuration bounds (match createQuestionBankValidator)
+  if (bank.timeLimit !== undefined && bank.timeLimit !== null) {
+    if (typeof bank.timeLimit !== 'number' || bank.timeLimit < 0 || bank.timeLimit > 480) {
+      throw new ValidationError('Invalid import data: timeLimit must be between 0 and 480 minutes');
+    }
+  }
+  if (bank.passingScore !== undefined && bank.passingScore !== null) {
+    if (typeof bank.passingScore !== 'number' || bank.passingScore < 0 || bank.passingScore > 100) {
+      throw new ValidationError('Invalid import data: passingScore must be between 0 and 100');
+    }
+  }
+  if (bank.questionCount !== undefined && bank.questionCount !== null) {
+    if (typeof bank.questionCount !== 'number' || bank.questionCount < 1 || bank.questionCount > 500) {
+      throw new ValidationError('Invalid import data: questionCount must be between 1 and 500');
+    }
+  }
+  if (bank.maxAttempts !== undefined && bank.maxAttempts !== null) {
+    if (typeof bank.maxAttempts !== 'number' || bank.maxAttempts < 0 || bank.maxAttempts > 100) {
+      throw new ValidationError('Invalid import data: maxAttempts must be between 0 and 100');
+    }
+  }
+  // Validate feedbackTiming against enum
+  const validFeedbackTimings = Object.values(FeedbackTiming);
+  if (bank.feedbackTiming !== undefined && bank.feedbackTiming !== null) {
+    if (!validFeedbackTimings.includes(bank.feedbackTiming as FeedbackTiming)) {
+      throw new ValidationError(`Invalid import data: feedbackTiming must be one of ${validFeedbackTimings.join(', ')}`);
+    }
   }
 
   if (!Array.isArray(obj.questions)) {

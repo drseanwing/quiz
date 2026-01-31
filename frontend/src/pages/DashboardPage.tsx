@@ -40,8 +40,8 @@ export function DashboardPage() {
 
       {error && <Alert variant="error">Failed to load your quiz data. Please try again later.</Alert>}
 
-      {/* Stats */}
-      <div className={styles.grid}>
+      {/* Stats - only show when data is loaded */}
+      {!error && <div className={styles.grid}>
         <Card className={styles.statCard}>
           <span className={styles.statValue}>{completedAttempts.length}</span>
           <span className={styles.statLabel}>Quizzes Completed</span>
@@ -58,7 +58,7 @@ export function DashboardPage() {
           </span>
           <span className={styles.statLabel}>Average Score</span>
         </Card>
-      </div>
+      </div>}
 
       {/* Quick links */}
       <section className={styles.section}>

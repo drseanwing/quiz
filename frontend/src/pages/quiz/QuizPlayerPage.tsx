@@ -169,7 +169,7 @@ export function QuizPlayerPage() {
 
   // Submit quiz
   const handleSubmit = useCallback(async () => {
-    if (!attemptId || submitting) return;
+    if (!attemptId || submittingRef.current) return;
     setSubmitting(true);
     submittingRef.current = true;
     setShowConfirm(false);
@@ -185,7 +185,7 @@ export function QuizPlayerPage() {
       setSubmitting(false);
       submittingRef.current = false;
     }
-  }, [attemptId, submitting, navigate]);
+  }, [attemptId, navigate]);
 
   // Keep ref in sync with latest handleSubmit
   handleSubmitRef.current = handleSubmit;

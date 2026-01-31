@@ -37,8 +37,8 @@ export const saveProgressValidator = [
     .withMessage('Responses must be an object'),
 
   body('timeSpent')
-    .isInt({ min: 0 })
-    .withMessage('timeSpent must be a non-negative integer'),
+    .isInt({ min: 0, max: 86400 })
+    .withMessage('timeSpent must be between 0 and 86400 seconds'),
 ];
 
 /**

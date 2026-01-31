@@ -163,12 +163,6 @@ router.post(
         });
       }
 
-      logger.info('Invite token created', {
-        tokenId: invite.id,
-        email: invite.email,
-        createdBy: req.user!.userId,
-      });
-
       res.status(201).json({ success: true, data: invite });
     } catch (error) {
       next(error);

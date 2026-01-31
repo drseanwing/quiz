@@ -803,7 +803,7 @@
 - ⏳ Create service tests
 
 #### P5.5.4: Frontend Component Tests
-- ✅ Create common component tests (32 tests: Button, Alert, Input, Modal)
+- ✅ Create common component tests (46 tests: Button, Alert, Input, Modal, Spinner, Card, ErrorBoundary)
 - ⏳ Create form component tests
 - ⏳ Create quiz player tests
 - ⏳ Create admin component tests
@@ -873,7 +873,7 @@
 - ⏳ Test backup/restore process
 
 #### P5.7.3: Monitoring Setup
-- ⏳ Add health check endpoint testing
+- ✅ Enhance health check with DB connectivity ping (returns 503 if DB down)
 - ⏳ Add log aggregation
 - ⏳ Add error alerting
 - ⏳ Add uptime monitoring

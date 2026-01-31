@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
+import { Spinner } from '@/components/common/Spinner';
 import * as quizApi from '@/services/quizApi';
 import * as questionBankApi from '@/services/questionBankApi';
 import type { IQuestionBank, IAttemptSummary } from '@/types';
@@ -100,7 +101,7 @@ export function QuizListPage() {
       <section className={styles.section}>
         <h2 className="visually-hidden">Available Quizzes</h2>
         {banksLoading || attemptsLoading ? (
-          <p className={styles.loading}>Loading quizzes...</p>
+          <div className={styles.loading}><Spinner size="lg" /></div>
         ) : banks.length === 0 ? (
           <p className={styles.empty}>No quizzes are currently available.</p>
         ) : (

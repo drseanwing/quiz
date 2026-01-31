@@ -38,9 +38,6 @@ router.get('/health', async (_req: Request, res: Response) => {
       status: healthy ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
       version: '1.0.0',
-      uptime: Math.floor(process.uptime()),
-      checks: { database: dbStatus },
-      latencyMs,
     },
   });
 });

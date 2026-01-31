@@ -10,7 +10,6 @@ import { uploadRateLimiter } from '@/middleware/rateLimiter';
 import { imageUpload, validateMagicBytes } from '@/config/upload';
 import { getImageUrl, deleteImage } from '@/services/uploadService';
 import { ValidationError } from '@/middleware/errorHandler';
-import path from 'path';
 import logger from '@/config/logger';
 
 const router = Router();
