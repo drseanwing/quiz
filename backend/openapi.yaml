@@ -1,0 +1,1616 @@
+openapi: 3.0.3
+info:
+  title: REdI Quiz Platform API
+  description: RESTful API for the REdI Quiz Platform - quiz management, delivery, and administration.
+  version: 1.0.0
+  contact:
+    name: REdI Quiz Platform
+
+servers:
+  - url: /api
+    description: API base path
+
+tags:
+  - name: Health
+    description: Server health and metadata
+  - name: Auth
+    description: Authentication and password management
+  - name: Users
+    description: User profile and admin user management
+  - name: Question Banks
+    description: Question bank CRUD and import/export
+  - name: Questions
+    description: Question CRUD within question banks
+  - name: Quizzes
+    description: Quiz delivery and attempt management
+  - name: Uploads
+    description: Image upload management
+  - name: Admin
+    description: Admin-only operations (stats, completions, logs, invites)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Email is required
+            details:
+              type: object
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalCount:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 3
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        surname:
+          type: string
+        idNumber:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [USER, EDITOR, ADMIN]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthTokens:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Access token lifetime in seconds
+
+    QuestionBank:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, OPEN, PUBLIC, ARCHIVED]
+        timeLimit:
+          type: integer
+          description: Time limit in minutes (0 = unlimited)
+        randomQuestions:
+          type: boolean
+        randomAnswers:
+          type: boolean
+        passingScore:
+          type: integer
+        feedbackTiming:
+          type: string
+          enum: [IMMEDIATE, END, NEVER]
+        questionCount:
+          type: integer
+        maxAttempts:
+          type: integer
+        notificationEmail:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bankId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [MULTIPLE_CHOICE_SINGLE, MULTIPLE_CHOICE_MULTI, TRUE_FALSE, DRAG_ORDER, IMAGE_MAP, SLIDER]
+        prompt:
+          type: string
+        promptImage:
+          type: string
+          nullable: true
+        options:
+          type: object
+        correctAnswer:
+          type: object
+        feedback:
+          type: string
+        feedbackImage:
+          type: string
+          nullable: true
+        referenceLink:
+          type: string
+          nullable: true
+        sortOrder:
+          type: integer
+
+    AttemptSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bankId:
+          type: string
+          format: uuid
+        bankTitle:
+          type: string
+        status:
+          type: string
+          enum: [IN_PROGRESS, COMPLETED, TIMED_OUT]
+        score:
+          type: number
+        maxScore:
+          type: number
+        percentage:
+          type: number
+        passed:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+
+    QuizResults:
+      type: object
+      properties:
+        score:
+          type: number
+        maxScore:
+          type: number
+        percentage:
+          type: number
+        passed:
+          type: boolean
+        bankTitle:
+          type: string
+
+    PlatformStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        activeUsers:
+          type: integer
+        totalBanks:
+          type: integer
+        activeBanks:
+          type: integer
+        totalAttempts:
+          type: integer
+        completedAttempts:
+          type: integer
+        completionRate:
+          type: number
+        averageScore:
+          type: number
+        passRate:
+          type: number
+
+    CompletionRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userName:
+          type: string
+        userEmail:
+          type: string
+        bankTitle:
+          type: string
+        score:
+          type: number
+        maxScore:
+          type: number
+        percentage:
+          type: number
+        passed:
+          type: boolean
+        status:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        timeSpent:
+          type: integer
+
+    LogRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          nullable: true
+        userName:
+          type: string
+          nullable: true
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+          nullable: true
+        details:
+          type: object
+          nullable: true
+        ipAddress:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    InviteToken:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        token:
+          type: string
+          description: Plaintext token (only returned at creation)
+        email:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        surname:
+          type: string
+          nullable: true
+        bankTitle:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+        usedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    UuidPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: healthy
+                      timestamp:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, surname]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                firstName:
+                  type: string
+                  maxLength: 100
+                surname:
+                  type: string
+                  maxLength: 100
+                idNumber:
+                  type: string
+                  maxLength: 50
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AuthTokens'
+        '400':
+          description: Validation error or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Account locked or rate limit exceeded
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+                      expiresIn:
+                        type: integer
+        '401':
+          description: Invalid or expired refresh token
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+        '401':
+          description: Not authenticated
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset email
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent (always returns 200 to prevent enumeration)
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password with token
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      responses:
+        '200':
+          description: Password reset successful
+        '400':
+          description: Invalid or expired token
+
+  /auth/token-login:
+    post:
+      tags: [Auth]
+      summary: Log in via invite token
+      operationId: tokenLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  maxLength: 256
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AuthTokens'
+        '401':
+          description: Invalid or expired invite token
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+    patch:
+      tags: [Users]
+      summary: Update current user profile
+      operationId: updateProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  maxLength: 100
+                surname:
+                  type: string
+                  maxLength: 100
+                idNumber:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+      responses:
+        '200':
+          description: Profile updated
+        '401':
+          description: Not authenticated
+
+  /users/me/password:
+    patch:
+      tags: [Users]
+      summary: Change password
+      operationId: changePassword
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      responses:
+        '200':
+          description: Password changed
+        '400':
+          description: Weak password or same as current
+        '401':
+          description: Incorrect current password
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users (admin only)
+      operationId: listUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 200
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [USER, EDITOR, ADMIN]
+        - name: isActive
+          in: query
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: Paginated user list
+        '403':
+          description: Not admin
+    post:
+      tags: [Users]
+      summary: Create user (admin only)
+      operationId: createUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, surname]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                firstName:
+                  type: string
+                  maxLength: 100
+                surname:
+                  type: string
+                  maxLength: 100
+                idNumber:
+                  type: string
+                  maxLength: 50
+                role:
+                  type: string
+                  enum: [USER, EDITOR, ADMIN]
+                  default: USER
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Validation error
+        '403':
+          description: Not admin
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID (admin only)
+      operationId: getUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: User data
+        '404':
+          description: User not found
+    patch:
+      tags: [Users]
+      summary: Update user (admin only)
+      operationId: updateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                surname:
+                  type: string
+                idNumber:
+                  type: string
+                  nullable: true
+                role:
+                  type: string
+                  enum: [USER, EDITOR, ADMIN]
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: User updated
+        '403':
+          description: Cannot change own role or deactivate self
+        '404':
+          description: User not found
+    delete:
+      tags: [Users]
+      summary: Deactivate user (admin only)
+      operationId: deactivateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: User deactivated
+        '403':
+          description: Cannot deactivate self
+        '404':
+          description: User not found
+
+  /users/{id}/reset-password:
+    post:
+      tags: [Users]
+      summary: Admin reset user password
+      operationId: adminResetPassword
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset
+        '404':
+          description: User not found
+
+  /question-banks:
+    get:
+      tags: [Question Banks]
+      summary: List question banks
+      operationId: listQuestionBanks
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, OPEN, PUBLIC, ARCHIVED]
+      responses:
+        '200':
+          description: Paginated question bank list
+    post:
+      tags: [Question Banks]
+      summary: Create question bank (editor/admin)
+      operationId: createQuestionBank
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  maxLength: 200
+                description:
+                  type: string
+                  maxLength: 2000
+                status:
+                  type: string
+                  enum: [DRAFT, OPEN, PUBLIC, ARCHIVED]
+                timeLimit:
+                  type: integer
+                  minimum: 0
+                  maximum: 7200
+                randomQuestions:
+                  type: boolean
+                randomAnswers:
+                  type: boolean
+                passingScore:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                feedbackTiming:
+                  type: string
+                  enum: [IMMEDIATE, END, NEVER]
+                questionCount:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                maxAttempts:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                notificationEmail:
+                  type: string
+                  format: email
+      responses:
+        '201':
+          description: Question bank created
+        '403':
+          description: Not editor/admin
+
+  /question-banks/{id}:
+    get:
+      tags: [Question Banks]
+      summary: Get question bank with questions
+      operationId: getQuestionBank
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Question bank with questions
+        '404':
+          description: Not found
+    patch:
+      tags: [Question Banks]
+      summary: Update question bank (editor/admin)
+      operationId: updateQuestionBank
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [DRAFT, OPEN, PUBLIC, ARCHIVED]
+                timeLimit:
+                  type: integer
+                passingScore:
+                  type: integer
+      responses:
+        '200':
+          description: Updated
+        '403':
+          description: Not owner/admin
+        '404':
+          description: Not found
+    delete:
+      tags: [Question Banks]
+      summary: Delete question bank (editor/admin)
+      operationId: deleteQuestionBank
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Deleted
+        '403':
+          description: Not owner/admin
+        '404':
+          description: Not found
+
+  /question-banks/{id}/duplicate:
+    post:
+      tags: [Question Banks]
+      summary: Duplicate question bank
+      operationId: duplicateQuestionBank
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '201':
+          description: Duplicated question bank
+        '404':
+          description: Not found
+
+  /question-banks/{id}/export:
+    get:
+      tags: [Question Banks]
+      summary: Export question bank as JSON
+      operationId: exportQuestionBank
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: JSON export
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not found
+
+  /question-banks/import:
+    post:
+      tags: [Question Banks]
+      summary: Import question bank from JSON
+      operationId: importQuestionBank
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: JSON structure from export endpoint
+      responses:
+        '201':
+          description: Imported question bank
+        '400':
+          description: Invalid import data
+
+  /question-banks/{bankId}/questions:
+    get:
+      tags: [Questions]
+      summary: List questions in a bank
+      operationId: listQuestions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Question list
+        '404':
+          description: Bank not found
+    post:
+      tags: [Questions]
+      summary: Create question in bank
+      operationId: createQuestion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, prompt, options, correctAnswer, feedback]
+              properties:
+                type:
+                  type: string
+                  enum: [MULTIPLE_CHOICE_SINGLE, MULTIPLE_CHOICE_MULTI, TRUE_FALSE, DRAG_ORDER, IMAGE_MAP, SLIDER]
+                prompt:
+                  type: string
+                  maxLength: 10000
+                promptImage:
+                  type: string
+                  maxLength: 500
+                options:
+                  type: object
+                correctAnswer:
+                  type: object
+                feedback:
+                  type: string
+                  maxLength: 10000
+                feedbackImage:
+                  type: string
+                  maxLength: 500
+                referenceLink:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: Question created
+        '400':
+          description: Validation error
+
+  /question-banks/{bankId}/questions/reorder:
+    patch:
+      tags: [Questions]
+      summary: Reorder questions in a bank
+      operationId: reorderQuestions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questionIds]
+              properties:
+                questionIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: Questions reordered
+
+  /questions/{id}:
+    get:
+      tags: [Questions]
+      summary: Get question by ID
+      operationId: getQuestion
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Question data
+        '404':
+          description: Not found
+    patch:
+      tags: [Questions]
+      summary: Update question
+      operationId: updateQuestion
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                prompt:
+                  type: string
+                options:
+                  type: object
+                correctAnswer:
+                  type: object
+                feedback:
+                  type: string
+                referenceLink:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Updated
+        '404':
+          description: Not found
+    delete:
+      tags: [Questions]
+      summary: Delete question
+      operationId: deleteQuestion
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /questions/{id}/duplicate:
+    post:
+      tags: [Questions]
+      summary: Duplicate question
+      operationId: duplicateQuestion
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '201':
+          description: Duplicated question
+
+  /quizzes/{bankId}/start:
+    post:
+      tags: [Quizzes]
+      summary: Start a quiz attempt
+      operationId: startQuiz
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Quiz started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      attemptId:
+                        type: string
+                        format: uuid
+                      questions:
+                        type: array
+                        items:
+                          type: object
+                      timeLimit:
+                        type: integer
+                      bankTitle:
+                        type: string
+        '403':
+          description: Bank not open or max attempts exceeded
+        '404':
+          description: Bank not found
+
+  /attempts/mine:
+    get:
+      tags: [Quizzes]
+      summary: List current user's attempts
+      operationId: listMyAttempts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: User's attempt list
+
+  /attempts/{id}:
+    get:
+      tags: [Quizzes]
+      summary: Get attempt state (for resuming)
+      operationId: getAttempt
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Attempt state with responses
+        '404':
+          description: Not found
+    patch:
+      tags: [Quizzes]
+      summary: Save quiz progress (auto-save)
+      operationId: saveProgress
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [responses, timeSpent]
+              properties:
+                responses:
+                  type: object
+                  description: Map of questionId to answer data
+                timeSpent:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: Progress saved
+        '404':
+          description: Attempt not found
+
+  /attempts/{id}/submit:
+    post:
+      tags: [Quizzes]
+      summary: Submit quiz for scoring
+      operationId: submitAttempt
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Quiz scored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/QuizResults'
+        '404':
+          description: Attempt not found
+
+  /attempts/{id}/results:
+    get:
+      tags: [Quizzes]
+      summary: Get detailed quiz results
+      operationId: getResults
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UuidPath'
+      responses:
+        '200':
+          description: Detailed results with feedback
+        '404':
+          description: Attempt not found or not submitted
+
+  /uploads/images:
+    post:
+      tags: [Uploads]
+      summary: Upload image (editor/admin)
+      operationId: uploadImage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      filename:
+                        type: string
+                      url:
+                        type: string
+                      size:
+                        type: integer
+                      mimetype:
+                        type: string
+        '400':
+          description: Invalid file type or size
+
+  /uploads/images/{filename}:
+    delete:
+      tags: [Uploads]
+      summary: Delete image (editor/admin)
+      operationId: deleteImage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image deleted
+        '400':
+          description: Invalid filename
+        '404':
+          description: File not found
+
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: Get platform statistics
+      operationId: getStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/PlatformStats'
+        '403':
+          description: Not admin
+
+  /admin/completions:
+    get:
+      tags: [Admin]
+      summary: List quiz completions
+      operationId: listCompletions
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: bankId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: passed
+          in: query
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: Paginated completions
+        '403':
+          description: Not admin
+
+  /admin/completions/export:
+    get:
+      tags: [Admin]
+      summary: Export completions as CSV
+      operationId: exportCompletions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: bankId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: passed
+          in: query
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+        '403':
+          description: Not admin
+
+  /admin/logs:
+    get:
+      tags: [Admin]
+      summary: List audit logs
+      operationId: listLogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Paginated audit logs
+        '403':
+          description: Not admin
+
+  /admin/invite-tokens:
+    post:
+      tags: [Admin]
+      summary: Create invite token
+      operationId: createInvite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                firstName:
+                  type: string
+                  maxLength: 100
+                surname:
+                  type: string
+                  maxLength: 100
+                bankId:
+                  type: string
+                  format: uuid
+                expiresInDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 90
+                  default: 7
+      responses:
+        '201':
+          description: Invite created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/InviteToken'
+        '403':
+          description: Not admin
+    get:
+      tags: [Admin]
+      summary: List invite tokens
+      operationId: listInvites
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Paginated invite tokens (token values masked)
+        '403':
+          description: Not admin
