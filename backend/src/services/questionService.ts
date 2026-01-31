@@ -174,7 +174,7 @@ export function sanitizeOptions(options: unknown, type: QuestionType): unknown {
  * Validate and normalize a reference link URL.
  * Returns null for invalid URLs; only http(s) allowed.
  */
-function validateReferenceLink(value: string | null | undefined): string | null {
+export function validateReferenceLink(value: string | null | undefined): string | null {
   if (!value) return null;
   try {
     const url = new URL(value);
