@@ -797,7 +797,7 @@
 
 #### P5.5.3: Frontend Unit Tests
 - ✅ Create test setup file (Vitest + Testing Library + jsdom)
-- ✅ Create utility function tests (17 tests: isSafeUrl, safeUrl)
+- ✅ Create utility function tests (29 tests: sanitizeHtml, isSafeUrl, safeUrl)
 - ✅ Create hook tests (10 tests: useAuth with session restore, login, logout, register, error handling)
 - ✅ Create service tests (43 tests: questionBankApi, quizApi, questionApi, adminApi)
 - ⏳ Create context tests
@@ -911,7 +911,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~92% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 225 frontend tests across 9 suites = 649 total, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 8 code reviews completed)
+- Phase 5: ~93% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 237 frontend tests across 9 suites = 661 total, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 9 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -956,6 +956,11 @@
   bound (86400s), reduced health check info exposure, removed duplicate invite log in admin
   route, fixed submitting stale closure in QuizPlayerPage handleSubmit, added Spinner to
   QuizListPage loading, hid stats on DashboardPage error, added ExportButton error handling
+- Review 9 (14 backend + 12 frontend issues found): Fixed submitAttempt double-scoring race
+  condition via optimistic concurrency guard (updateMany with status check), added date filter
+  validation in admin listCompletions/listLogs, exported csvEscape and fixed test to import
+  actual function instead of re-implementation, added 12 sanitizeHtml tests covering XSS
+  defense vectors (script stripping, event handlers, javascript: URIs, form/iframe elements)
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)
