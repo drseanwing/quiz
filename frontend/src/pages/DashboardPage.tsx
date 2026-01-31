@@ -3,7 +3,7 @@
  * @description Main dashboard for authenticated users
  */
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/common/Card';
@@ -16,6 +16,7 @@ import styles from './DashboardPage.module.css';
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: attempts, isLoading, error } = useQuery({
     queryKey: ['my-attempts'],
@@ -63,13 +64,9 @@ export function DashboardPage() {
       <section className={styles.section}>
         <h2>Quick Links</h2>
         <div className={styles.quickLinks}>
-          <Link to="/quizzes">
-            <Button variant="primary">Browse Quizzes</Button>
-          </Link>
+          <Button variant="primary" onClick={() => navigate('/quizzes')}>Browse Quizzes</Button>
           {isEditorOrAdmin && (
-            <Link to="/question-banks">
-              <Button variant="secondary">Manage Question Banks</Button>
-            </Link>
+            <Button variant="secondary" onClick={() => navigate('/question-banks')}>Manage Question Banks</Button>
           )}
         </div>
       </section>

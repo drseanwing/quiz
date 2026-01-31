@@ -95,16 +95,16 @@ export function CompletionsTab() {
       {data && (
         <>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Quiz completions">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Quiz</th>
-                  <th>Score</th>
-                  <th>%</th>
-                  <th>Result</th>
-                  <th>Completed</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Quiz</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">%</th>
+                  <th scope="col">Result</th>
+                  <th scope="col">Completed</th>
                 </tr>
               </thead>
               <tbody>

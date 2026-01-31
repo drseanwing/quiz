@@ -101,16 +101,16 @@ export function QuestionBanksTab() {
       {data && (
         <>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Question banks">
               <thead>
                 <tr>
-                  <th>Title</th>
-                  <th>Owner</th>
-                  <th>Status</th>
-                  <th>Questions</th>
-                  <th>Attempts</th>
-                  <th>Updated</th>
-                  <th>Actions</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Owner</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Questions</th>
+                  <th scope="col">Attempts</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,6 +131,7 @@ export function QuestionBanksTab() {
                         value={bank.status}
                         className={`${styles.statusSelect} ${styles[STATUS_COLORS[bank.status] || '']}`}
                         onChange={e => statusMutation.mutate({ bankId: bank.id, status: e.target.value })}
+                        aria-label={`Status for ${bank.title}`}
                       >
                         {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -142,6 +143,7 @@ export function QuestionBanksTab() {
                       <button
                         className={styles.deleteBtn}
                         onClick={() => setDeleteTarget(bank)}
+                        aria-label={`Delete ${bank.title}`}
                       >
                         Delete
                       </button>

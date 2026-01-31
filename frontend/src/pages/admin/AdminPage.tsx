@@ -32,12 +32,14 @@ export function AdminPage() {
         <h1>Administration</h1>
       </header>
 
-      <nav className={styles.tabs} role="tablist">
+      <nav className={styles.tabs} role="tablist" aria-label="Admin sections">
         {TABS.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             role="tab"
             aria-selected={activeTab === tab.id}
+            aria-controls={`tabpanel-${tab.id}`}
             className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -46,7 +48,12 @@ export function AdminPage() {
         ))}
       </nav>
 
-      <div className={styles.content} role="tabpanel">
+      <div
+        className={styles.content}
+        role="tabpanel"
+        id={`tabpanel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+      >
         {activeTab === 'dashboard' && <AdminDashboard />}
         {activeTab === 'users' && <UsersTab />}
         {activeTab === 'banks' && <QuestionBanksTab />}

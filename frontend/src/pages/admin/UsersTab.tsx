@@ -65,12 +65,13 @@ export function UsersTab() {
             onChange={e => setSearch(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && applyFilters()}
             className={styles.searchInput}
+            aria-label="Search users"
           />
-          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
+          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} aria-label="Filter by role">
             <option value="">All Roles</option>
             {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <select value={activeFilter} onChange={e => setActiveFilter(e.target.value)}>
+          <select value={activeFilter} onChange={e => setActiveFilter(e.target.value)} aria-label="Filter by status">
             <option value="">All Status</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -87,16 +88,16 @@ export function UsersTab() {
       {data && (
         <>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Users">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Last Login</th>
-                  <th>Created</th>
-                  <th>Actions</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last Login</th>
+                  <th scope="col">Created</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -113,8 +114,8 @@ export function UsersTab() {
                     <td>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}</td>
                     <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className={styles.actions}>
-                      <button className={styles.actionBtn} onClick={() => setEditUser(user)}>Edit</button>
-                      <button className={styles.actionBtn} onClick={() => setResetPwUser(user)}>Reset PW</button>
+                      <button className={styles.actionBtn} onClick={() => setEditUser(user)} aria-label={`Edit ${user.firstName} ${user.surname}`}>Edit</button>
+                      <button className={styles.actionBtn} onClick={() => setResetPwUser(user)} aria-label={`Reset password for ${user.firstName} ${user.surname}`}>Reset PW</button>
                     </td>
                   </tr>
                 ))}

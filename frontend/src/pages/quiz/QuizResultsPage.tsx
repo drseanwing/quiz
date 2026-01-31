@@ -3,7 +3,7 @@
  * @description Displays quiz results after completion
  */
 
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
@@ -74,12 +74,7 @@ export function QuizResultsPage() {
 
       {/* Actions */}
       <footer className={styles.actions}>
-        <Link to={`/quizzes`}>
-          <Button variant="secondary">Back to Quizzes</Button>
-        </Link>
-        <Link to={`/quizzes`}>
-          <Button variant="primary">Try Another Quiz</Button>
-        </Link>
+        <Button variant="secondary" onClick={() => navigate('/quizzes')}>Back to Quizzes</Button>
       </footer>
     </div>
   );

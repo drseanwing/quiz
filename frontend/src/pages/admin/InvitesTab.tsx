@@ -111,16 +111,16 @@ export function InvitesTab() {
       {data && (
         <>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Invite tokens">
               <thead>
                 <tr>
-                  <th>Email</th>
-                  <th>Name</th>
-                  <th>Quiz</th>
-                  <th>Token</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Expires</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Quiz</th>
+                  <th scope="col">Token</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Created</th>
+                  <th scope="col">Expires</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,6 +137,7 @@ export function InvitesTab() {
                           className={styles.copyBtn}
                           onClick={() => copyToken(invite.token, invite.id)}
                           title="Copy token"
+                          aria-label={`Copy invite token for ${invite.email}`}
                         >
                           {copiedId === invite.id ? 'Copied!' : `${invite.token.slice(0, 12)}...`}
                         </button>

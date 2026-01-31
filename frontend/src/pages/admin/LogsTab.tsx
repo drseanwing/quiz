@@ -43,8 +43,9 @@ export function LogsTab() {
     <div className={styles.container}>
       <div className={styles.filters}>
         <div className={styles.filterGroup}>
-          <label>Action</label>
+          <label htmlFor="log-action-filter">Action</label>
           <input
+            id="log-action-filter"
             type="text"
             placeholder="e.g. LOGIN_SUCCESS"
             value={actionFilter}
@@ -52,8 +53,9 @@ export function LogsTab() {
           />
         </div>
         <div className={styles.filterGroup}>
-          <label>Entity Type</label>
+          <label htmlFor="log-entity-filter">Entity Type</label>
           <input
+            id="log-entity-filter"
             type="text"
             placeholder="e.g. user"
             value={entityFilter}
@@ -72,15 +74,15 @@ export function LogsTab() {
       {data && (
         <>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Audit logs">
               <thead>
                 <tr>
-                  <th>Time</th>
-                  <th>Action</th>
-                  <th>Entity</th>
-                  <th>User</th>
-                  <th>IP</th>
-                  <th></th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Action</th>
+                  <th scope="col">Entity</th>
+                  <th scope="col">User</th>
+                  <th scope="col">IP</th>
+                  <th scope="col"><span className="sr-only">Details</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -93,7 +95,7 @@ export function LogsTab() {
                     <td className={styles.ip}>{log.ipAddress || '-'}</td>
                     <td>
                       {log.details && (
-                        <button className={styles.detailBtn} onClick={() => setSelectedLog(log)}>
+                        <button className={styles.detailBtn} onClick={() => setSelectedLog(log)} aria-label={`View details for ${log.action} event`}>
                           Details
                         </button>
                       )}
