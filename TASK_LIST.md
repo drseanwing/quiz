@@ -675,10 +675,10 @@
 - ✅ Configure X-Content-Type-Options
 
 #### P5.1.2: Input Validation
-- ⏳ Audit all endpoints for validation
-- ⏳ Add missing validators
-- ⏳ Test validation edge cases
-- ⏳ Add validation error messages
+- ✅ Audit all endpoints for validation
+- ✅ Add missing validators (token-login, attempts pagination)
+- ✅ Add filename validation on upload delete
+- ✅ Add pagination bounds clamping to all handlers
 
 #### P5.1.3: Authentication Security
 - ⏳ Test JWT expiry handling
@@ -726,14 +726,14 @@
 ### P5.3: Performance Optimization
 
 #### P5.3.1: Database Performance
-- ⏳ Review query execution plans
-- ⏳ Add missing indexes
+- ✅ Review query execution plans
+- ✅ Add composite indexes (status+completedAt, userId+status)
 - ⏳ Optimize N+1 queries
 - ⏳ Add query result caching
 
 #### P5.3.2: API Performance
 - ✅ Add response compression
-- ⏳ Implement pagination limits
+- ✅ Implement pagination limits (bounds clamping)
 - ⏳ Add conditional requests
 - ⏳ Profile slow endpoints
 
@@ -773,9 +773,10 @@
 - ⏳ Create user service tests
 - ⏳ Create question bank service tests
 - ⏳ Create quiz service tests
-- ⏳ Create scoring service tests
+- ✅ Create scoring service tests (47 tests, all 6 question types)
 - ⏳ Create email service tests
 - ⏳ Create import/export service tests
+- ✅ Create password utility tests (21 tests)
 
 #### P5.5.2: Backend Integration Tests
 - ⏳ Create auth flow tests
@@ -848,14 +849,14 @@
 ### P5.7: Production Readiness
 
 #### P5.7.1: Environment Configuration
-- ⏳ Create production .env template
-- ⏳ Document required secrets
+- ✅ Create production .env template
+- ✅ Document required secrets
 - ⏳ Add secret rotation guide
 - ⏳ Add security checklist
 
 #### P5.7.2: Database Setup
 - ⏳ Create production migration guide
-- ⏳ Create seed data script
+- ✅ Create seed data script
 - ⏳ Create backup script
 - ⏳ Create restore script
 - ⏳ Test backup/restore process
@@ -892,18 +893,19 @@
 
 ## CURRENT STATUS
 
-**Next Incomplete Task**: P5.1.2 - Input Validation Audit
+**Next Incomplete Task**: P5.1.3 - Authentication Security Testing
 
 **Progress**:
 - Phase 1: 100% complete
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~20% complete (security headers, compression, code splitting, error boundary done)
+- Phase 5: ~30% complete (security headers, input validation, compression, indexes, unit tests, env template, seed script done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
 - Review 2: Fixed Modal prop mismatch, XSS in email templates, password reset handling,
   CSV injection defense, self-deactivation guard, audit log separation
+- Review 3: Pending (6 commits since last review)
 
 **Last Updated**: 2026-01-30
