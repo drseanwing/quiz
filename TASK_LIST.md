@@ -251,9 +251,9 @@
 - ✅ Create HTML sanitization function
 - ✅ Create allowed tags whitelist
 - ✅ Create allowed attributes whitelist
-- ⏳ Add sanitization to question prompts
+- ✅ Add sanitization to question prompts
 - ⏳ Add sanitization to question options
-- ⏳ Add sanitization to question feedback
+- ✅ Add sanitization to question feedback
 
 ### P2.5: Import/Export Service
 
@@ -780,6 +780,10 @@
 - ⏳ Create email service tests
 - ⏳ Create import/export service tests
 - ✅ Create password utility tests (21 tests)
+- ✅ Create sanitizer tests (22 tests: sanitizeHtml, sanitizePlainText, sanitizeOptionText)
+- ✅ Create lockout utility tests (18 tests: lockout tracking, case-insensitivity)
+- ✅ Create JWT utility tests (20 tests: generation, verification, header extraction)
+- ✅ Create CSV/email escape tests (26 tests: formula injection, escapeHtml, sanitizeSubject)
 
 #### P5.5.2: Backend Integration Tests
 - ⏳ Create auth flow tests
@@ -896,14 +900,14 @@
 
 ## CURRENT STATUS
 
-**Next Incomplete Task**: P5.1.3 - Authentication Security Testing
+**Next Incomplete Task**: P5.6.1 - API Documentation
 
 **Progress**:
 - Phase 1: 100% complete
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~35% complete (security headers, input validation, compression, indexes, unit tests, env template, seed script, accessibility improvements done)
+- Phase 5: ~40% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
