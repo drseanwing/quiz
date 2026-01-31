@@ -68,6 +68,7 @@ export function QuestionBankListPage() {
 
       <div className={styles.filters}>
         <Input
+          label="Search question banks"
           placeholder="Search question banks..."
           value={search}
           onChange={(e) => {

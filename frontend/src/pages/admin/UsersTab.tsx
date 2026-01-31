@@ -194,7 +194,7 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
 
   return (
     <Modal isOpen onClose={onClose} title="Create User">
-      <form className={styles.modalForm} onSubmit={handleSubmit}>
+      <form className={styles.modalForm} onSubmit={handleSubmit} noValidate>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
           <label>First Name <input required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
@@ -268,7 +268,7 @@ function EditUserModal({
 
   return (
     <Modal isOpen onClose={onClose} title={`Edit: ${user.firstName} ${user.surname}`}>
-      <form className={styles.modalForm} onSubmit={handleSubmit}>
+      <form className={styles.modalForm} onSubmit={handleSubmit} noValidate>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
           <label>First Name <input required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
@@ -343,7 +343,7 @@ function ResetPasswordModal({
 
   return (
     <Modal isOpen onClose={onClose} title={`Reset Password: ${user.firstName} ${user.surname}`}>
-      <form className={styles.modalForm} onSubmit={handleSubmit}>
+      <form className={styles.modalForm} onSubmit={handleSubmit} noValidate>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         {successMsg && <Alert variant="success">{successMsg}</Alert>}
         <p className={styles.modalNote}>Set a new password for <strong>{user.email}</strong></p>

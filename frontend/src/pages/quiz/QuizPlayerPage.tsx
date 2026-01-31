@@ -132,6 +132,17 @@ export function QuizPlayerPage() {
     };
   }, []);
 
+  // Warn before navigating away with unsaved quiz progress
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (Object.keys(responsesRef.current).length > 0 && !submittingRef.current) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const setAnswer = useCallback((questionId: string, answer: unknown) => {
     setResponses(prev => ({ ...prev, [questionId]: answer }));
 
@@ -172,6 +183,7 @@ export function QuizPlayerPage() {
       const msg = err instanceof Error ? err.message : 'Failed to submit quiz';
       setError(msg);
       setSubmitting(false);
+      submittingRef.current = false;
     }
   }, [attemptId, submitting, navigate]);
 

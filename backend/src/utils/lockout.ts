@@ -139,13 +139,20 @@ export function getFailedAttemptCount(email: string): number {
 }
 
 /**
- * Purge expired lockout records to prevent unbounded memory growth.
+ * Purge expired and stale lockout records to prevent unbounded memory growth.
+ * Removes records where:
+ * - The lockout has expired (lockedUntil <= now)
+ * - The record never reached lockout threshold and is older than the lockout window
  */
 function purgeExpiredRecords(): void {
   const now = new Date();
+  const staleThresholdMs = config.lockout.durationMinutes * 60 * 1000;
   let purged = 0;
   for (const [key, record] of lockoutStore) {
     if (record.lockedUntil && record.lockedUntil <= now) {
+      lockoutStore.delete(key);
+      purged++;
+    } else if (!record.lockedUntil && now.getTime() - record.firstAttemptAt.getTime() > staleThresholdMs) {
       lockoutStore.delete(key);
       purged++;
     }

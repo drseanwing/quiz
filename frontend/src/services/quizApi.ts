@@ -11,7 +11,6 @@ import type {
   ISaveProgressResult,
   IQuizResults,
   IAttemptSummary,
-  IQuestionBank,
 } from '@/types';
 
 export async function startQuiz(bankId: string): Promise<IStartQuizResult> {
@@ -54,7 +53,3 @@ export async function listMyAttempts(bankId?: string): Promise<IAttemptSummary[]
   return body.data;
 }
 
-export async function listAvailableQuizzes(): Promise<IQuestionBank[]> {
-  const body = (await api.get('/question-banks?pageSize=100')) as unknown as IApiResponse<IQuestionBank[]>;
-  return Array.isArray(body.data) ? body.data : [];
-}

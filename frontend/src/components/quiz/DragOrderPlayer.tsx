@@ -100,14 +100,12 @@ export function DragOrderPlayer({ options, answer, onChange, disabled }: DragOrd
     setItems((prev) => {
       const oldIndex = prev.findIndex(i => i.id === active.id);
       const newIndex = prev.findIndex(i => i.id === over.id);
-      return arrayMove(prev, oldIndex, newIndex);
+      const reordered = arrayMove(prev, oldIndex, newIndex);
+      // Use queueMicrotask to call onChange with the latest reordered state
+      // without side effects inside the state updater
+      queueMicrotask(() => onChange(reordered.map(i => i.id)));
+      return reordered;
     });
-
-    // Call onChange outside setItems to avoid side effects in state updater
-    const oldIndex = items.findIndex(i => i.id === active.id);
-    const newIndex = items.findIndex(i => i.id === over.id);
-    const reordered = arrayMove(items, oldIndex, newIndex);
-    onChange(reordered.map(i => i.id));
   }
 
   return (

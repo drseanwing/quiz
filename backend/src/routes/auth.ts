@@ -206,6 +206,7 @@ router.post(
  */
 router.post(
   '/reset-password',
+  authRateLimiter,
   resetPasswordValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

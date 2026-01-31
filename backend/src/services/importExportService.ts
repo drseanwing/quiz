@@ -140,6 +140,12 @@ function validateImportData(data: unknown): IExportedQuestionBank {
   if (typeof bank.title !== 'string' || bank.title.trim().length === 0) {
     throw new ValidationError('Invalid import data: bank title is required');
   }
+  if (bank.title.length > 200) {
+    throw new ValidationError('Invalid import data: bank title exceeds 200 characters');
+  }
+  if (typeof bank.description === 'string' && bank.description.length > 2000) {
+    throw new ValidationError('Invalid import data: bank description exceeds 2000 characters');
+  }
 
   if (!Array.isArray(obj.questions)) {
     throw new ValidationError('Invalid import data: questions must be an array');
@@ -160,9 +166,13 @@ function validateImportData(data: unknown): IExportedQuestionBank {
     }
     if (typeof q.prompt !== 'string' || q.prompt.trim().length === 0) {
       errors.push(`Question ${i + 1}: prompt is required`);
+    } else if (q.prompt.length > 10000) {
+      errors.push(`Question ${i + 1}: prompt exceeds 10000 characters`);
     }
     if (typeof q.feedback !== 'string') {
       errors.push(`Question ${i + 1}: feedback is required`);
+    } else if (q.feedback.length > 10000) {
+      errors.push(`Question ${i + 1}: feedback exceeds 10000 characters`);
     }
     if (q.options === undefined || q.options === null) {
       errors.push(`Question ${i + 1}: options are required`);

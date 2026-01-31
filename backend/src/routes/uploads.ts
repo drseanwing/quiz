@@ -7,9 +7,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, requireEditor } from '@/middleware/auth';
 import { uploadRateLimiter } from '@/middleware/rateLimiter';
-import { imageUpload } from '@/config/upload';
+import { imageUpload, validateMagicBytes } from '@/config/upload';
 import { getImageUrl, deleteImage } from '@/services/uploadService';
 import { ValidationError } from '@/middleware/errorHandler';
+import path from 'path';
 import logger from '@/config/logger';
 
 const router = Router();
@@ -40,11 +41,14 @@ router.post(
       next();
     });
   },
-  (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
         throw new ValidationError('No image file provided');
       }
+
+      // Validate magic bytes match claimed MIME type
+      await validateMagicBytes(req.file.path, req.file.mimetype);
 
       const url = getImageUrl(req.file.filename);
 

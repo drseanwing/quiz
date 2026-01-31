@@ -51,7 +51,9 @@ export function CompletionsTab() {
       const a = document.createElement('a');
       a.href = url;
       a.download = 'completions.csv';
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
       setExportError('CSV export failed. Please try again.');
