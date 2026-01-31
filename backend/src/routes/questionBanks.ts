@@ -226,6 +226,7 @@ router.post(
  */
 router.get(
   '/:id/export',
+  requireEditor,
   questionBankIdValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

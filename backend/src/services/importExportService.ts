@@ -10,9 +10,20 @@ import { NotFoundError, ValidationError } from '@/middleware/errorHandler';
 import { canAccessBank } from '@/services/questionBankService';
 import type { ITokenPayload } from '@/utils/jwt';
 import { sanitizeHtml } from '@/services/sanitizer';
+import { sanitizeOptions } from '@/services/questionService';
 import logger from '@/config/logger';
 
 const MAX_IMPORT_QUESTIONS = 500;
+
+function isValidUrl(value: string | null | undefined): value is string {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
 
 // ─── Export Types ──────────────────────────────────────────────────────────
 
@@ -205,11 +216,11 @@ export async function importQuestionBank(
           type: q.type,
           prompt: sanitizeHtml(q.prompt),
           promptImage: q.promptImage,
-          options: q.options as object,
+          options: sanitizeOptions(q.options, q.type) as object,
           correctAnswer: q.correctAnswer as object,
           feedback: sanitizeHtml(q.feedback),
           feedbackImage: q.feedbackImage,
-          referenceLink: q.referenceLink,
+          referenceLink: isValidUrl(q.referenceLink) ? q.referenceLink : null,
           order: q.order ?? index,
         })),
       });

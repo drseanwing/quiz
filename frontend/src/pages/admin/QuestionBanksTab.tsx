@@ -85,8 +85,9 @@ export function QuestionBanksTab() {
           onChange={e => setSearch(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && applyFilters()}
           className={styles.searchInput}
+          aria-label="Search question banks by title"
         />
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status">
           <option value="">All Statuses</option>
           {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>

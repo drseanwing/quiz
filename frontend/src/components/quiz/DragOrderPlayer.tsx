@@ -3,7 +3,7 @@
  * @description Drag-to-order question player using @dnd-kit
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -71,6 +71,10 @@ function SortableItem({ id, text, index, disabled }: SortableItemProps) {
 export function DragOrderPlayer({ options, answer, onChange, disabled }: DragOrderPlayerProps) {
   const [items, setItems] = useState<Array<{ id: string; text: string }>>([]);
 
+  // Derive a stable key from option IDs so the effect only fires when
+  // the actual option set changes, not on every parent re-render
+  const optionsKey = useMemo(() => options.map(o => o.id).join(','), [options]);
+
   useEffect(() => {
     if (answer?.orderedIds && answer.orderedIds.length > 0) {
       const map = new Map(options.map(o => [o.id, o]));
@@ -81,7 +85,8 @@ export function DragOrderPlayer({ options, answer, onChange, disabled }: DragOrd
     } else {
       setItems([...options]);
     }
-  }, [options, answer?.orderedIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [optionsKey, answer?.orderedIds]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

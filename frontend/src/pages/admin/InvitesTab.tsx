@@ -3,7 +3,7 @@
  * @description Admin invite token management (create + list)
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
@@ -23,6 +23,14 @@ export function InvitesTab() {
   const [expiresInDays, setExpiresInDays] = useState('7');
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up copy timer on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-invites', page],
@@ -62,7 +70,8 @@ export function InvitesTab() {
     navigator.clipboard.writeText(token)
       .then(() => {
         setCopiedId(id);
-        setTimeout(() => setCopiedId(null), 2000);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
       })
       .catch(() => {
         window.prompt('Copy this token:', token);
@@ -77,20 +86,20 @@ export function InvitesTab() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formRow}>
             <div className={styles.field}>
-              <label>Email *</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <label htmlFor="invite-email">Email *</label>
+              <input id="invite-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
             <div className={styles.field}>
-              <label>First Name</label>
-              <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} />
+              <label htmlFor="invite-firstName">First Name</label>
+              <input id="invite-firstName" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} />
             </div>
             <div className={styles.field}>
-              <label>Surname</label>
-              <input type="text" value={surname} onChange={e => setSurname(e.target.value)} />
+              <label htmlFor="invite-surname">Surname</label>
+              <input id="invite-surname" type="text" value={surname} onChange={e => setSurname(e.target.value)} />
             </div>
             <div className={styles.field}>
-              <label>Expires (days)</label>
-              <input type="number" value={expiresInDays} onChange={e => setExpiresInDays(e.target.value)} min="1" max="90" />
+              <label htmlFor="invite-expires">Expires (days)</label>
+              <input id="invite-expires" type="number" value={expiresInDays} onChange={e => setExpiresInDays(e.target.value)} min="1" max="90" />
             </div>
           </div>
           <div className={styles.formActions}>

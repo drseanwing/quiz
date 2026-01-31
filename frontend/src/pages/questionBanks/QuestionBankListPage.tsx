@@ -3,7 +3,7 @@
  * @description Page listing all question banks with filtering and creation
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { listQuestionBanks } from '@/services/questionBankApi';
@@ -26,15 +26,26 @@ const STATUS_OPTIONS = [
 
 export function QuestionBankListPage() {
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [importOpen, setImportOpen] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input to avoid firing API call on every keystroke
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [search]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['questionBanks', { search, status: statusFilter, page }],
+    queryKey: ['questionBanks', { search: debouncedSearch, status: statusFilter, page }],
     queryFn: () =>
       listQuestionBanks({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: (statusFilter as QuestionBankStatus) || undefined,
         page,
         pageSize: 12,

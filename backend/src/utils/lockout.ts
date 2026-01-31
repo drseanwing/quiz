@@ -139,6 +139,27 @@ export function getFailedAttemptCount(email: string): number {
 }
 
 /**
+ * Purge expired lockout records to prevent unbounded memory growth.
+ */
+function purgeExpiredRecords(): void {
+  const now = new Date();
+  let purged = 0;
+  for (const [key, record] of lockoutStore) {
+    if (record.lockedUntil && record.lockedUntil <= now) {
+      lockoutStore.delete(key);
+      purged++;
+    }
+  }
+  if (purged > 0) {
+    logger.debug('Purged expired lockout records', { purged, remaining: lockoutStore.size });
+  }
+}
+
+// Periodic cleanup every 10 minutes
+const purgeTimer = setInterval(purgeExpiredRecords, 10 * 60 * 1000);
+purgeTimer.unref(); // Don't keep process alive for cleanup
+
+/**
  * Clear all lockout records (used for testing)
  */
 export function clearAllLockouts(): void {

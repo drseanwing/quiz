@@ -92,13 +92,14 @@ export async function authenticate(
       throw new AuthenticationError('User account is deactivated');
     }
 
-    // Attach user data to request
-    req.user = result.payload;
+    // Attach user data to request, overriding JWT role with live DB role
+    // to ensure role changes take effect immediately
+    req.user = { ...result.payload, role: user.role };
 
     logger.debug('Authentication successful', {
       userId: result.payload.userId,
       email: result.payload.email,
-      role: result.payload.role,
+      role: user.role,
       path: req.path,
     });
 
@@ -147,7 +148,7 @@ export async function optionalAuth(
       });
 
       if (user && user.isActive) {
-        req.user = result.payload;
+        req.user = { ...result.payload, role: user.role };
         logger.debug('Optional auth: User authenticated', {
           userId: result.payload.userId,
         });

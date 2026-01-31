@@ -65,16 +65,16 @@ export function CompletionsTab() {
       {exportError && <Alert variant="error">{exportError}</Alert>}
       <div className={styles.filters}>
         <div className={styles.filterGroup}>
-          <label>From</label>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+          <label htmlFor="completions-from">From</label>
+          <input id="completions-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
         </div>
         <div className={styles.filterGroup}>
-          <label>To</label>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+          <label htmlFor="completions-to">To</label>
+          <input id="completions-to" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
         </div>
         <div className={styles.filterGroup}>
-          <label>Result</label>
-          <select value={passedFilter} onChange={e => setPassedFilter(e.target.value)}>
+          <label htmlFor="completions-result">Result</label>
+          <select id="completions-result" value={passedFilter} onChange={e => setPassedFilter(e.target.value)}>
             <option value="">All</option>
             <option value="true">Passed</option>
             <option value="false">Not Passed</option>

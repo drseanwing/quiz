@@ -588,31 +588,26 @@ export async function loginWithToken(
   // Hash token to match stored hash
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  // Find valid invite token
+  // Atomically claim the invite token to prevent TOCTOU race conditions.
+  // Uses updateMany with usedAt:null guard so only one concurrent request can succeed.
+  const claimed = await prisma.inviteToken.updateMany({
+    where: { token: hashedToken, usedAt: null, expiresAt: { gt: new Date() } },
+    data: { usedAt: new Date() },
+  });
+
+  if (claimed.count === 0) {
+    // Token not found, already used, or expired
+    logger.warn('Token login failed: Invalid, used, or expired token');
+    throw new AuthenticationError('Invalid or expired invite token');
+  }
+
+  // Re-fetch the token record for its metadata (email, name)
   const inviteRecord = await prisma.inviteToken.findUnique({
     where: { token: hashedToken },
   });
 
   if (!inviteRecord) {
-    logger.warn('Token login failed: Invalid token');
-    throw new AuthenticationError('Invalid or expired invite token');
-  }
-
-  // Check if token is used
-  if (inviteRecord.usedAt) {
-    logger.warn('Token login failed: Token already used', {
-      email: inviteRecord.email,
-    });
-    throw new AuthenticationError('Invite token has already been used');
-  }
-
-  // Check if token is expired
-  if (inviteRecord.expiresAt < new Date()) {
-    logger.warn('Token login failed: Token expired', {
-      email: inviteRecord.email,
-      expiresAt: inviteRecord.expiresAt,
-    });
-    throw new AuthenticationError('Invite token has expired');
+    throw new AuthenticationError('Invalid invite token');
   }
 
   // Check if user already exists
@@ -673,12 +668,6 @@ export async function loginWithToken(
     });
     throw new AuthenticationError('User account is deactivated');
   }
-
-  // Mark invite token as used
-  await prisma.inviteToken.update({
-    where: { id: inviteRecord.id },
-    data: { usedAt: new Date() },
-  });
 
   // Update last login
   await prisma.user.update({

@@ -278,9 +278,22 @@ export async function updateQuestionBank(
     throw new NotFoundError('Question bank');
   }
 
+  // Whitelist allowed fields to prevent unexpected column writes
+  const updateData: Record<string, unknown> = {};
+  const allowedFields: (keyof IUpdateQuestionBankRequest)[] = [
+    'title', 'description', 'status', 'timeLimit', 'randomQuestions',
+    'randomAnswers', 'passingScore', 'feedbackTiming', 'notificationEmail',
+    'questionCount', 'maxAttempts',
+  ];
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      updateData[key] = data[key];
+    }
+  }
+
   const bank = await prisma.questionBank.update({
     where: { id },
-    data,
+    data: updateData,
     select: questionBankSelect,
   });
 

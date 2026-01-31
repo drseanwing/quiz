@@ -143,7 +143,7 @@ export async function getQuestion(
 /**
  * Sanitize user-provided option content based on question type
  */
-function sanitizeOptions(options: unknown, type: QuestionType): unknown {
+export function sanitizeOptions(options: unknown, type: QuestionType): unknown {
   if (!options || typeof options !== 'object') return options;
 
   // Array-based options: MC, TF, Drag Order — sanitize text fields
@@ -168,6 +168,20 @@ function sanitizeOptions(options: unknown, type: QuestionType): unknown {
 
   // Image Map: no text fields to sanitize
   return options;
+}
+
+/**
+ * Validate and normalize a reference link URL.
+ * Returns null for invalid URLs; only http(s) allowed.
+ */
+function validateReferenceLink(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -197,7 +211,7 @@ export async function createQuestion(
       correctAnswer: data.correctAnswer as object,
       feedback: sanitizeHtml(data.feedback),
       feedbackImage: data.feedbackImage,
-      referenceLink: data.referenceLink,
+      referenceLink: validateReferenceLink(data.referenceLink),
       order: (maxOrder._max.order ?? -1) + 1,
     },
     select: questionSelect,
@@ -245,7 +259,7 @@ export async function updateQuestion(
       ...(data.correctAnswer !== undefined && { correctAnswer: data.correctAnswer as object }),
       ...(data.feedback !== undefined && { feedback: sanitizeHtml(data.feedback) }),
       ...(data.feedbackImage !== undefined && { feedbackImage: data.feedbackImage }),
-      ...(data.referenceLink !== undefined && { referenceLink: data.referenceLink }),
+      ...(data.referenceLink !== undefined && { referenceLink: validateReferenceLink(data.referenceLink) }),
     },
     select: questionSelect,
   });

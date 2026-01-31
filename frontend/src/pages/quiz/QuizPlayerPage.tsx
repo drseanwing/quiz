@@ -99,6 +99,10 @@ export function QuizPlayerPage() {
     return () => clearInterval(id);
   }, [startedAt, timeLimit]);
 
+  // Refs for debounce / auto-save status reset timers
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Auto-save
   useEffect(() => {
     if (!attemptId || loading) return;
@@ -108,7 +112,8 @@ export function QuizPlayerPage() {
         setSaveStatus('saving');
         await quizApi.saveProgress(attemptId!, responsesRef.current, elapsedRef.current);
         setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
+        if (statusResetRef.current) clearTimeout(statusResetRef.current);
+        statusResetRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
       } catch {
         setSaveStatus('error');
       }
@@ -117,8 +122,13 @@ export function QuizPlayerPage() {
     return () => clearInterval(id);
   }, [attemptId, loading]);
 
-  // Debounced per-answer save
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Cleanup debounce and status reset timers on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (statusResetRef.current) clearTimeout(statusResetRef.current);
+    };
+  }, []);
 
   const setAnswer = useCallback((questionId: string, answer: unknown) => {
     setResponses(prev => ({ ...prev, [questionId]: answer }));
