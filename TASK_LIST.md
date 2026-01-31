@@ -719,8 +719,8 @@
 
 #### P5.2.4: Semantic HTML
 - ⏳ Audit heading hierarchy
-- ⏳ Add landmark regions
-- ⏳ Add skip links
+- ✅ Add landmark regions
+- ✅ Add skip links
 - ✅ Fix nested Link>Button anti-pattern (DashboardPage, QuizResultsPage)
 - ✅ Add scope="col" to all table headers
 - ✅ Add aria-label to all data tables

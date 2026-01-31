@@ -27,7 +27,7 @@ export function Header() {
         </Link>
 
         {isAuthenticated && user && (
-          <nav className={styles.nav}>
+          <nav className={styles.nav} aria-label="Main navigation">
             <NavLink
               to="/dashboard"
               className={({ isActive }) =>
