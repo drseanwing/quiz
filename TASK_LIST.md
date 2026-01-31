@@ -798,9 +798,9 @@
 #### P5.5.3: Frontend Unit Tests
 - ✅ Create test setup file (Vitest + Testing Library + jsdom)
 - ✅ Create utility function tests (29 tests: sanitizeHtml, isSafeUrl, safeUrl)
-- ✅ Create hook tests (10 tests: useAuth with session restore, login, logout, register, error handling)
+- ✅ Create hook tests (15 tests: useAuth with session restore, login, logout, register, error handling, isLoading, force logout, error extraction)
 - ✅ Create service tests (43 tests: questionBankApi, quizApi, questionApi, adminApi)
-- ⏳ Create context tests
+- ✅ Create context tests (covered by useAuth tests which test AuthProvider directly)
 
 #### P5.5.4: Frontend Component Tests
 - ✅ Create common component tests (46 tests: Button, Alert, Input, Modal, Spinner, Card, ErrorBoundary)
@@ -816,8 +816,8 @@
 - ⏳ Create question bank creation test
 
 #### P5.5.6: Test Coverage
-- ⏳ Set coverage thresholds
-- ⏳ Generate coverage reports
+- ✅ Set coverage thresholds (backend: 50%/55%/50%/50%, frontend: 25%/25%/20%/25%)
+- ✅ Generate coverage reports (backend: 55%/64%/53%/55%, frontend: 30%/29%/25%/31%)
 - ⏳ Identify untested code
 - ⏳ Add missing tests
 
@@ -911,7 +911,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~93% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 237 frontend tests across 9 suites = 661 total, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 9 code reviews completed)
+- Phase 5: ~94% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 242 frontend tests across 9 suites = 666 total, coverage thresholds configured, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 9 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
