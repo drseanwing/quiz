@@ -453,3 +453,68 @@ Before going live:
 - [ ] Automated database backups are configured
 - [ ] `.env` file is not committed to version control
 - [ ] `ALLOWED_EMAIL_DOMAIN` is set correctly
+
+---
+
+## Secret Rotation
+
+### Rotating JWT Secrets
+
+JWT secrets should be rotated periodically (e.g., quarterly) or immediately if a compromise is suspected.
+
+```bash
+# 1. Generate new secrets
+NEW_JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+NEW_REFRESH_SECRET=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+
+# 2. Update .env with new values
+# JWT_SECRET=<new value>
+# JWT_REFRESH_SECRET=<new value>
+
+# 3. Restart the backend
+docker compose restart backend
+```
+
+**Impact**: All existing access and refresh tokens become invalid. All users will need to re-authenticate. Plan rotation during low-usage periods.
+
+### Rotating Database Password
+
+```bash
+# 1. Generate new password
+NEW_DB_PASS=$(openssl rand -base64 32)
+
+# 2. Update password in PostgreSQL
+docker compose exec db psql -U redi_user -d redi_quiz \
+  -c "ALTER USER redi_user WITH PASSWORD '$NEW_DB_PASS';"
+
+# 3. Update .env
+# POSTGRES_PASSWORD=<new value>
+# DATABASE_URL=postgresql://redi_user:<new value>@db:5432/redi_quiz?schema=public
+
+# 4. Restart backend to pick up new connection string
+docker compose restart backend
+
+# 5. Verify
+curl -s https://quiz.example.com/api/health
+```
+
+### Rotating SSL Certificates
+
+```bash
+# Renew Let's Encrypt certificate
+certbot renew
+
+# Copy to nginx ssl directory
+cp /etc/letsencrypt/live/quiz.example.com/fullchain.pem nginx/ssl/cert.pem
+cp /etc/letsencrypt/live/quiz.example.com/privkey.pem nginx/ssl/key.pem
+chmod 600 nginx/ssl/*.pem
+
+# Reload nginx (no downtime)
+docker compose exec nginx nginx -s reload
+```
+
+Set up auto-renewal in crontab:
+```bash
+# crontab -e
+0 3 * * * certbot renew --quiet && cp /etc/letsencrypt/live/quiz.example.com/fullchain.pem /path/to/quiz/nginx/ssl/cert.pem && cp /etc/letsencrypt/live/quiz.example.com/privkey.pem /path/to/quiz/nginx/ssl/key.pem && docker compose -f /path/to/quiz/docker-compose.yml exec -T nginx nginx -s reload
+```
