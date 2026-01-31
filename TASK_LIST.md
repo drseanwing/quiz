@@ -912,7 +912,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~95% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 282 frontend tests across 10 suites = 706 total, coverage thresholds configured, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 9 code reviews completed)
+- Phase 5: ~96% complete (security headers, input validation, compression, indexes, 425 backend tests across 16 suites + 283 frontend tests across 10 suites = 708 total, coverage thresholds configured, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links, semantic tables), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 10 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -962,6 +962,12 @@
   validation in admin listCompletions/listLogs, exported csvEscape and fixed test to import
   actual function instead of re-implementation, added 12 sanitizeHtml tests covering XSS
   defense vectors (script stripping, event handlers, javascript: URIs, form/iframe elements)
+- Review 10 (7 backend + 18 frontend issues found): Fixed DOMPurify data: URI gap via
+  afterSanitizeAttributes hook (strips data: from src), saveProgress TOCTOU race via updateMany
+  guard, exported escapeHtml/sanitizeSubject replacing test re-implementations, added submitAttempt
+  race condition test (count=0 path), converted QuizListPage attempt history to semantic table,
+  added article ARIA landmark to QuestionReviewCard, wrapped attemptsByBank in useMemo, fixed
+  test mock shapes to match actual API contract
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)
