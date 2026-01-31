@@ -7,6 +7,7 @@
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
+import compression from 'compression';
 import helmet from 'helmet';
 import { config } from './config';
 import logger from './config/logger';
@@ -51,6 +52,9 @@ app.use(
     credentials: config.cors.credentials,
   })
 );
+
+// Response compression
+app.use(compression());
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
