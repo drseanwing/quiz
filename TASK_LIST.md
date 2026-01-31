@@ -773,7 +773,7 @@
 #### P5.5.1: Backend Unit Tests
 - ✅ Create auth service tests (7 tests: registration, login, token refresh, Prisma mocked)
 - ✅ Create user service tests (17 tests: getCurrentUser, updateProfile, changePassword, listUsers, createUser, updateUser, deactivateUser, adminResetPassword)
-- ✅ Create question bank service tests (10 tests: canAccessBank, canModifyBank authorization)
+- ✅ Create question bank service tests (40 tests: canAccessBank, canModifyBank, list, get, create, update, delete, duplicate)
 - ✅ Create quiz service tests (11 tests: startQuiz validation, getAttempt ownership, listUserAttempts)
 - ✅ Create scoring service tests (47 tests, all 6 question types)
 - ✅ Create email service tests (33 tests: completion, password reset, invite, mock mode, logging)
@@ -796,13 +796,14 @@
 - ⏳ Create admin function tests
 
 #### P5.5.3: Frontend Unit Tests
-- ⏳ Create utility function tests
-- ⏳ Create hook tests
+- ✅ Create test setup file (Vitest + Testing Library + jsdom)
+- ✅ Create utility function tests (17 tests: isSafeUrl, safeUrl)
+- ✅ Create hook tests (10 tests: useAuth with session restore, login, logout, register, error handling)
 - ⏳ Create context tests
 - ⏳ Create service tests
 
 #### P5.5.4: Frontend Component Tests
-- ⏳ Create common component tests
+- ✅ Create common component tests (32 tests: Button, Alert, Input, Modal)
 - ⏳ Create form component tests
 - ⏳ Create quiz player tests
 - ⏳ Create admin component tests
@@ -910,7 +911,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~80% complete (security headers, input validation, compression, indexes, 371 unit tests across 16 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 7 code reviews completed)
+- Phase 5: ~85% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 59 frontend tests across 3 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 7 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
