@@ -79,6 +79,7 @@ function makeAttempt(overrides: Partial<IAttemptSummary> = {}): IAttemptSummary 
     maxScore: 10,
     percentage: 80,
     passed: true,
+    timeSpent: 300,
     startedAt: '2026-01-15T10:00:00Z',
     completedAt: '2026-01-15T10:30:00Z',
     ...overrides,
@@ -210,7 +211,7 @@ describe('DashboardPage', () => {
 
 describe('QuizListPage', () => {
   beforeEach(() => {
-    mockBankApi.listQuestionBanks.mockResolvedValue({ banks: [], total: 0 });
+    mockBankApi.listQuestionBanks.mockResolvedValue({ banks: [], meta: { page: 1, pageSize: 100, totalCount: 0, totalPages: 0 } });
     mockQuizApi.listMyAttempts.mockResolvedValue([]);
   });
 
@@ -234,7 +235,7 @@ describe('QuizListPage', () => {
         { id: 'b1', title: 'Safety Quiz', description: 'Test your safety knowledge', questionCount: 10, timeLimit: 30, maxAttempts: 3, status: 'OPEN' },
         { id: 'b2', title: 'Policy Quiz', description: null, questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' },
       ],
-      total: 2,
+      meta: { page: 1, pageSize: 100, totalCount: 2, totalPages: 1 },
     });
     renderWithProviders(<QuizListPage />);
     await waitFor(() => {
@@ -250,7 +251,7 @@ describe('QuizListPage', () => {
   it('shows Start Quiz buttons for each bank', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     renderWithProviders(<QuizListPage />);
     await waitFor(() => {
@@ -261,7 +262,7 @@ describe('QuizListPage', () => {
   it('shows Resume button for in-progress attempts', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     mockQuizApi.listMyAttempts.mockResolvedValue([
       makeAttempt({ id: 'a1', bankId: 'b1', status: AttemptStatus.IN_PROGRESS, passed: false, percentage: 0, completedAt: null }),
@@ -276,7 +277,7 @@ describe('QuizListPage', () => {
   it('shows best score for completed attempts', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     mockQuizApi.listMyAttempts.mockResolvedValue([
       makeAttempt({ id: 'a1', bankId: 'b1', percentage: 60 }),
@@ -291,7 +292,7 @@ describe('QuizListPage', () => {
   it('shows attempt count for limited-attempt banks', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 3, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     mockQuizApi.listMyAttempts.mockResolvedValue([
       makeAttempt({ id: 'a1', bankId: 'b1' }),
@@ -318,7 +319,7 @@ describe('QuizListPage', () => {
   it('shows start error and allows dismissal', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     mockQuizApi.startQuiz.mockRejectedValue(new Error('Max attempts reached'));
     renderWithProviders(<QuizListPage />);
@@ -339,7 +340,7 @@ describe('QuizListPage', () => {
   it('navigates to quiz player when starting quiz', async () => {
     mockBankApi.listQuestionBanks.mockResolvedValue({
       banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
-      total: 1,
+      meta: { page: 1, pageSize: 100, totalCount: 1, totalPages: 1 },
     });
     mockQuizApi.startQuiz.mockResolvedValue({ attemptId: 'new-attempt-1' });
     renderWithProviders(<QuizListPage />);

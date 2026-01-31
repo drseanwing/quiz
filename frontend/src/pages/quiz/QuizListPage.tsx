@@ -3,7 +3,7 @@
  * @description Shows available quizzes and user's attempt history
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
@@ -48,16 +48,19 @@ export function QuizListPage() {
     },
   });
 
-  const banks = banksResult?.banks ?? [] as IQuestionBank[];
+  const banks = (banksResult?.banks ?? []) as IQuestionBank[];
 
-  const attemptsByBank = new Map<string, IAttemptSummary[]>();
-  if (attempts) {
-    for (const a of attempts) {
-      const list = attemptsByBank.get(a.bankId) || [];
-      list.push(a);
-      attemptsByBank.set(a.bankId, list);
+  const attemptsByBank = useMemo(() => {
+    const map = new Map<string, IAttemptSummary[]>();
+    if (attempts) {
+      for (const a of attempts) {
+        const list = map.get(a.bankId) || [];
+        list.push(a);
+        map.set(a.bankId, list);
+      }
     }
-  }
+    return map;
+  }, [attempts]);
 
   // Check for in-progress attempts
   const inProgressAttempts = attempts?.filter(a => a.status === AttemptStatus.IN_PROGRESS) || [];
@@ -168,31 +171,37 @@ export function QuizListPage() {
       {attempts && attempts.length > 0 && (
         <section className={styles.section}>
           <h2>Your Attempt History</h2>
-          <div className={styles.table}>
-            <div className={styles.tableHeader}>
-              <span>Quiz</span>
-              <span>Status</span>
-              <span>Score</span>
-              <span>Date</span>
-              <span />
-            </div>
+          <table className={styles.table} aria-label="Your attempt history">
+            <thead>
+              <tr className={styles.tableHeader}>
+                <th scope="col">Quiz</th>
+                <th scope="col">Status</th>
+                <th scope="col">Score</th>
+                <th scope="col">Date</th>
+                <th scope="col"><span className="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
             {attempts
               .filter(a => a.status !== AttemptStatus.IN_PROGRESS)
               .slice(0, 20)
               .map(attempt => (
-                <div key={attempt.id} className={styles.tableRow}>
-                  <span className={styles.tableTitle}>{attempt.bankTitle}</span>
-                  <span className={`${styles.tableStatus} ${attempt.passed ? styles.statusPassed : styles.statusFailed}`}>
+                <tr key={attempt.id} className={styles.tableRow}>
+                  <td className={styles.tableTitle}>{attempt.bankTitle}</td>
+                  <td className={`${styles.tableStatus} ${attempt.passed ? styles.statusPassed : styles.statusFailed}`}>
                     {attempt.passed ? 'Passed' : attempt.status === 'TIMED_OUT' ? 'Timed Out' : 'Not Passed'}
-                  </span>
-                  <span>{Math.round(attempt.percentage)}%</span>
-                  <span>{new Date(attempt.startedAt).toLocaleDateString()}</span>
-                  <Link to={`/results/${attempt.id}`} className={styles.tableLink}>
-                    View
-                  </Link>
-                </div>
+                  </td>
+                  <td>{Math.round(attempt.percentage)}%</td>
+                  <td>{new Date(attempt.startedAt).toLocaleDateString()}</td>
+                  <td>
+                    <Link to={`/results/${attempt.id}`} className={styles.tableLink}>
+                      View
+                    </Link>
+                  </td>
+                </tr>
               ))}
-          </div>
+            </tbody>
+          </table>
         </section>
       )}
     </div>

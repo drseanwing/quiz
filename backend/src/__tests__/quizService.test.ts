@@ -327,34 +327,34 @@ describe('saveProgress', () => {
     mockPrisma.quizAttempt.findUnique.mockResolvedValue(
       makeAttemptForSave({ responses: { q1: { selectedId: 't' } } })
     );
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await saveProgress('attempt-1', 'user-1', { q2: { selectedId: 'f' } }, 60);
 
     expect(result.savedAt).toBeDefined();
-    const updateCall = mockPrisma.quizAttempt.update.mock.calls[0][0];
+    const updateCall = mockPrisma.quizAttempt.updateMany.mock.calls[0][0];
     expect(updateCall.data.responses).toEqual({ q1: { selectedId: 't' }, q2: { selectedId: 'f' } });
     expect(updateCall.data.timeSpent).toBe(60);
   });
 
   it('ignores response keys not in questionOrder', async () => {
     mockPrisma.quizAttempt.findUnique.mockResolvedValue(makeAttemptForSave());
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     await saveProgress('attempt-1', 'user-1', { q1: 'a', q999: 'injected' }, 10);
 
-    const updateCall = mockPrisma.quizAttempt.update.mock.calls[0][0];
+    const updateCall = mockPrisma.quizAttempt.updateMany.mock.calls[0][0];
     expect(updateCall.data.responses).toEqual({ q1: 'a' });
     expect(updateCall.data.responses.q999).toBeUndefined();
   });
 
   it('clamps negative timeSpent to zero', async () => {
     mockPrisma.quizAttempt.findUnique.mockResolvedValue(makeAttemptForSave());
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     await saveProgress('attempt-1', 'user-1', {}, -100);
 
-    const updateCall = mockPrisma.quizAttempt.update.mock.calls[0][0];
+    const updateCall = mockPrisma.quizAttempt.updateMany.mock.calls[0][0];
     expect(updateCall.data.timeSpent).toBe(0);
   });
 
@@ -386,7 +386,7 @@ describe('saveProgress', () => {
     mockPrisma.quizAttempt.findUnique.mockResolvedValue(
       makeAttemptForSave({ bank: { timeLimit: 0, feedbackTiming: 'IMMEDIATE' } })
     );
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.question.findMany.mockResolvedValue([
       {
         id: 'q1',
@@ -414,7 +414,7 @@ describe('saveProgress', () => {
         bank: { timeLimit: 0, feedbackTiming: 'IMMEDIATE' },
       })
     );
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     // Re-saving q1 should not trigger feedback (not newly answered)
     const result = await saveProgress('attempt-1', 'user-1', { q1: { selectedId: 'f' } }, 20);
@@ -588,6 +588,21 @@ describe('submitAttempt', () => {
     expect(result.score).toBe(1); // 1 correct out of 2
     expect(result.maxScore).toBe(2);
     expect(result.percentage).toBe(50);
+  });
+
+  it('throws 409 when attempt was concurrently completed (race condition)', async () => {
+    mockPrisma.quizAttempt.findUnique.mockResolvedValue(makeAttemptForSubmit());
+    mockPrisma.question.findMany.mockResolvedValue([
+      {
+        id: 'q1', type: 'TRUE_FALSE', prompt: 'Q1', promptImage: null,
+        options: [{ id: 't', text: 'True' }, { id: 'f', text: 'False' }],
+        correctAnswer: { value: true }, feedback: '', feedbackImage: null, referenceLink: null,
+      },
+    ]);
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 0 }); // race lost
+
+    await expect(submitAttempt('attempt-1', 'user-1'))
+      .rejects.toThrow('already been submitted or timed out');
   });
 });
 

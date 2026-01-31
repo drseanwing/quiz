@@ -16,6 +16,16 @@ const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'class'];
 /** Only allow http, https, and mailto URI schemes */
 const ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 
+// Strip data: URIs from src attributes (DOMPurify's URI regexp only targets href)
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.hasAttribute('src')) {
+    const src = node.getAttribute('src') || '';
+    if (/^data:/i.test(src)) {
+      node.removeAttribute('src');
+    }
+  }
+});
+
 /** Sanitize HTML for safe rendering via dangerouslySetInnerHTML */
 export function sanitizeHtml(dirty: string): string {
   return DOMPurify.sanitize(dirty, {

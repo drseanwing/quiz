@@ -418,8 +418,9 @@ export async function saveProgress(
   const existingResponses = (attempt.responses as Record<string, unknown>) || {};
   const mergedResponses = { ...existingResponses, ...validResponses };
 
-  await prisma.quizAttempt.update({
-    where: { id: attemptId },
+  // Use updateMany with status guard to prevent writing to a completed/timed-out attempt
+  await prisma.quizAttempt.updateMany({
+    where: { id: attemptId, status: AttemptStatus.IN_PROGRESS },
     data: {
       responses: mergedResponses as object,
       timeSpent: Math.max(0, timeSpent),

@@ -17,7 +17,7 @@ interface IEmailPayload {
 /**
  * Escape HTML special characters to prevent XSS in email templates
  */
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -30,7 +30,7 @@ function escapeHtml(str: string): string {
  * Sanitize email subject line -- strip control characters that could
  * be used for MIME header injection.
  */
-function sanitizeSubject(str: string): string {
+export function sanitizeSubject(str: string): string {
   return str.replace(/[\r\n\0]/g, '');
 }
 

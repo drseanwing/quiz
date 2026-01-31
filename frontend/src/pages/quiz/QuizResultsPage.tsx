@@ -82,7 +82,7 @@ export function QuizResultsPage() {
 
 function QuestionReviewCard({ question, index }: { question: IQuestionResult; index: number }) {
   return (
-    <div className={`${styles.reviewCard} ${question.isCorrect ? styles.reviewCorrect : styles.reviewIncorrect}`}>
+    <article className={`${styles.reviewCard} ${question.isCorrect ? styles.reviewCorrect : styles.reviewIncorrect}`} aria-label={`Question ${index + 1}`}>
       <div className={styles.reviewHeader}>
         <span className={styles.reviewNumber}>Q{index + 1}</span>
         <span className={styles.reviewType}>{formatType(question.type)}</span>
@@ -132,7 +132,7 @@ function QuestionReviewCard({ question, index }: { question: IQuestionResult; in
           Reference Link
         </a>
       )}
-    </div>
+    </article>
   );
 }
 

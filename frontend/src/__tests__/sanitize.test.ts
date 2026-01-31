@@ -33,12 +33,15 @@ describe('sanitizeHtml', () => {
     expect(result).not.toContain('javascript:');
   });
 
-  it('preserves img with data: URI (safeUrl blocks data: URIs separately)', () => {
+  it('strips data: URIs from img src attributes', () => {
     const result = sanitizeHtml('<img src="data:text/html,<script>alert(1)</script>">');
-    // DOMPurify does not parse inside attribute values, so data: URI content is preserved.
-    // The safeUrl() utility (tested below) provides the layer that blocks data: URIs.
-    expect(result).toContain('<img');
-    expect(result).not.toContain('onerror');
+    // DOMPurify hook strips data: URIs from src attributes
+    expect(result).not.toContain('data:');
+  });
+
+  it('strips data:image URIs from img src', () => {
+    const result = sanitizeHtml('<img src="data:image/svg+xml,<svg onload=alert(1)>">');
+    expect(result).not.toContain('data:');
   });
 
   it('strips data-* attributes', () => {

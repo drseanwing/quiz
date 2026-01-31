@@ -3,6 +3,7 @@
  */
 
 import { csvEscape } from '@/services/adminService';
+import { escapeHtml, sanitizeSubject } from '@/services/emailService';
 
 describe('csvEscape', () => {
 
@@ -68,17 +69,7 @@ describe('csvEscape', () => {
   });
 });
 
-describe('escapeHtml logic', () => {
-  // Re-implement the same logic as emailService.escapeHtml
-  function escapeHtml(str: string): string {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
+describe('escapeHtml', () => {
   it('escapes ampersands', () => {
     expect(escapeHtml('A & B')).toBe('A &amp; B');
   });
@@ -112,12 +103,7 @@ describe('escapeHtml logic', () => {
   });
 });
 
-describe('sanitizeSubject logic', () => {
-  // Re-implement the same logic as emailService.sanitizeSubject
-  function sanitizeSubject(str: string): string {
-    return str.replace(/[\r\n\0]/g, '');
-  }
-
+describe('sanitizeSubject', () => {
   it('returns normal subject unchanged', () => {
     expect(sanitizeSubject('Quiz Results')).toBe('Quiz Results');
   });
