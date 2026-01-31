@@ -1,6 +1,6 @@
 /**
  * @file        Common component tests
- * @description Tests for Button, Alert, Input, and Modal
+ * @description Tests for Button, Alert, Input, Modal, Spinner, Card, ErrorBoundary
  */
 
 import { render, screen } from '@testing-library/react';
@@ -9,6 +9,9 @@ import { Button } from '@/components/common/Button';
 import { Alert } from '@/components/common/Alert';
 import { Input } from '@/components/common/Input';
 import { Modal } from '@/components/common/Modal';
+import { Spinner } from '@/components/common/Spinner';
+import { Card } from '@/components/common/Card';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 // ─── Button ──────────────────────────────────────────────────────────────────
 
@@ -205,5 +208,120 @@ describe('Modal', () => {
     const titleId = dialog.getAttribute('aria-labelledby');
     expect(titleId).toBeTruthy();
     expect(document.getElementById(titleId!)).toHaveTextContent('Labeled');
+  });
+});
+
+// ─── Spinner ─────────────────────────────────────────────────────────────────
+
+describe('Spinner', () => {
+  it('renders with status role', () => {
+    render(<Spinner />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('has aria-label for accessibility', () => {
+    render(<Spinner />);
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument();
+  });
+
+  it('contains screen-reader text', () => {
+    render(<Spinner />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('applies size class', () => {
+    render(<Spinner size="lg" />);
+    expect(screen.getByRole('status').className).toContain('lg');
+  });
+
+  it('defaults to md size', () => {
+    render(<Spinner />);
+    expect(screen.getByRole('status').className).toContain('md');
+  });
+});
+
+// ─── Card ────────────────────────────────────────────────────────────────────
+
+describe('Card', () => {
+  it('renders children', () => {
+    render(<Card><p>Card content</p></Card>);
+    expect(screen.getByText('Card content')).toBeInTheDocument();
+  });
+
+  it('applies card class', () => {
+    const { container } = render(<Card>Content</Card>);
+    expect((container.firstChild as HTMLElement).className).toContain('card');
+  });
+
+  it('applies accent class when accent is true', () => {
+    const { container } = render(<Card accent>Accent</Card>);
+    expect((container.firstChild as HTMLElement).className).toContain('accent');
+  });
+
+  it('does not apply accent class by default', () => {
+    const { container } = render(<Card>Normal</Card>);
+    expect((container.firstChild as HTMLElement).className).not.toContain('accent');
+  });
+
+  it('passes through className', () => {
+    const { container } = render(<Card className="custom">Custom</Card>);
+    expect((container.firstChild as HTMLElement).className).toContain('custom');
+  });
+});
+
+// ─── ErrorBoundary ───────────────────────────────────────────────────────────
+
+function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
+  if (shouldThrow) throw new Error('Test error');
+  return <p>Safe content</p>;
+}
+
+describe('ErrorBoundary', () => {
+  beforeEach(() => {
+    // Suppress console.error from React error boundary + our componentDidCatch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders children when no error', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={false} />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Safe content')).toBeInTheDocument();
+  });
+
+  it('shows error UI when child throws', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText(/unexpected error/i)).toBeInTheDocument();
+  });
+
+  it('shows Go to Dashboard and Try Again buttons', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Try Again')).toBeInTheDocument();
+  });
+
+  it('shows error details in dev mode', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    // In test (DEV), error message is shown in a pre tag
+    expect(screen.getByText('Test error')).toBeInTheDocument();
   });
 });

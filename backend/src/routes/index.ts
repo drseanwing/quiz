@@ -6,6 +6,7 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import prisma from '@/config/database';
 import authRoutes from './auth';
 import userRoutes from './users';
 import questionBankRoutes from './questionBanks';
@@ -18,15 +19,28 @@ import adminRoutes from './admin';
 const router = Router();
 
 /**
- * Health check endpoint
+ * Health check endpoint — verifies API + database connectivity
  */
-router.get('/health', (_req: Request, res: Response) => {
-  res.json({
-    success: true,
+router.get('/health', async (_req: Request, res: Response) => {
+  const start = Date.now();
+  let dbStatus: 'ok' | 'error' = 'ok';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    dbStatus = 'error';
+  }
+  const latencyMs = Date.now() - start;
+
+  const healthy = dbStatus === 'ok';
+  res.status(healthy ? 200 : 503).json({
+    success: healthy,
     data: {
-      status: 'healthy',
+      status: healthy ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
       version: '1.0.0',
+      uptime: Math.floor(process.uptime()),
+      checks: { database: dbStatus },
+      latencyMs,
     },
   });
 });
