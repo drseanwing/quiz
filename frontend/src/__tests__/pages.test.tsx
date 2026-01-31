@@ -1,0 +1,373 @@
+/**
+ * @file        Page component tests
+ * @description Tests for DashboardPage and QuizListPage
+ */
+
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AttemptStatus, UserRole, type IAttemptSummary } from '@/types';
+
+// ─── Mocks ──────────────────────────────────────────────────────────────────
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return { ...actual, useNavigate: () => mockNavigate };
+});
+
+const mockAuth = vi.hoisted(() => ({
+  login: vi.fn(),
+  register: vi.fn(),
+  error: null as string | null,
+  clearError: vi.fn(),
+  isLoading: false,
+  isAuthenticated: true,
+  isRestoring: false,
+  user: { id: 'u1', firstName: 'Alice', surname: 'Smith', email: 'alice@test.com', role: 'USER' as UserRole },
+  logout: vi.fn(),
+}));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mockAuth }));
+
+const mockQuizApi = vi.hoisted(() => ({
+  startQuiz: vi.fn(),
+  getAttempt: vi.fn(),
+  saveProgress: vi.fn(),
+  submitAttempt: vi.fn(),
+  getResults: vi.fn(),
+  listMyAttempts: vi.fn(),
+}));
+vi.mock('@/services/quizApi', () => mockQuizApi);
+
+const mockBankApi = vi.hoisted(() => ({
+  listQuestionBanks: vi.fn(),
+  getQuestionBank: vi.fn(),
+  createQuestionBank: vi.fn(),
+  updateQuestionBank: vi.fn(),
+  deleteQuestionBank: vi.fn(),
+  duplicateQuestionBank: vi.fn(),
+}));
+vi.mock('@/services/questionBankApi', () => mockBankApi);
+vi.mock('@/services/api', () => ({ default: { get: vi.fn(), post: vi.fn() }, api: { get: vi.fn(), post: vi.fn() } }));
+
+import { DashboardPage } from '@/pages/DashboardPage';
+import { QuizListPage } from '@/pages/quiz/QuizListPage';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function renderWithProviders(ui: React.ReactElement) {
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+
+function makeAttempt(overrides: Partial<IAttemptSummary> = {}): IAttemptSummary {
+  return {
+    id: 'a1',
+    bankId: 'b1',
+    bankTitle: 'Test Quiz',
+    status: AttemptStatus.COMPLETED,
+    score: 8,
+    maxScore: 10,
+    percentage: 80,
+    passed: true,
+    startedAt: '2026-01-15T10:00:00Z',
+    completedAt: '2026-01-15T10:30:00Z',
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockAuth.user = { id: 'u1', firstName: 'Alice', surname: 'Smith', email: 'alice@test.com', role: 'USER' as UserRole };
+  mockAuth.error = null;
+});
+
+// ─── DashboardPage ──────────────────────────────────────────────────────────
+
+describe('DashboardPage', () => {
+  it('shows spinner while loading', () => {
+    mockQuizApi.listMyAttempts.mockReturnValue(new Promise(() => {})); // never resolves
+    renderWithProviders(<DashboardPage />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('shows welcome message with user name', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/welcome back, alice/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows stats for completed attempts', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', percentage: 80 }),
+      makeAttempt({ id: 'a2', percentage: 60, passed: false }),
+    ]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText('2')).toBeInTheDocument(); // Quizzes Completed
+      expect(screen.getByText('1')).toBeInTheDocument(); // Quizzes Passed
+      expect(screen.getByText('70%')).toBeInTheDocument(); // Average Score
+    });
+  });
+
+  it('shows error alert when API fails', async () => {
+    mockQuizApi.listMyAttempts.mockRejectedValue(new Error('fail'));
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/failed to load/i);
+    });
+  });
+
+  it('hides stats when there is an error', async () => {
+    mockQuizApi.listMyAttempts.mockRejectedValue(new Error('fail'));
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Quizzes Completed')).not.toBeInTheDocument();
+  });
+
+  it('shows Browse Quizzes button', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /browse quizzes/i })).toBeInTheDocument();
+    });
+  });
+
+  it('navigates to quizzes on Browse Quizzes click', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    const user = userEvent.setup();
+    await waitFor(() => screen.getByRole('button', { name: /browse quizzes/i }));
+    await user.click(screen.getByRole('button', { name: /browse quizzes/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/quizzes');
+  });
+
+  it('shows Manage Question Banks for editors', async () => {
+    mockAuth.user = { ...mockAuth.user!, role: 'EDITOR' as UserRole };
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /manage question banks/i })).toBeInTheDocument();
+    });
+  });
+
+  it('hides Manage Question Banks for regular users', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => screen.getByRole('button', { name: /browse quizzes/i }));
+    expect(screen.queryByRole('button', { name: /manage question banks/i })).not.toBeInTheDocument();
+  });
+
+  it('shows in-progress attempts section', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'ip1', status: AttemptStatus.IN_PROGRESS, bankTitle: 'Ongoing Quiz', passed: false, percentage: 0, completedAt: null }),
+    ]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Continue Where You Left Off')).toBeInTheDocument();
+      expect(screen.getByText('Ongoing Quiz')).toBeInTheDocument();
+    });
+  });
+
+  it('shows empty state when no completed attempts', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/no completed quizzes yet/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows recent results with pass/fail status', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', bankTitle: 'Quiz A', percentage: 90, passed: true }),
+      makeAttempt({ id: 'a2', bankTitle: 'Quiz B', percentage: 40, passed: false }),
+    ]);
+    renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Quiz A')).toBeInTheDocument();
+      expect(screen.getByText('Quiz B')).toBeInTheDocument();
+      expect(screen.getByText(/90% - passed/i)).toBeInTheDocument();
+      expect(screen.getByText(/40% - not passed/i)).toBeInTheDocument();
+    });
+  });
+});
+
+// ─── QuizListPage ───────────────────────────────────────────────────────────
+
+describe('QuizListPage', () => {
+  beforeEach(() => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({ banks: [], total: 0 });
+    mockQuizApi.listMyAttempts.mockResolvedValue([]);
+  });
+
+  it('shows loading spinner while fetching', () => {
+    mockBankApi.listQuestionBanks.mockReturnValue(new Promise(() => {}));
+    mockQuizApi.listMyAttempts.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<QuizListPage />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('shows empty state when no quizzes available', async () => {
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/no quizzes are currently available/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders quiz cards with bank info', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [
+        { id: 'b1', title: 'Safety Quiz', description: 'Test your safety knowledge', questionCount: 10, timeLimit: 30, maxAttempts: 3, status: 'OPEN' },
+        { id: 'b2', title: 'Policy Quiz', description: null, questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' },
+      ],
+      total: 2,
+    });
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Safety Quiz')).toBeInTheDocument();
+      expect(screen.getByText('Test your safety knowledge')).toBeInTheDocument();
+      expect(screen.getByText('10 questions')).toBeInTheDocument();
+      expect(screen.getByText('30 min')).toBeInTheDocument();
+      expect(screen.getByText('Policy Quiz')).toBeInTheDocument();
+      expect(screen.getByText('5 questions')).toBeInTheDocument();
+    });
+  });
+
+  it('shows Start Quiz buttons for each bank', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
+      total: 1,
+    });
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /start quiz/i })).toBeInTheDocument();
+    });
+  });
+
+  it('shows Resume button for in-progress attempts', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
+      total: 1,
+    });
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', bankId: 'b1', status: AttemptStatus.IN_PROGRESS, passed: false, percentage: 0, completedAt: null }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button', { name: /resume/i });
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('shows best score for completed attempts', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
+      total: 1,
+    });
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', bankId: 'b1', percentage: 60 }),
+      makeAttempt({ id: 'a2', bankId: 'b1', percentage: 90 }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/best score: 90%/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows attempt count for limited-attempt banks', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 3, status: 'OPEN' }],
+      total: 1,
+    });
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', bankId: 'b1' }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText('1/3 attempts')).toBeInTheDocument();
+    });
+  });
+
+  it('shows attempt history table', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', bankTitle: 'Past Quiz', percentage: 75, passed: true }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Your Attempt History')).toBeInTheDocument();
+      expect(screen.getByText('Past Quiz')).toBeInTheDocument();
+      expect(screen.getByText('75%')).toBeInTheDocument();
+      expect(screen.getByText('Passed')).toBeInTheDocument();
+    });
+  });
+
+  it('shows start error and allows dismissal', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
+      total: 1,
+    });
+    mockQuizApi.startQuiz.mockRejectedValue(new Error('Max attempts reached'));
+    renderWithProviders(<QuizListPage />);
+    const user = userEvent.setup();
+
+    await waitFor(() => screen.getByRole('button', { name: /start quiz/i }));
+    await user.click(screen.getByRole('button', { name: /start quiz/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Max attempts reached');
+    });
+
+    // Dismiss the error
+    await user.click(screen.getByLabelText('Dismiss alert'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('navigates to quiz player when starting quiz', async () => {
+    mockBankApi.listQuestionBanks.mockResolvedValue({
+      banks: [{ id: 'b1', title: 'Quiz', questionCount: 5, timeLimit: 0, maxAttempts: 0, status: 'OPEN' }],
+      total: 1,
+    });
+    mockQuizApi.startQuiz.mockResolvedValue({ attemptId: 'new-attempt-1' });
+    renderWithProviders(<QuizListPage />);
+    const user = userEvent.setup();
+
+    await waitFor(() => screen.getByRole('button', { name: /start quiz/i }));
+    await user.click(screen.getByRole('button', { name: /start quiz/i }));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/quiz/new-attempt-1');
+    });
+  });
+
+  it('shows Continue section for in-progress attempts', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'ip1', status: AttemptStatus.IN_PROGRESS, bankTitle: 'Ongoing', passed: false, percentage: 0, completedAt: null }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Continue Where You Left Off')).toBeInTheDocument();
+      expect(screen.getByText('Ongoing')).toBeInTheDocument();
+    });
+  });
+
+  it('shows Timed Out status in attempt history', async () => {
+    mockQuizApi.listMyAttempts.mockResolvedValue([
+      makeAttempt({ id: 'a1', status: AttemptStatus.TIMED_OUT, bankTitle: 'Timed Quiz', passed: false, percentage: 30 }),
+    ]);
+    renderWithProviders(<QuizListPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Timed Out')).toBeInTheDocument();
+    });
+  });
+});
