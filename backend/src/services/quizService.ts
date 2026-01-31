@@ -553,8 +553,10 @@ export async function submitAttempt(
   const completedAt = new Date();
   const timeSpent = Math.round((completedAt.getTime() - attempt.startedAt.getTime()) / 1000);
 
-  await prisma.quizAttempt.update({
-    where: { id: attemptId },
+  // Use updateMany with status guard to prevent double-scoring race
+  // (e.g., concurrent submitAttempt and autoTimeoutAttempt)
+  const updated = await prisma.quizAttempt.updateMany({
+    where: { id: attemptId, status: AttemptStatus.IN_PROGRESS },
     data: {
       status: finalStatus,
       score: total.score,
@@ -565,6 +567,10 @@ export async function submitAttempt(
       timeSpent,
     },
   });
+
+  if (updated.count === 0) {
+    throw new AppError('ATTEMPT_ALREADY_COMPLETED', 'This quiz attempt has already been submitted or timed out', 409);
+  }
 
   logger.info('Quiz attempt submitted', {
     attemptId,

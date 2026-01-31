@@ -470,7 +470,7 @@ describe('submitAttempt', () => {
         referenceLink: null,
       },
     ]);
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await submitAttempt('attempt-1', 'user-1');
 
@@ -500,7 +500,7 @@ describe('submitAttempt', () => {
         referenceLink: null,
       },
     ]);
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await submitAttempt('attempt-1', 'user-1');
 
@@ -529,7 +529,7 @@ describe('submitAttempt', () => {
         referenceLink: null,
       },
     ]);
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await submitAttempt('attempt-1', 'user-1');
 
@@ -551,11 +551,11 @@ describe('submitAttempt', () => {
         referenceLink: null,
       },
     ]);
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     await submitAttempt('attempt-1', 'user-1');
 
-    const updateCall = mockPrisma.quizAttempt.update.mock.calls[0][0];
+    const updateCall = mockPrisma.quizAttempt.updateMany.mock.calls[0][0];
     expect(updateCall.data.status).toBe('COMPLETED');
     expect(updateCall.data.completedAt).toBeInstanceOf(Date);
     expect(typeof updateCall.data.score).toBe('number');
@@ -581,7 +581,7 @@ describe('submitAttempt', () => {
         correctAnswer: { value: true }, feedback: '', feedbackImage: null, referenceLink: null,
       },
     ]);
-    mockPrisma.quizAttempt.update.mockResolvedValue({});
+    mockPrisma.quizAttempt.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await submitAttempt('attempt-1', 'user-1');
 

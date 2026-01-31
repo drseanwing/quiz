@@ -1,32 +1,10 @@
 /**
  * Tests for CSV escape and email utility functions
- *
- * csvEscape is a private function in adminService.ts — we test it indirectly
- * by importing it after extracting, or by testing through the public API.
- * Since csvEscape is not exported, we test the escapeHtml and sanitizeSubject
- * patterns by re-implementing the same logic in isolated tests.
- *
- * For csvEscape we use a workaround: require the module and test via
- * the internal function by writing a thin test wrapper.
  */
 
-// We'll test the csvEscape logic by calling exportCompletionsCSV indirectly,
-// but that requires DB access. Instead, let's test the pure logic directly
-// by extracting it into a testable form.
-// Since csvEscape is not exported, we test the logic pattern directly.
+import { csvEscape } from '@/services/adminService';
 
-describe('csvEscape logic', () => {
-  // Re-implement the same logic as adminService.csvEscape for unit testing
-  function csvEscape(value: string): string {
-    let safe = value;
-    if (/^[=+\-@\t\r]/.test(safe)) {
-      safe = `'${safe}`;
-    }
-    if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe !== value) {
-      return `"${safe.replace(/"/g, '""')}"`;
-    }
-    return safe;
-  }
+describe('csvEscape', () => {
 
   it('returns plain text unchanged', () => {
     expect(csvEscape('hello')).toBe('hello');

@@ -1,9 +1,78 @@
 /**
  * @file        Sanitize utility tests
- * @description Tests for isSafeUrl and safeUrl
+ * @description Tests for sanitizeHtml, isSafeUrl, and safeUrl
  */
 
-import { isSafeUrl, safeUrl } from '@/utils/sanitize';
+import { sanitizeHtml, isSafeUrl, safeUrl } from '@/utils/sanitize';
+
+// ─── sanitizeHtml ───────────────────────────────────────────────────────────
+
+describe('sanitizeHtml', () => {
+  it('strips script tags', () => {
+    expect(sanitizeHtml('<script>alert(1)</script>')).toBe('');
+  });
+
+  it('strips event handler attributes', () => {
+    const result = sanitizeHtml('<img src="x.png" onerror="alert(1)">');
+    expect(result).not.toContain('onerror');
+    expect(result).toContain('src="x.png"');
+  });
+
+  it('preserves allowed tags', () => {
+    const input = '<p><strong>Bold</strong> and <em>italic</em></p>';
+    expect(sanitizeHtml(input)).toBe(input);
+  });
+
+  it('preserves links with safe href', () => {
+    const input = '<a href="https://example.com" target="_blank">Link</a>';
+    expect(sanitizeHtml(input)).toContain('href="https://example.com"');
+  });
+
+  it('strips javascript: URIs from links', () => {
+    const result = sanitizeHtml('<a href="javascript:alert(1)">click</a>');
+    expect(result).not.toContain('javascript:');
+  });
+
+  it('preserves img with data: URI (safeUrl blocks data: URIs separately)', () => {
+    const result = sanitizeHtml('<img src="data:text/html,<script>alert(1)</script>">');
+    // DOMPurify does not parse inside attribute values, so data: URI content is preserved.
+    // The safeUrl() utility (tested below) provides the layer that blocks data: URIs.
+    expect(result).toContain('<img');
+    expect(result).not.toContain('onerror');
+  });
+
+  it('strips data-* attributes', () => {
+    const result = sanitizeHtml('<p data-custom="value">Text</p>');
+    expect(result).not.toContain('data-custom');
+    expect(result).toContain('Text');
+  });
+
+  it('strips style attributes', () => {
+    const result = sanitizeHtml('<p style="color:red">Text</p>');
+    expect(result).not.toContain('style');
+  });
+
+  it('preserves list elements', () => {
+    const input = '<ul><li>One</li><li>Two</li></ul>';
+    expect(sanitizeHtml(input)).toBe(input);
+  });
+
+  it('preserves heading elements', () => {
+    const input = '<h2>Title</h2>';
+    expect(sanitizeHtml(input)).toBe(input);
+  });
+
+  it('strips form elements', () => {
+    const result = sanitizeHtml('<form action="/steal"><input type="text"></form>');
+    expect(result).not.toContain('form');
+    expect(result).not.toContain('input');
+  });
+
+  it('strips iframe elements', () => {
+    const result = sanitizeHtml('<iframe src="https://evil.com"></iframe>');
+    expect(result).not.toContain('iframe');
+  });
+});
 
 describe('isSafeUrl', () => {
   it('accepts https URLs', () => {

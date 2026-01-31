@@ -53,9 +53,15 @@ export async function listCompletions(
   if (typeof filters.passed === 'boolean') where.passed = filters.passed;
   if (filters.dateFrom || filters.dateTo) {
     const completedAt: Record<string, Date> = {};
-    if (filters.dateFrom) completedAt.gte = new Date(filters.dateFrom);
-    if (filters.dateTo) completedAt.lte = new Date(filters.dateTo);
-    where.completedAt = completedAt;
+    if (filters.dateFrom) {
+      const d = new Date(filters.dateFrom);
+      if (!isNaN(d.getTime())) completedAt.gte = d;
+    }
+    if (filters.dateTo) {
+      const d = new Date(filters.dateTo);
+      if (!isNaN(d.getTime())) completedAt.lte = d;
+    }
+    if (Object.keys(completedAt).length > 0) where.completedAt = completedAt;
   }
 
   const [data, totalCount] = await Promise.all([
@@ -118,7 +124,7 @@ export async function exportCompletionsCSV(filters: ICompletionFilters): Promise
   return header + rows;
 }
 
-function csvEscape(value: string): string {
+export function csvEscape(value: string): string {
   // Prevent CSV formula injection: prefix dangerous leading chars with a single quote
   let safe = value;
   if (/^[=+\-@\t\r\n]/.test(safe)) {
@@ -167,9 +173,15 @@ export async function listLogs(
   if (filters.userId) where.userId = filters.userId;
   if (filters.dateFrom || filters.dateTo) {
     const createdAt: Record<string, Date> = {};
-    if (filters.dateFrom) createdAt.gte = new Date(filters.dateFrom);
-    if (filters.dateTo) createdAt.lte = new Date(filters.dateTo);
-    where.createdAt = createdAt;
+    if (filters.dateFrom) {
+      const d = new Date(filters.dateFrom);
+      if (!isNaN(d.getTime())) createdAt.gte = d;
+    }
+    if (filters.dateTo) {
+      const d = new Date(filters.dateTo);
+      if (!isNaN(d.getTime())) createdAt.lte = d;
+    }
+    if (Object.keys(createdAt).length > 0) where.createdAt = createdAt;
   }
 
   const [data, totalCount] = await Promise.all([
