@@ -156,6 +156,8 @@ model QuizAttempt {
   @@index([userId, bankId])
   @@index([status])
   @@index([completedAt])
+  @@index([status, completedAt])
+  @@index([userId, status])
   @@map("quiz_attempts")
 }
 
