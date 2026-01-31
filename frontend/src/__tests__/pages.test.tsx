@@ -1,20 +1,21 @@
 /**
  * @file        Page component tests
- * @description Tests for DashboardPage and QuizListPage
+ * @description Tests for DashboardPage, QuizListPage, and QuizResultsPage
  */
 
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AttemptStatus, UserRole, type IAttemptSummary } from '@/types';
+import { AttemptStatus, UserRole, QuestionType, FeedbackTiming, type IAttemptSummary } from '@/types';
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const mockNavigate = vi.fn();
+let mockParams: Record<string, string> = {};
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
-  return { ...actual, useNavigate: () => mockNavigate };
+  return { ...actual, useNavigate: () => mockNavigate, useParams: () => mockParams };
 });
 
 const mockAuth = vi.hoisted(() => ({
@@ -53,6 +54,7 @@ vi.mock('@/services/api', () => ({ default: { get: vi.fn(), post: vi.fn() }, api
 
 import { DashboardPage } from '@/pages/DashboardPage';
 import { QuizListPage } from '@/pages/quiz/QuizListPage';
+import { QuizResultsPage } from '@/pages/quiz/QuizResultsPage';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -87,6 +89,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockAuth.user = { id: 'u1', firstName: 'Alice', surname: 'Smith', email: 'alice@test.com', role: 'USER' as UserRole };
   mockAuth.error = null;
+  mockParams = {};
 });
 
 // ─── DashboardPage ──────────────────────────────────────────────────────────
@@ -368,6 +371,200 @@ describe('QuizListPage', () => {
     renderWithProviders(<QuizListPage />);
     await waitFor(() => {
       expect(screen.getByText('Timed Out')).toBeInTheDocument();
+    });
+  });
+});
+
+// ─── QuizResultsPage ────────────────────────────────────────────────────────
+
+function makeResults(overrides: Record<string, unknown> = {}) {
+  return {
+    bankTitle: 'Safety Quiz',
+    status: 'COMPLETED',
+    passed: true,
+    percentage: 80,
+    score: 8,
+    maxScore: 10,
+    timeSpent: 185,
+    feedbackTiming: FeedbackTiming.END,
+    questions: [
+      {
+        id: 'q1',
+        type: QuestionType.TRUE_FALSE,
+        prompt: '<p>Is fire hot?</p>',
+        promptImage: null,
+        options: [{ id: 't', text: 'True' }, { id: 'f', text: 'False' }],
+        userResponse: { value: true },
+        correctAnswer: { value: true },
+        feedback: 'Correct! Fire is hot.',
+        feedbackImage: null,
+        referenceLink: null,
+        score: 1,
+        isCorrect: true,
+      },
+      {
+        id: 'q2',
+        type: QuestionType.MULTIPLE_CHOICE_SINGLE,
+        prompt: '<p>What color is the sky?</p>',
+        promptImage: null,
+        options: [{ id: 'a', text: 'Blue' }, { id: 'b', text: 'Green' }],
+        userResponse: { optionId: 'b' },
+        correctAnswer: { optionId: 'a' },
+        feedback: 'The sky is blue.',
+        feedbackImage: null,
+        referenceLink: 'https://example.com/sky',
+        score: 0,
+        isCorrect: false,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+describe('QuizResultsPage', () => {
+  beforeEach(() => {
+    mockParams = { attemptId: 'attempt-1' };
+  });
+
+  it('shows loading state', () => {
+    mockQuizApi.getResults.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<QuizResultsPage />);
+    expect(screen.getByText(/loading results/i)).toBeInTheDocument();
+  });
+
+  it('shows error state when API fails', async () => {
+    mockQuizApi.getResults.mockRejectedValue(new Error('Not found'));
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Not found');
+    });
+    expect(screen.getByRole('button', { name: /back to quizzes/i })).toBeInTheDocument();
+  });
+
+  it('navigates back on error button click', async () => {
+    mockQuizApi.getResults.mockRejectedValue(new Error('fail'));
+    renderWithProviders(<QuizResultsPage />);
+    const user = userEvent.setup();
+    await waitFor(() => screen.getByRole('button', { name: /back to quizzes/i }));
+    await user.click(screen.getByRole('button', { name: /back to quizzes/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/quizzes');
+  });
+
+  it('displays quiz title and completion status', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Safety Quiz')).toBeInTheDocument();
+      expect(screen.getByText('Completed')).toBeInTheDocument();
+    });
+  });
+
+  it('shows Timed Out status for timed-out attempts', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults({ status: 'TIMED_OUT' }));
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Timed Out')).toBeInTheDocument();
+    });
+  });
+
+  it('displays score percentage and pass/fail', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('80%')).toBeInTheDocument();
+      expect(screen.getByText('PASSED')).toBeInTheDocument();
+    });
+  });
+
+  it('shows NOT PASSED for failing attempts', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults({ passed: false, percentage: 40 }));
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('NOT PASSED')).toBeInTheDocument();
+    });
+  });
+
+  it('displays score points and time', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('8.0 / 10 points')).toBeInTheDocument();
+      expect(screen.getByText('Time: 3m 5s')).toBeInTheDocument();
+    });
+  });
+
+  it('renders question review cards for END feedback', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Question Review')).toBeInTheDocument();
+      expect(screen.getByText('Q1')).toBeInTheDocument();
+      expect(screen.getByText('Q2')).toBeInTheDocument();
+    });
+  });
+
+  it('shows correct/incorrect badges', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Correct')).toBeInTheDocument();
+      expect(screen.getByText('Incorrect')).toBeInTheDocument();
+    });
+  });
+
+  it('shows user answers and correct answers', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('True')).toBeInTheDocument(); // user's T/F answer
+      expect(screen.getByText('Green')).toBeInTheDocument(); // user's wrong MC answer
+      expect(screen.getByText('Blue')).toBeInTheDocument(); // correct MC answer
+    });
+  });
+
+  it('renders feedback text', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Correct! Fire is hot.')).toBeInTheDocument();
+      expect(screen.getByText('The sky is blue.')).toBeInTheDocument();
+    });
+  });
+
+  it('renders reference link', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      const link = screen.getByText('Reference Link');
+      expect(link).toHaveAttribute('href', 'https://example.com/sky');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+  });
+
+  it('hides question review for NONE feedback timing', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults({ feedbackTiming: FeedbackTiming.NONE, questions: [] }));
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('80%')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Question Review')).not.toBeInTheDocument();
+  });
+
+  it('shows question type labels', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('True/False')).toBeInTheDocument();
+      expect(screen.getByText('Multiple Choice')).toBeInTheDocument();
+    });
+  });
+
+  it('shows Back to Quizzes footer button', async () => {
+    mockQuizApi.getResults.mockResolvedValue(makeResults());
+    renderWithProviders(<QuizResultsPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /back to quizzes/i })).toBeInTheDocument();
     });
   });
 });
