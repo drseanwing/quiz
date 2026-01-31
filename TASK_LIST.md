@@ -709,9 +709,9 @@
 - ⏳ Fix tab order issues
 
 #### P5.2.3: Screen Reader Support
-- ⏳ Add ARIA labels to inputs
-- ⏳ Add ARIA labels to buttons
-- ⏳ Add ARIA labels to navigation
+- ✅ Add ARIA labels to inputs (search, filters, selects)
+- ✅ Add ARIA labels to buttons (action buttons with context)
+- ✅ Add ARIA labels to navigation (admin tab panel pattern)
 - ⏳ Add ARIA live regions
 - ⏳ Test with NVDA
 - ⏳ Test with JAWS
@@ -721,7 +721,10 @@
 - ⏳ Audit heading hierarchy
 - ⏳ Add landmark regions
 - ⏳ Add skip links
-- ⏳ Fix HTML validation errors
+- ✅ Fix nested Link>Button anti-pattern (DashboardPage, QuizResultsPage)
+- ✅ Add scope="col" to all table headers
+- ✅ Add aria-label to all data tables
+- ✅ Associate form labels via htmlFor/id
 
 ### P5.3: Performance Optimization
 
@@ -900,7 +903,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~30% complete (security headers, input validation, compression, indexes, unit tests, env template, seed script done)
+- Phase 5: ~35% complete (security headers, input validation, compression, indexes, unit tests, env template, seed script, accessibility improvements done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
