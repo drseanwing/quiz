@@ -12,6 +12,7 @@ import {
   forgotPasswordValidator,
   resetPasswordValidator,
   refreshTokenValidator,
+  tokenLoginValidator,
 } from '@/validators/authValidators';
 import { handleValidationErrors } from '@/middleware/validation';
 import { validateEmailDomain } from '@/middleware/emailDomain';
@@ -235,20 +236,9 @@ router.post(
  * @returns {200} Login successful with user data and tokens
  * @returns {401} Invalid or expired invite token
  */
-router.post('/token-login', authRateLimiter, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/token-login', authRateLimiter, tokenLoginValidator, handleValidationErrors, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token, password } = req.body;
-
-    if (!token || typeof token !== 'string') {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invite token is required',
-        },
-      });
-      return;
-    }
 
     const result = await authService.loginWithToken(
       token,

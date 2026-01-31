@@ -39,8 +39,8 @@ router.get(
       };
 
       const pagination = {
-        page: parseInt(req.query.page as string) || 1,
-        pageSize: parseInt(req.query.pageSize as string) || 20,
+        page: Math.max(1, parseInt(req.query.page as string) || 1),
+        pageSize: Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 20)),
       };
 
       const result = await questionBankService.listQuestionBanks(

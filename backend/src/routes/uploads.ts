@@ -88,6 +88,11 @@ router.delete(
     try {
       const filename = req.params.filename as string;
 
+      // Validate filename: only allow alphanumeric, hyphens, underscores, dots
+      if (!filename || !/^[\w\-.]+(\.[\w]+)?$/.test(filename) || filename.includes('..')) {
+        throw new ValidationError('Invalid filename');
+      }
+
       await deleteImage(filename);
 
       logger.info('Image deleted via API', {

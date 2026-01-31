@@ -59,8 +59,8 @@ router.get(
       };
 
       const pagination = {
-        page: parseInt(req.query.page as string) || 1,
-        pageSize: parseInt(req.query.pageSize as string) || 20,
+        page: Math.max(1, parseInt(req.query.page as string) || 1),
+        pageSize: Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 20)),
       };
 
       const result = await adminService.listCompletions(filters, pagination);
@@ -125,8 +125,8 @@ router.get(
       };
 
       const pagination = {
-        page: parseInt(req.query.page as string) || 1,
-        pageSize: parseInt(req.query.pageSize as string) || 20,
+        page: Math.max(1, parseInt(req.query.page as string) || 1),
+        pageSize: Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 20)),
       };
 
       const result = await adminService.listLogs(filters, pagination);
@@ -187,8 +187,8 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const pagination = {
-        page: parseInt(req.query.page as string) || 1,
-        pageSize: parseInt(req.query.pageSize as string) || 20,
+        page: Math.max(1, parseInt(req.query.page as string) || 1),
+        pageSize: Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 20)),
       };
 
       const result = await adminService.listInviteTokens(pagination);

@@ -124,10 +124,23 @@ export const refreshTokenValidator = [
 
 /**
  * Token-based login validator
- * Validates invite token from query string
+ * Validates invite token and optional password from request body
  */
 export const tokenLoginValidator = [
-  // Token comes from query string, not body
-  // Validation handled in route handler
+  body('token')
+    .isString()
+    .withMessage('Invite token is required')
+    .notEmpty()
+    .withMessage('Invite token cannot be empty')
+    .isLength({ max: 256 })
+    .withMessage('Token exceeds maximum length'),
+
+  body('password')
+    .optional()
+    .isString()
+    .isLength({ min: config.password.minLength, max: 128 })
+    .withMessage(
+      `Password must be between ${config.password.minLength} and 128 characters`
+    ),
 ];
 
