@@ -8,6 +8,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
+import { Spinner } from '@/components/common/Spinner';
+import { Alert } from '@/components/common/Alert';
 import * as quizApi from '@/services/quizApi';
 import { UserRole, AttemptStatus } from '@/types';
 import styles from './DashboardPage.module.css';
@@ -15,7 +17,7 @@ import styles from './DashboardPage.module.css';
 export function DashboardPage() {
   const { user } = useAuth();
 
-  const { data: attempts } = useQuery({
+  const { data: attempts, isLoading, error } = useQuery({
     queryKey: ['my-attempts'],
     queryFn: () => quizApi.listMyAttempts(),
   });
@@ -28,10 +30,14 @@ export function DashboardPage() {
 
   const isEditorOrAdmin = user?.role === UserRole.EDITOR || user?.role === UserRole.ADMIN;
 
+  if (isLoading) return <div className={styles.page}><Spinner /></div>;
+
   return (
     <div className={styles.page}>
       <h1>Dashboard</h1>
       <p className={styles.welcome}>Welcome back, {user?.firstName}!</p>
+
+      {error && <Alert type="error">Failed to load your quiz data. Please try again later.</Alert>}
 
       {/* Stats */}
       <div className={styles.grid}>

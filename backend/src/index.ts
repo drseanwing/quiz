@@ -17,6 +17,11 @@ import routes from './routes';
 
 const app = express();
 
+// Trust proxy (required behind nginx/Docker for correct req.ip and rate limiting)
+if (config.isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // Security middleware
 app.use(
   helmet({

@@ -15,6 +15,7 @@ import { AttemptStatus } from '@/types';
 import styles from './QuizPlayerPage.module.css';
 
 const AUTO_SAVE_INTERVAL = 30_000; // 30 seconds
+const DEBOUNCE_SAVE_DELAY = 1_500;  // 1.5 seconds debounce for per-answer saves
 
 export function QuizPlayerPage() {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -116,12 +117,15 @@ export function QuizPlayerPage() {
     return () => clearInterval(id);
   }, [attemptId, loading]);
 
-  // Answer a question
-  const setAnswer = useCallback((questionId: string, answer: unknown) => {
-    setResponses(prev => {
-      const updated = { ...prev, [questionId]: answer };
+  // Debounced per-answer save
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-      // Save immediately for this question
+  const setAnswer = useCallback((questionId: string, answer: unknown) => {
+    setResponses(prev => ({ ...prev, [questionId]: answer }));
+
+    // Debounce the API save to avoid flooding on rapid interactions (slider, drag)
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
       if (attemptId) {
         quizApi.saveProgress(attemptId, { [questionId]: answer }, elapsedRef.current)
           .then(result => {
@@ -137,9 +141,7 @@ export function QuizPlayerPage() {
           })
           .catch(() => { /* auto-save will retry */ });
       }
-
-      return updated;
-    });
+    }, DEBOUNCE_SAVE_DELAY);
   }, [attemptId]);
 
   // Submit quiz

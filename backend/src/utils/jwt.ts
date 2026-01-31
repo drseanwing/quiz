@@ -327,7 +327,7 @@ export function extractTokenFromHeader(authHeader: string | undefined): string |
   const parts = authHeader.split(' ');
 
   if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    logger.debug('Invalid Authorization header format', { authHeader });
+    logger.debug('Invalid Authorization header format');
     return null;
   }
 

@@ -540,14 +540,14 @@ export async function resetPassword(
   // Hash new password
   const passwordHash = await hashPassword(data.password);
 
-  // Update password and mark token as used
+  // Update password and invalidate all outstanding reset tokens for this user
   await prisma.$transaction([
     prisma.user.update({
       where: { id: resetRecord.userId },
       data: { passwordHash },
     }),
-    prisma.passwordReset.update({
-      where: { id: resetRecord.id },
+    prisma.passwordReset.updateMany({
+      where: { userId: resetRecord.userId, usedAt: null },
       data: { usedAt: new Date() },
     }),
   ]);
@@ -579,9 +579,12 @@ export async function loginWithToken(
 ): Promise<IAuthResponse> {
   logger.info('Token-based login requested');
 
+  // Hash token to match stored hash
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
   // Find valid invite token
   const inviteRecord = await prisma.inviteToken.findUnique({
-    where: { token },
+    where: { token: hashedToken },
   });
 
   if (!inviteRecord) {

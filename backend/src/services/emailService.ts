@@ -27,6 +27,14 @@ function escapeHtml(str: string): string {
 }
 
 /**
+ * Sanitize email subject line -- strip control characters that could
+ * be used for MIME header injection.
+ */
+function sanitizeSubject(str: string): string {
+  return str.replace(/[\r\n\0]/g, '');
+}
+
+/**
  * Send an email via Power Automate webhook (or mock in dev)
  */
 async function sendEmail(payload: IEmailPayload): Promise<boolean> {
@@ -118,11 +126,11 @@ export async function sendCompletionNotification(
 
   await sendAndLog(attemptId, {
     recipient: notificationEmail,
-    subject: `Quiz Completion: ${data.userName} - ${data.bankTitle} (${passStatus})`,
+    subject: sanitizeSubject(`Quiz Completion: ${data.userName} - ${data.bankTitle} (${passStatus})`),
     htmlBody: `
       <div style="font-family: Montserrat, Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #1B3A5F; color: white; padding: 24px; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px;">${config.email.fromName}</h1>
+          <h1 style="margin: 0; font-size: 20px;">${escapeHtml(config.email.fromName)}</h1>
         </div>
         <div style="padding: 24px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1B3A5F; margin-top: 0;">Quiz Completion Notification</h2>
@@ -133,7 +141,7 @@ export async function sendCompletionNotification(
           </div>
         </div>
         <div style="padding: 12px 24px; background: #f9fafb; font-size: 12px; color: #6b7280; text-align: center;">
-          This is an automated notification from ${config.email.fromName}.
+          This is an automated notification from ${escapeHtml(config.email.fromName)}.
         </div>
       </div>
     `,
@@ -151,11 +159,11 @@ export async function sendPasswordResetEmail(
 
   const success = await sendEmail({
     recipient: email,
-    subject: `${config.email.fromName} - Password Reset`,
+    subject: sanitizeSubject(`${config.email.fromName} - Password Reset`),
     htmlBody: `
       <div style="font-family: Montserrat, Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #1B3A5F; color: white; padding: 24px; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px;">${config.email.fromName}</h1>
+          <h1 style="margin: 0; font-size: 20px;">${escapeHtml(config.email.fromName)}</h1>
         </div>
         <div style="padding: 24px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1B3A5F; margin-top: 0;">Password Reset</h2>
@@ -195,16 +203,16 @@ export async function sendInviteEmail(
 
   const success = await sendEmail({
     recipient: email,
-    subject: `${config.email.fromName} - You've Been Invited`,
+    subject: sanitizeSubject(`${config.email.fromName} - You've Been Invited`),
     htmlBody: `
       <div style="font-family: Montserrat, Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #1B3A5F; color: white; padding: 24px; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px;">${config.email.fromName}</h1>
+          <h1 style="margin: 0; font-size: 20px;">${escapeHtml(config.email.fromName)}</h1>
         </div>
         <div style="padding: 24px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1B3A5F; margin-top: 0;">You're Invited!</h2>
           <p>${greeting},</p>
-          <p>You have been invited to join ${config.email.fromName}${bankLine}.</p>
+          <p>You have been invited to join ${escapeHtml(config.email.fromName)}${bankLine}.</p>
           <p style="text-align: center; margin: 24px 0;">
             <a href="${registerUrl}" style="background: #2B9E9E; color: white; padding: 12px 32px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
               Register Now

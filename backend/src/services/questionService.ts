@@ -11,6 +11,7 @@ import {
   NotFoundError,
   AuthorizationError,
 } from '@/middleware/errorHandler';
+import { sanitizeHtml } from './sanitizer';
 import { canModifyBank, canAccessBank } from './questionBankService';
 
 export interface ICreateQuestionRequest {
@@ -159,11 +160,11 @@ export async function createQuestion(
     data: {
       bankId,
       type: data.type,
-      prompt: data.prompt,
+      prompt: sanitizeHtml(data.prompt),
       promptImage: data.promptImage,
       options: data.options as object,
       correctAnswer: data.correctAnswer as object,
-      feedback: data.feedback,
+      feedback: sanitizeHtml(data.feedback),
       feedbackImage: data.feedbackImage,
       referenceLink: data.referenceLink,
       order: (maxOrder._max.order ?? -1) + 1,
@@ -205,11 +206,11 @@ export async function updateQuestion(
     where: { id },
     data: {
       ...(data.type !== undefined && { type: data.type }),
-      ...(data.prompt !== undefined && { prompt: data.prompt }),
+      ...(data.prompt !== undefined && { prompt: sanitizeHtml(data.prompt) }),
       ...(data.promptImage !== undefined && { promptImage: data.promptImage }),
       ...(data.options !== undefined && { options: data.options as object }),
       ...(data.correctAnswer !== undefined && { correctAnswer: data.correctAnswer as object }),
-      ...(data.feedback !== undefined && { feedback: data.feedback }),
+      ...(data.feedback !== undefined && { feedback: sanitizeHtml(data.feedback) }),
       ...(data.feedbackImage !== undefined && { feedbackImage: data.feedbackImage }),
       ...(data.referenceLink !== undefined && { referenceLink: data.referenceLink }),
     },

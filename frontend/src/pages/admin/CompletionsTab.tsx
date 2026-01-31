@@ -18,6 +18,7 @@ export function CompletionsTab() {
   const [dateTo, setDateTo] = useState('');
   const [passedFilter, setPassedFilter] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-completions', page, filters],
@@ -43,6 +44,7 @@ export function CompletionsTab() {
 
   async function handleExport() {
     setExporting(true);
+    setExportError(null);
     try {
       const blob = await adminApi.exportCompletionsCSV(filters);
       const url = URL.createObjectURL(blob);
@@ -52,7 +54,7 @@ export function CompletionsTab() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      // Export failed silently
+      setExportError('CSV export failed. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -60,6 +62,7 @@ export function CompletionsTab() {
 
   return (
     <div className={styles.container}>
+      {exportError && <Alert type="error">{exportError}</Alert>}
       <div className={styles.filters}>
         <div className={styles.filterGroup}>
           <label>From</label>

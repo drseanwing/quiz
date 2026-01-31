@@ -11,7 +11,7 @@ const ALLOWED_TAGS = [
   'sub', 'sup', 'span', 'div', 'img',
 ];
 
-const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'class', 'style'];
+const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'class'];
 
 /** Sanitize HTML for safe rendering via dangerouslySetInnerHTML */
 export function sanitizeHtml(dirty: string): string {

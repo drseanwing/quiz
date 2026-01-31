@@ -59,10 +59,14 @@ export function InvitesTab() {
   }
 
   function copyToken(token: string, id: string) {
-    navigator.clipboard.writeText(token).then(() => {
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    });
+    navigator.clipboard.writeText(token)
+      .then(() => {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      })
+      .catch(() => {
+        window.prompt('Copy this token:', token);
+      });
   }
 
   return (

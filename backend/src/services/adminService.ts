@@ -291,13 +291,14 @@ export async function createInviteToken(data: ICreateInviteRequest): Promise<IIn
     if (!bank) throw new NotFoundError('Question bank');
   }
 
-  const token = crypto.randomBytes(32).toString('hex');
+  const plaintextToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(plaintextToken).digest('hex');
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + (data.expiresInDays || 7));
 
   const invite = await prisma.inviteToken.create({
     data: {
-      token,
+      token: hashedToken,
       email: data.email,
       firstName: data.firstName || null,
       surname: data.surname || null,
@@ -311,9 +312,10 @@ export async function createInviteToken(data: ICreateInviteRequest): Promise<IIn
 
   logger.info('Invite token created', { email: data.email, tokenId: invite.id });
 
+  // Return plaintext token only at creation time -- it cannot be retrieved later
   return {
     id: invite.id,
-    token: invite.token,
+    token: plaintextToken,
     email: invite.email,
     firstName: invite.firstName,
     surname: invite.surname,
@@ -342,7 +344,7 @@ export async function listInviteTokens(
 
   const rows: IInviteTokenRow[] = data.map(t => ({
     id: t.id,
-    token: t.token,
+    token: `${t.token.substring(0, 8)}...`,
     email: t.email,
     firstName: t.firstName,
     surname: t.surname,
@@ -365,7 +367,8 @@ export async function validateInviteToken(token: string): Promise<{
   surname?: string | undefined;
   bankId?: string | undefined;
 }> {
-  const invite = await prisma.inviteToken.findUnique({ where: { token } });
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  const invite = await prisma.inviteToken.findUnique({ where: { token: hashedToken } });
 
   if (!invite) return { valid: false };
   if (invite.usedAt) return { valid: false };
@@ -381,8 +384,9 @@ export async function validateInviteToken(token: string): Promise<{
 }
 
 export async function markTokenUsed(token: string): Promise<void> {
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   await prisma.inviteToken.update({
-    where: { token },
+    where: { token: hashedToken },
     data: { usedAt: new Date() },
   });
 }

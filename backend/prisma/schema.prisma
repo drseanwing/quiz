@@ -73,7 +73,6 @@ model User {
   auditLogs      AuditLog[]
   passwordResets PasswordReset[]
 
-  @@index([email])
   @@index([role])
   @@index([isActive])
   @@map("users")
@@ -211,7 +210,6 @@ model PasswordReset {
   // Relations
   user User @relation(fields: [userId], references: [id])
 
-  @@index([token])
   @@index([userId])
   @@index([expiresAt])
   @@map("password_resets")
@@ -231,7 +229,6 @@ model InviteToken {
   // Relations
   bank QuestionBank? @relation(fields: [bankId], references: [id])
 
-  @@index([token])
   @@index([email])
   @@index([expiresAt])
   @@map("invite_tokens")

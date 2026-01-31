@@ -158,6 +158,7 @@ router.patch(
  */
 router.delete(
   '/:id',
+  requireEditor,
   questionBankIdValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

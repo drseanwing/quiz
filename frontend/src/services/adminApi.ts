@@ -4,12 +4,7 @@
  */
 
 import { api } from './api';
-
-interface IApiResponse<T> {
-  success: boolean;
-  data: T;
-  meta?: { page: number; pageSize: number; totalCount: number; totalPages: number };
-}
+import type { IApiResponse } from '@/types';
 
 // Stats
 export interface IPlatformStats {

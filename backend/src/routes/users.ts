@@ -17,6 +17,7 @@ import {
   adminResetPasswordValidator,
 } from '@/validators/userValidators';
 import { handleValidationErrors } from '@/middleware/validation';
+import { AuthorizationError } from '@/middleware/errorHandler';
 import { authenticate, requireAdmin } from '@/middleware/auth';
 import logger from '@/config/logger';
 
@@ -252,6 +253,16 @@ router.patch(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Prevent admins from deactivating or demoting themselves
+      if (req.params.id === req.user!.userId) {
+        if (req.body.isActive === false) {
+          throw new AuthorizationError('Cannot deactivate your own account');
+        }
+        if (req.body.role && req.body.role !== req.user!.role) {
+          throw new AuthorizationError('Cannot change your own role');
+        }
+      }
+
       const user = await userService.updateUser(req.params.id, req.body);
 
       logger.info('User updated by admin', {

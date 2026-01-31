@@ -59,12 +59,12 @@ export function handleValidationErrors(
       };
     });
 
-    throw new ValidationError(
+    return next(new ValidationError(
       formattedErrors[0]?.message || 'Validation failed',
       {
         errors: formattedErrors,
       }
-    );
+    ));
   }
 
   next();
@@ -99,38 +99,12 @@ export function validateRequiredFields(fields: string[]) {
         missing,
       });
 
-      throw new ValidationError('Required fields missing', {
+      return next(new ValidationError('Required fields missing', {
         missing,
-      });
+      }));
     }
 
     next();
   };
 }
 
-/**
- * Sanitize request body
- * Removes undefined, null, and empty string values
- *
- * @param req - Express request
- * @param res - Express response
- * @param next - Express next function
- *
- * @example
- * router.patch('/api/example', sanitizeBody, handler);
- */
-export function sanitizeBody(req: Request, res: Response, next: NextFunction): void {
-  if (req.body && typeof req.body === 'object') {
-    for (const key in req.body) {
-      if (
-        req.body[key] === undefined ||
-        req.body[key] === null ||
-        req.body[key] === ''
-      ) {
-        delete req.body[key];
-      }
-    }
-  }
-
-  next();
-}

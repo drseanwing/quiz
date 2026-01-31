@@ -53,9 +53,9 @@ export const config = {
   // Password requirements
   password: {
     minLength: parseInt(process.env.PASSWORD_MIN_LENGTH || '8', 10),
-    requireUppercase: process.env.PASSWORD_REQUIRE_UPPERCASE === 'true',
-    requireLowercase: process.env.PASSWORD_REQUIRE_LOWERCASE === 'true',
-    requireNumber: process.env.PASSWORD_REQUIRE_NUMBER === 'true',
+    requireUppercase: process.env.PASSWORD_REQUIRE_UPPERCASE !== 'false',
+    requireLowercase: process.env.PASSWORD_REQUIRE_LOWERCASE !== 'false',
+    requireNumber: process.env.PASSWORD_REQUIRE_NUMBER !== 'false',
   },
 
   // Account lockout

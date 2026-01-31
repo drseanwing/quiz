@@ -4,6 +4,7 @@
  */
 
 import { useRef } from 'react';
+import { safeUrl } from '@/utils/sanitize';
 import styles from './ImageMapPlayer.module.css';
 
 interface ImageMapPlayerProps {
@@ -34,7 +35,7 @@ export function ImageMapPlayer({ options, answer, onChange, disabled }: ImageMap
       <div className={styles.imageWrapper}>
         <img
           ref={imgRef}
-          src={options.image}
+          src={safeUrl(options.image || '')}
           alt="Click to answer"
           className={styles.image}
           onClick={handleClick}

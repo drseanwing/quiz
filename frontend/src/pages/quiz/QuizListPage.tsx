@@ -19,6 +19,7 @@ export function QuizListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [startError, setStartError] = useState<string | null>(null);
+  const [startingBankId, setStartingBankId] = useState<string | null>(null);
 
   const { data: banksResult, isLoading: banksLoading } = useQuery({
     queryKey: ['available-quizzes'],
@@ -31,18 +32,22 @@ export function QuizListPage() {
   });
 
   const startMutation = useMutation({
-    mutationFn: quizApi.startQuiz,
+    mutationFn: (bankId: string) => {
+      setStartingBankId(bankId);
+      return quizApi.startQuiz(bankId);
+    },
     onSuccess: (result) => {
+      setStartingBankId(null);
       queryClient.invalidateQueries({ queryKey: ['my-attempts'] });
       navigate(`/quiz/${result.attemptId}`);
     },
     onError: (err) => {
+      setStartingBankId(null);
       setStartError(err instanceof Error ? err.message : 'Failed to start quiz');
     },
   });
 
-  const banks = (banksResult as unknown as { banks?: IQuestionBank[] })?.banks
-    || (Array.isArray(banksResult) ? banksResult : []) as IQuestionBank[];
+  const banks = banksResult?.banks ?? [] as IQuestionBank[];
 
   const attemptsByBank = new Map<string, IAttemptSummary[]>();
   if (attempts) {
@@ -143,9 +148,9 @@ export function QuizListPage() {
                         <Button
                           variant="primary"
                           onClick={() => startMutation.mutate(bank.id)}
-                          disabled={startMutation.isPending}
+                          disabled={startMutation.isPending && startingBankId === bank.id}
                         >
-                          {startMutation.isPending ? 'Starting...' : 'Start Quiz'}
+                          {startMutation.isPending && startingBankId === bank.id ? 'Starting...' : 'Start Quiz'}
                         </Button>
                       )}
                     </div>
