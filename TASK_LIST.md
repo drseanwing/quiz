@@ -906,6 +906,20 @@
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
 - Review 2: Fixed Modal prop mismatch, XSS in email templates, password reset handling,
   CSV injection defense, self-deactivation guard, audit log separation
-- Review 3: Pending (6 commits since last review)
+- Review 3 (27 backend + 33 frontend issues found): Fixed invite token hashing,
+  self-deactivation via PATCH, password defaults, validation middleware, question HTML
+  sanitization, requireEditor on delete, password reset token invalidation, trust proxy,
+  email subject sanitization, redundant indexes, dead code, debounce quiz saves,
+  setState side-effects, DashboardPage loading/error, CSV export errors, QuizListPage
+  type/mutation fixes, safeUrl for ImageMapPlayer, clipboard error handling, sanitizer
+  style attr removal, dependency cleanup
+
+**Known Deferred Items** (require infrastructure or significant architectural changes):
+- JWT token blacklist / refresh token revocation (needs Redis or DB table)
+- In-memory lockout store scalability (needs Redis for multi-replica)
+- Authenticated file serving for uploads (needs signed URLs or auth middleware)
+- Answer option re-randomization on page reload (needs schema migration to store order)
+- Timer calculation using server timeSpent vs wall-clock (needs careful testing)
+- localStorage token storage (needs httpOnly cookie backend infrastructure)
 
 **Last Updated**: 2026-01-30
