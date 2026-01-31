@@ -705,14 +705,14 @@
 - ⏳ Test all forms with keyboard
 - ⏳ Test modal dialogs with keyboard
 - ⏳ Test quiz player with keyboard
-- ⏳ Add visible focus indicators
+- ✅ Add visible focus indicators
 - ⏳ Fix tab order issues
 
 #### P5.2.3: Screen Reader Support
 - ✅ Add ARIA labels to inputs (search, filters, selects)
 - ✅ Add ARIA labels to buttons (action buttons with context)
 - ✅ Add ARIA labels to navigation (admin tab panel pattern)
-- ⏳ Add ARIA live regions
+- ✅ Add ARIA live regions
 - ⏳ Test with NVDA
 - ⏳ Test with JAWS
 - ⏳ Fix screen reader issues

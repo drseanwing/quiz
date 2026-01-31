@@ -193,11 +193,16 @@ export function QuizPlayerPage() {
         <h1 className={styles.title}>{bankTitle}</h1>
         <div className={styles.headerRight}>
           {timeRemaining !== null && (
-            <div className={`${styles.timer} ${timeRemaining < 60 ? styles.timerWarning : ''}`}>
+            <div
+              className={`${styles.timer} ${timeRemaining < 60 ? styles.timerWarning : ''}`}
+              role="timer"
+              aria-live={timeRemaining < 60 ? 'assertive' : 'off'}
+              aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
+            >
               {formatTime(timeRemaining)}
             </div>
           )}
-          <div className={styles.saveStatus}>
+          <div className={styles.saveStatus} aria-live="polite">
             {saveStatus === 'saving' && 'Saving...'}
             {saveStatus === 'saved' && 'Saved'}
             {saveStatus === 'error' && 'Save failed'}
