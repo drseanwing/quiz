@@ -96,7 +96,8 @@ export async function listCompletions(
  * Export completions as CSV text
  */
 export async function exportCompletionsCSV(filters: ICompletionFilters): Promise<string> {
-  const all = await listCompletions(filters, { page: 1, pageSize: 10000 });
+  // Cap at 50,000 rows to prevent OOM on very large datasets
+  const all = await listCompletions(filters, { page: 1, pageSize: 50000 });
 
   const header = 'Name,Email,Quiz,Score,Max Score,Percentage,Passed,Status,Completed At,Time (s)\n';
   const rows = all.data.map(r =>

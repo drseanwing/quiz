@@ -297,6 +297,11 @@ router.delete(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Prevent admins from deleting themselves
+      if (req.params.id === req.user!.userId) {
+        throw new AuthorizationError('Cannot deactivate your own account');
+      }
+
       const user = await userService.deactivateUser(req.params.id);
 
       logger.info('User deactivated by admin', {

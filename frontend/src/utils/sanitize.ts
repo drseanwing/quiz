@@ -13,12 +13,16 @@ const ALLOWED_TAGS = [
 
 const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'class'];
 
+/** Only allow http, https, and mailto URI schemes */
+const ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+
 /** Sanitize HTML for safe rendering via dangerouslySetInnerHTML */
 export function sanitizeHtml(dirty: string): string {
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP,
   });
 }
 

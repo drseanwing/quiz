@@ -10,6 +10,7 @@ import logger from '@/config/logger';
 import {
   NotFoundError,
   AuthorizationError,
+  ValidationError,
 } from '@/middleware/errorHandler';
 import { sanitizeHtml } from './sanitizer';
 import { canModifyBank, canAccessBank } from './questionBankService';
@@ -335,6 +336,14 @@ export async function reorderQuestions(
   });
 
   const bankQuestionIds = new Set(questions.map((q) => q.id));
+
+  // Verify completeness: submitted IDs must cover all questions in the bank
+  if (questionIds.length !== bankQuestionIds.size) {
+    throw new ValidationError(
+      `Expected ${bankQuestionIds.size} question IDs but received ${questionIds.length}`
+    );
+  }
+
   for (const qId of questionIds) {
     if (!bankQuestionIds.has(qId)) {
       throw new NotFoundError(`Question ${qId} not found in this bank`);

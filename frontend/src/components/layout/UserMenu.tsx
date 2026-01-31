@@ -111,14 +111,14 @@ export function UserMenu({ user }: UserMenuProps) {
           </div>
 
           <Link
-            to="/profile"
+            to="/dashboard"
             className={styles.menuItem}
             role="menuitem"
             tabIndex={-1}
             ref={(el) => { menuItemsRef.current[0] = el; }}
             onClick={() => setIsOpen(false)}
           >
-            Profile
+            Dashboard
           </Link>
 
           <div className={styles.divider} />

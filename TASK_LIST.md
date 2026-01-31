@@ -820,10 +820,10 @@
 ### P5.6: Documentation
 
 #### P5.6.1: API Documentation
-- ⏳ Document all endpoints
-- ⏳ Add request examples
-- ⏳ Add response examples
-- ⏳ Add error code reference
+- ✅ Document all endpoints
+- ✅ Add request examples
+- ✅ Add response examples
+- ✅ Add error code reference
 - ⏳ Generate OpenAPI spec
 
 #### P5.6.2: Database Documentation
@@ -833,11 +833,11 @@
 - ⏳ Create ER diagram
 
 #### P5.6.3: Deployment Documentation
-- ⏳ Document Docker setup
-- ⏳ Document environment variables
-- ⏳ Document SSL configuration
-- ⏳ Document nginx configuration
-- ⏳ Create deployment checklist
+- ✅ Document Docker setup
+- ✅ Document environment variables
+- ✅ Document SSL configuration
+- ✅ Document nginx configuration
+- ✅ Create deployment checklist
 
 #### P5.6.4: Admin Guide
 - ⏳ Document user management
@@ -900,14 +900,14 @@
 
 ## CURRENT STATUS
 
-**Next Incomplete Task**: P5.6.1 - API Documentation
+**Next Incomplete Task**: P5.6.2 - Database Documentation
 
 **Progress**:
 - Phase 1: 100% complete
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~40% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization done)
+- Phase 5: ~50% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization, API docs, deployment docs done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -920,6 +920,12 @@
   setState side-effects, DashboardPage loading/error, CSV export errors, QuizListPage
   type/mutation fixes, safeUrl for ImageMapPlayer, clipboard error handling, sanitizer
   style attr removal, dependency cleanup
+- Review 4 (22 backend + 20 frontend issues found): Fixed admin self-delete guard,
+  refresh token rate limiting, password reset token cleanup, requireEditor on PATCH
+  question-banks, reorder completeness validation, CSV export row cap, TipTap Link
+  rel="noopener noreferrer", DOMPurify ALLOWED_URI_REGEXP, Alert prop type→variant,
+  dead /profile link, ErrorBoundary hides raw errors in production, quizApi
+  double-unwrap fix
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)

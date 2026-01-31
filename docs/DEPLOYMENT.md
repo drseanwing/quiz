@@ -1,274 +1,455 @@
-# Deployment Guide
+# REdI Quiz Platform - Deployment Guide
 
-This guide covers deploying the REdI Quiz Platform to production.
+## Architecture Overview
+
+```
+Internet
+    |
+  [Nginx]  :80 / :443
+    |
+    ├── /api/*  → [Backend API]  :3000  (Node.js 20 + Express)
+    ├── /uploads/* → static files
+    └── /*      → [Static Files]        (Vite-built React SPA)
+                        |
+                  [PostgreSQL 16]  :5432
+```
+
+All services run as Docker containers orchestrated by docker-compose.
+The backend runs as a non-root user (`nodejs:1001`) with dumb-init for proper signal handling.
+
+---
 
 ## Prerequisites
 
-- Docker and Docker Compose installed on the server
-- SSL certificates for HTTPS
-- Domain name configured
-- PostgreSQL 16 (or use Docker)
-- Nginx (or use Docker)
+- Docker 24+ and Docker Compose v2
+- Git
+- Domain name with DNS configured (for production)
+- SSL certificate (Let's Encrypt recommended)
 
-## Environment Configuration
+---
 
-1. **Create Production Environment File**
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Configure Environment Variables**
-   ```bash
-   # Critical: Change all secrets!
-   JWT_SECRET=$(openssl rand -base64 64)
-   JWT_REFRESH_SECRET=$(openssl rand -base64 64)
-   POSTGRES_PASSWORD=$(openssl rand -base64 32)
-
-   # Set production values
-   NODE_ENV=production
-   APP_URL=https://your-domain.com
-   CORS_ORIGIN=https://your-domain.com
-   ```
-
-3. **Required Variables**
-   - `DATABASE_URL` - PostgreSQL connection string
-   - `JWT_SECRET` - JWT signing secret
-   - `JWT_REFRESH_SECRET` - Refresh token secret
-   - `POSTGRES_PASSWORD` - Database password
-   - `POWER_AUTOMATE_EMAIL_URL` - Email endpoint
-   - `ALLOWED_EMAIL_DOMAIN` - Email domain restriction
-
-## SSL Configuration
-
-1. **Place SSL Certificates**
-   ```bash
-   cp your-cert.pem nginx/ssl/cert.pem
-   cp your-key.pem nginx/ssl/key.pem
-   chmod 600 nginx/ssl/*.pem
-   ```
-
-2. **Update Nginx Configuration**
-   Edit `nginx/nginx.conf` and uncomment the HTTPS server block.
-
-## Deployment Steps
-
-### 1. Initial Deployment
+## Quick Start (Development)
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd quiz
+# 1. Clone and enter the repo
+git clone <repo-url> && cd quiz
 
-# Configure environment
+# 2. Copy environment file
 cp .env.example .env
-nano .env  # Edit with production values
+# Edit .env — at minimum set POSTGRES_PASSWORD
 
-# Start services
-docker-compose up -d
+# 3. Start all services
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# 4. Run database migrations
+docker compose exec backend npx prisma migrate deploy
+
+# 5. Seed initial admin user (optional)
+docker compose exec backend npx ts-node prisma/seed.ts
+```
+
+### Development Ports
+
+| Service        | Port  | URL                           |
+| -------------- | ----- | ----------------------------- |
+| PostgreSQL     | 9470  | `postgresql://localhost:9470` |
+| Backend API    | 9471  | `http://localhost:9471/api`   |
+| Node Debugger  | 9472  | `--inspect=0.0.0.0:9472`     |
+| Frontend (Vite)| 9473  | `http://localhost:9473`       |
+| Prisma Studio  | 9474  | `http://localhost:9474`       |
+| Adminer        | 9475  | `http://localhost:9475`       |
+| Nginx          | 9476  | `http://localhost:9476`       |
+
+Prisma Studio and Adminer require the `tools` profile:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile tools up
+```
+
+---
+
+## Production Deployment
+
+### 1. Prepare Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with production values. Generate secrets:
+
+```bash
+# Generate JWT secrets (run twice — one for each)
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Generate a strong database password
+openssl rand -base64 32
+```
+
+### 2. Required Environment Variables
+
+| Variable              | Required | Description                        |
+| --------------------- | -------- | ---------------------------------- |
+| `POSTGRES_PASSWORD`   | yes      | Database password                  |
+| `JWT_SECRET`          | yes      | JWT signing secret (64+ hex chars) |
+| `JWT_REFRESH_SECRET`  | yes      | Refresh token secret (64+ hex chars) |
+| `DATABASE_URL`        | yes      | Full PostgreSQL connection string  |
+| `CORS_ORIGIN`         | yes      | Frontend URL (e.g. `https://quiz.example.com`) |
+| `APP_URL`             | yes      | Public URL for email links         |
+| `ALLOWED_EMAIL_DOMAIN`| yes      | Restrict registration to this domain |
+
+### 3. SSL Certificates
+
+Place SSL certificates in `nginx/ssl/`:
+
+```bash
+mkdir -p nginx/ssl
+
+# Option A: Let's Encrypt (recommended)
+certbot certonly --standalone -d quiz.example.com
+cp /etc/letsencrypt/live/quiz.example.com/fullchain.pem nginx/ssl/cert.pem
+cp /etc/letsencrypt/live/quiz.example.com/privkey.pem nginx/ssl/key.pem
+chmod 600 nginx/ssl/*.pem
+
+# Option B: Self-signed (testing only)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout nginx/ssl/key.pem -out nginx/ssl/cert.pem
+```
+
+Then edit `nginx/nginx.conf`:
+1. Uncomment the HTTPS server block
+2. Replace `your-domain.com` with your actual domain
+3. Uncomment the HTTP-to-HTTPS redirect in the port 80 block
+4. Comment out the development `location /` block in the port 80 server
+
+### 4. Build and Start
+
+```bash
+# Build all images
+docker compose build
+
+# Start services (detached)
+docker compose up -d
 
 # Run database migrations
-docker-compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma migrate deploy
 
-# Seed initial data
-./scripts/seed.sh
+# Seed initial admin (first deployment only)
+docker compose exec backend node dist/prisma/seed.js
+
+# Verify health
+curl https://quiz.example.com/api/health
 ```
 
-### 2. Verify Deployment
+### 5. Verify Deployment
 
 ```bash
-# Check service health
-curl https://your-domain.com/api/health
+# Check all containers are running
+docker compose ps
 
-# View logs
-docker-compose logs -f
+# Check backend health
+docker compose logs backend --tail 50
 
-# Check database
-docker-compose exec db psql -U $POSTGRES_USER -d $POSTGRES_DB
+# Check nginx
+docker compose logs nginx --tail 50
+
+# Test endpoints
+curl -s https://quiz.example.com/api/health | jq .
+curl -s https://quiz.example.com/api/ | jq .
 ```
 
-### 3. Create Admin Account
+---
 
-```bash
-# If not using seed data, create admin manually
-docker-compose exec backend npm run create-admin
-```
+## Environment Variables Reference
+
+### Application
+
+| Variable     | Default      | Description          |
+| ------------ | ------------ | -------------------- |
+| `NODE_ENV`   | `production` | Environment mode     |
+| `PORT`       | `3000`       | Backend listen port  |
+| `APP_URL`    | —            | Public URL for emails |
+
+### Database
+
+| Variable            | Default     | Description              |
+| ------------------- | ----------- | ------------------------ |
+| `DATABASE_URL`      | —           | PostgreSQL connection URI |
+| `POSTGRES_USER`     | `redi_user` | DB username              |
+| `POSTGRES_PASSWORD` | —           | DB password (required)   |
+| `POSTGRES_DB`       | `redi_quiz` | Database name            |
+
+### Authentication
+
+| Variable                    | Default | Description                    |
+| --------------------------- | ------- | ------------------------------ |
+| `JWT_SECRET`                | —       | Access token signing key       |
+| `JWT_REFRESH_SECRET`        | —       | Refresh token signing key      |
+| `JWT_EXPIRES_IN`            | `1h`    | Access token TTL               |
+| `JWT_REFRESH_EXPIRES_IN`    | `7d`    | Refresh token TTL              |
+| `PASSWORD_MIN_LENGTH`       | `8`     | Minimum password length        |
+| `PASSWORD_REQUIRE_UPPERCASE`| `true`  | Require uppercase letter       |
+| `PASSWORD_REQUIRE_LOWERCASE`| `true`  | Require lowercase letter       |
+| `PASSWORD_REQUIRE_NUMBER`   | `true`  | Require digit                  |
+| `MAX_LOGIN_ATTEMPTS`        | `5`     | Failed attempts before lockout |
+| `LOCKOUT_DURATION_MINUTES`  | `15`    | Lockout duration               |
+
+### Email
+
+| Variable                  | Default                 | Description              |
+| ------------------------- | ----------------------- | ------------------------ |
+| `ALLOWED_EMAIL_DOMAIN`    | `health.qld.gov.au`    | Restrict registration    |
+| `POWER_AUTOMATE_EMAIL_URL`| —                       | Power Automate webhook   |
+| `EMAIL_REPLY_TO`          | `redi@health.qld.gov.au`| Reply-to address        |
+| `EMAIL_FROM_NAME`         | `REdI Quiz Platform`    | Display name in emails   |
+| `MOCK_EMAIL`              | `false`                 | Log emails instead of sending |
+
+### File Uploads
+
+| Variable             | Default                                    | Description          |
+| -------------------- | ------------------------------------------ | -------------------- |
+| `UPLOAD_DIR`         | `/app/uploads`                             | Upload storage path  |
+| `MAX_FILE_SIZE`      | `5242880` (5MB)                            | Max file size bytes  |
+| `ALLOWED_FILE_TYPES` | `image/jpeg,image/png,image/gif,image/webp`| Accepted MIME types  |
+
+### Logging
+
+| Variable     | Default      | Description                        |
+| ------------ | ------------ | ---------------------------------- |
+| `LOG_DIR`    | `/app/logs`  | Log file directory                 |
+| `LOG_LEVEL`  | `info`       | Log level (debug/info/warn/error)  |
+
+### Rate Limiting
+
+| Variable                   | Default  | Description                      |
+| -------------------------- | -------- | -------------------------------- |
+| `RATE_LIMIT_WINDOW_MS`     | `60000`  | Rate limit window (ms)           |
+| `RATE_LIMIT_MAX_REQUESTS`  | `100`    | Max requests per window          |
+| `RATE_LIMIT_AUTH_MAX`      | `5`      | Max auth requests per window     |
+
+### CORS
+
+| Variable           | Default           | Description              |
+| ------------------ | ----------------- | ------------------------ |
+| `CORS_ORIGIN`      | `http://localhost` | Allowed origin(s)       |
+| `CORS_CREDENTIALS` | `true`            | Allow credentials        |
+
+### Frontend Build
+
+| Variable         | Default              | Description        |
+| ---------------- | -------------------- | ------------------ |
+| `VITE_API_URL`   | `/api`               | API base URL       |
+| `VITE_APP_NAME`  | `REdI Quiz Platform` | App display name   |
+
+---
 
 ## Database Management
-
-### Backups
-
-Set up automated backups with cron:
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add daily backup at 2 AM
-0 2 * * * /path/to/quiz/scripts/backup.sh >> /var/log/redi-quiz-backup.log 2>&1
-```
-
-### Restore from Backup
-
-```bash
-./scripts/restore.sh backups/redi-quiz-backup-2026-01-30.sql.gz
-```
 
 ### Migrations
 
 ```bash
 # Apply pending migrations
-docker-compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma migrate deploy
 
-# View migration status
-docker-compose exec backend npx prisma migrate status
+# Check migration status
+docker compose exec backend npx prisma migrate status
+
+# Reset database (WARNING: destroys all data)
+docker compose exec backend npx prisma migrate reset
 ```
 
-## Updating the Application
+### Backups
 
 ```bash
-# Pull latest changes
-git pull origin main
+# Create a backup
+docker compose exec db pg_dump -U redi_user redi_quiz > backup_$(date +%Y%m%d_%H%M%S).sql
 
-# Rebuild images
-docker-compose build
+# Compressed backup
+docker compose exec db pg_dump -U redi_user redi_quiz | gzip > backup_$(date +%Y%m%d_%H%M%S).sql.gz
 
-# Stop services
-docker-compose down
-
-# Start with new images
-docker-compose up -d
-
-# Run migrations
-docker-compose exec backend npx prisma migrate deploy
-
-# Verify health
-curl https://your-domain.com/api/health
+# Automated daily backup via cron (2 AM)
+# crontab -e
+# 0 2 * * * cd /path/to/quiz && docker compose exec -T db pg_dump -U redi_user redi_quiz | gzip > backups/backup_$(date +\%Y\%m\%d).sql.gz
 ```
+
+### Restore from Backup
+
+```bash
+# Plain SQL
+docker compose exec -T db psql -U redi_user redi_quiz < backup_20260130_120000.sql
+
+# Compressed
+gunzip -c backup_20260130.sql.gz | docker compose exec -T db psql -U redi_user redi_quiz
+```
+
+### Seed Data
+
+The seed script creates an initial admin user:
+
+```bash
+# Development
+docker compose exec backend npx ts-node prisma/seed.ts
+
+# Production (compiled)
+docker compose exec backend node dist/prisma/seed.js
+```
+
+Default seed credentials (**change immediately** after first login):
+- Email: `admin@health.qld.gov.au`
+- Password: `Admin123!`
+- Role: `ADMIN`
+
+---
 
 ## Monitoring
 
-### Health Checks
+### Health Check
 
 ```bash
-# API health
-curl https://your-domain.com/api/health
-
-# Database connection
-docker-compose exec backend node -e "require('./dist/config/database').connectDatabase()"
+curl -s https://quiz.example.com/api/health
+# { "success": true, "data": { "status": "healthy", ... } }
 ```
 
-### Logs
+Docker health checks are built into all containers and can be monitored with:
 
 ```bash
-# View all logs
-docker-compose logs -f
-
-# View specific service
-docker-compose logs -f backend
-docker-compose logs -f nginx
-
-# Application logs (inside container)
-docker-compose exec backend tail -f /app/logs/combined.log
-docker-compose exec backend tail -f /app/logs/error.log
+docker compose ps   # Shows health status for each container
+docker inspect --format='{{.State.Health.Status}}' redi-quiz-backend
 ```
 
-### Disk Usage
+### Container Status & Resources
 
 ```bash
-# Check Docker volumes
-docker system df
-
-# Check backup size
-du -sh ./backups
-
-# Clean old Docker images
-docker image prune -a
+docker compose ps
+docker stats --no-stream
 ```
 
-## Security Checklist
-
-- [ ] All secrets changed from defaults
-- [ ] SSL/TLS enabled and enforced
-- [ ] Database password is strong
-- [ ] Firewall configured (only 80, 443 open)
-- [ ] Regular backups configured
-- [ ] Log rotation configured
-- [ ] Admin password changed from default
-- [ ] Rate limiting tested
-- [ ] CORS origins restricted
-- [ ] Security headers configured
-
-## Troubleshooting
-
-### Application Won't Start
+### Log Files
 
 ```bash
-# Check container status
-docker-compose ps
+# Follow all service logs
+docker compose logs -f --tail 50
 
-# View error logs
-docker-compose logs backend
+# Backend only
+docker compose logs backend --tail 100
 
-# Check environment variables
-docker-compose exec backend printenv
+# Application log files (inside container volume)
+docker compose exec backend ls -la /app/logs/
 ```
 
-### Database Connection Errors
+---
+
+## Updating
 
 ```bash
-# Check database status
-docker-compose ps db
+# 1. Create a backup before updating
+docker compose exec db pg_dump -U redi_user redi_quiz > backup_pre_update.sql
 
-# Test connection
-docker-compose exec backend npx prisma db push --skip-generate
+# 2. Pull latest code
+git pull origin master
 
-# View database logs
-docker-compose logs db
+# 3. Rebuild and restart (zero-downtime isn't supported yet)
+docker compose build
+docker compose up -d
+
+# 4. Apply any new migrations
+docker compose exec backend npx prisma migrate deploy
+
+# 5. Verify
+curl -s https://quiz.example.com/api/health
 ```
 
-### Performance Issues
-
-```bash
-# Check resource usage
-docker stats
-
-# Check database queries
-docker-compose exec backend npx prisma studio
-# Enable query logging in .env: LOG_LEVEL=debug
-```
+---
 
 ## Rollback Procedure
 
 ```bash
-# Stop services
-docker-compose down
+# 1. Stop services
+docker compose down
 
-# Restore previous version
-git checkout <previous-tag>
+# 2. Restore previous version
+git checkout <previous-commit-or-tag>
 
-# Restore database if needed
-./scripts/restore.sh backups/pre-deployment-backup.sql.gz
+# 3. Restore database if needed
+docker compose up -d db
+docker compose exec -T db psql -U redi_user redi_quiz < backup_pre_update.sql
 
-# Start services
-docker-compose up -d
+# 4. Rebuild and start
+docker compose build
+docker compose up -d
+
+# 5. Verify
+curl -s https://quiz.example.com/api/health
 ```
 
-## Production Best Practices
+---
 
-1. **Never** run as root
-2. Use Docker secrets for sensitive data
-3. Enable log rotation
-4. Monitor disk space
-5. Set up automated backups
-6. Test restore procedure regularly
-7. Keep Docker images updated
-8. Monitor application logs
-9. Set up alerts for errors
-10. Document all custom configurations
+## Troubleshooting
 
-## Support
+### Backend won't start
 
-For deployment issues:
-- Email: redi@health.qld.gov.au
-- Check logs: `docker-compose logs -f`
-- Review documentation in `/docs`
+```bash
+docker compose logs backend --tail 50
+
+# Common causes:
+# - DATABASE_URL incorrect → check .env and db container
+# - Missing migrations → run prisma migrate deploy
+# - Port conflict → check PORT isn't already in use
+```
+
+### Database connection refused
+
+```bash
+docker compose ps db
+docker compose exec db pg_isready -U redi_user
+# DATABASE_URL format: postgresql://user:pass@db:5432/redi_quiz?schema=public
+```
+
+### Frontend shows blank page
+
+```bash
+# Check nginx is serving files
+docker compose exec nginx ls /usr/share/nginx/html/
+
+# VITE_API_URL is baked in at build time — must rebuild:
+docker compose build frontend
+docker compose up -d frontend nginx
+```
+
+### Email not sending
+
+```bash
+# Verify config
+docker compose exec backend printenv | grep -i email
+docker compose exec backend printenv | grep POWER_AUTOMATE
+
+# Check logs
+docker compose logs backend | grep -i email
+```
+
+### Rate limiting issues
+
+If users are being rate-limited unexpectedly behind a reverse proxy, ensure `trust proxy` is configured. The backend enables this automatically when `NODE_ENV=production`.
+
+---
+
+## Security Checklist
+
+Before going live:
+
+- [ ] All `CHANGE_ME` values replaced in `.env`
+- [ ] JWT secrets are unique, random 64+ byte hex strings
+- [ ] `JWT_SECRET` and `JWT_REFRESH_SECRET` are different from each other
+- [ ] Database password is strong (32+ random characters)
+- [ ] `NODE_ENV` is set to `production`
+- [ ] `CORS_ORIGIN` is set to the exact production domain (no wildcards)
+- [ ] SSL certificates are installed and HTTPS is enabled
+- [ ] HTTP-to-HTTPS redirect is enabled in nginx.conf
+- [ ] `MOCK_EMAIL` is `false`
+- [ ] `LOG_LEVEL` is `info` (not `debug`)
+- [ ] Default seed user password has been changed
+- [ ] Firewall allows only ports 80 and 443
+- [ ] Docker volumes are on persistent storage
+- [ ] Automated database backups are configured
+- [ ] `.env` file is not committed to version control
+- [ ] `ALLOWED_EMAIL_DOMAIN` is set correctly

@@ -425,6 +425,12 @@ export async function requestPasswordReset(
   // Hash token before storing (security: prevents token exposure if DB compromised)
   const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
+  // Invalidate any existing unused reset tokens for this user to prevent unbounded growth
+  await prisma.passwordReset.updateMany({
+    where: { userId: user.id, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+
   // Store hashed reset token
   await prisma.passwordReset.create({
     data: {

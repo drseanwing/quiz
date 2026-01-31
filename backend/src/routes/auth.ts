@@ -111,6 +111,7 @@ router.post(
  */
 router.post(
   '/refresh',
+  authRateLimiter,
   refreshTokenValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

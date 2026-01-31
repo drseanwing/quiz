@@ -36,6 +36,9 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         autolink: true,
+        HTMLAttributes: {
+          rel: 'noopener noreferrer',
+        },
       }),
     ],
     content,

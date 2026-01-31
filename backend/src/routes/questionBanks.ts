@@ -125,6 +125,7 @@ router.post(
  */
 router.patch(
   '/:id',
+  requireEditor,
   updateQuestionBankValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

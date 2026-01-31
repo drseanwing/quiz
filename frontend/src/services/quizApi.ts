@@ -53,8 +53,6 @@ export async function listMyAttempts(bankId?: string): Promise<IAttemptSummary[]
 }
 
 export async function listAvailableQuizzes(): Promise<IQuestionBank[]> {
-  const body = (await api.get('/question-banks?pageSize=100')) as unknown as IApiResponse<{ data: IQuestionBank[] }>;
-  // The list endpoint wraps in {data, meta} format
-  const result = body.data as unknown as IQuestionBank[];
-  return Array.isArray(result) ? result : [];
+  const body = (await api.get('/question-banks?pageSize=100')) as unknown as IApiResponse<IQuestionBank[]>;
+  return Array.isArray(body.data) ? body.data : [];
 }

@@ -62,7 +62,7 @@ export function CompletionsTab() {
 
   return (
     <div className={styles.container}>
-      {exportError && <Alert type="error">{exportError}</Alert>}
+      {exportError && <Alert variant="error">{exportError}</Alert>}
       <div className={styles.filters}>
         <div className={styles.filterGroup}>
           <label>From</label>

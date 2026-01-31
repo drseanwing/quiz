@@ -38,7 +38,7 @@ export function DashboardPage() {
       <h1>Dashboard</h1>
       <p className={styles.welcome}>Welcome back, {user?.firstName}!</p>
 
-      {error && <Alert type="error">Failed to load your quiz data. Please try again later.</Alert>}
+      {error && <Alert variant="error">Failed to load your quiz data. Please try again later.</Alert>}
 
       {/* Stats */}
       <div className={styles.grid}>
