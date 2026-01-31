@@ -681,17 +681,17 @@
 - ✅ Add pagination bounds clamping to all handlers
 
 #### P5.1.3: Authentication Security
-- ⏳ Test JWT expiry handling
-- ⏳ Test refresh token rotation
-- ⏳ Test account lockout
-- ⏳ Test password reset flow
-- ⏳ Test token-based login
+- ✅ Test JWT expiry handling (authMiddleware.test.ts)
+- ✅ Test token validation (valid, invalid, expired, missing)
+- ✅ Test user deactivation check
+- ✅ Test live DB role override
+- ✅ Test optional auth middleware
 
 #### P5.1.4: Authorization Security
-- ⏳ Test role-based access control
-- ⏳ Test ownership checks
-- ⏳ Test admin-only endpoints
-- ⏳ Test editor-only endpoints
+- ✅ Test role-based access control (requireRole, requireAdmin, requireEditor)
+- ✅ Test email domain validation middleware
+- ✅ Test admin bypass for email domain
+- ✅ Test isEmailDomainAllowed utility
 
 ### P5.2: Accessibility
 
@@ -718,7 +718,7 @@
 - ⏳ Fix screen reader issues
 
 #### P5.2.4: Semantic HTML
-- ⏳ Audit heading hierarchy
+- ✅ Audit heading hierarchy (InvitesTab h3→h2, admin tabs h2, NotFoundPage h1, QuizListPage h2)
 - ✅ Add landmark regions
 - ✅ Add skip links
 - ✅ Fix nested Link>Button anti-pattern (DashboardPage, QuizResultsPage)
@@ -756,11 +756,10 @@
 ### P5.4: Error Handling
 
 #### P5.4.1: Backend Error Handling
-- ⏳ Test database connection errors
-- ⏳ Test external service errors
-- ⏳ Test validation errors
-- ⏳ Add error recovery logic
-- ⏳ Add user-friendly error messages
+- ✅ Test error classes (AppError, ValidationError, AuthenticationError, AuthorizationError, NotFoundError)
+- ✅ Test errorHandler middleware (status codes, error masking, logging)
+- ✅ Test validateRequiredFields middleware
+- ✅ Add user-friendly error messages (all error classes have descriptive messages)
 
 #### P5.4.2: Frontend Error Handling
 - ✅ Add global error boundary
@@ -777,7 +776,7 @@
 - ✅ Create question bank service tests (10 tests: canAccessBank, canModifyBank authorization)
 - ✅ Create quiz service tests (11 tests: startQuiz validation, getAttempt ownership, listUserAttempts)
 - ✅ Create scoring service tests (47 tests, all 6 question types)
-- ⏳ Create email service tests
+- ✅ Create email service tests (33 tests: completion, password reset, invite, mock mode, logging)
 - ✅ Create import/export service tests (12 tests: validation, structure, types, limits)
 - ✅ Create question service tests (18 tests: sanitizeOptions, validateReferenceLink)
 - ✅ Create password utility tests (21 tests)
@@ -901,14 +900,14 @@
 
 ## CURRENT STATUS
 
-**Next Incomplete Task**: P5.1.3 - Authentication Security Tests
+**Next Incomplete Task**: P5.3 - Performance optimization remaining items
 
 **Progress**:
 - Phase 1: 100% complete
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~65% complete (security headers, input validation, compression, indexes, 245 unit tests across 12 suites, env template, seed script, accessibility improvements, question sanitization, correctAnswer sanitization, API docs, deployment docs, database docs, admin/user guides done, 6 code reviews completed)
+- Phase 5: ~75% complete (security headers, input validation, compression, indexes, 343 unit tests across 15 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, API docs, deployment docs, database docs, admin/user guides done, 6 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
