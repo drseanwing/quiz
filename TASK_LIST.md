@@ -911,7 +911,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~85% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 59 frontend tests across 3 suites, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 7 code reviews completed)
+- Phase 5: ~87% complete (security headers, input validation, compression, indexes, 424 backend tests across 16 suites + 73 frontend tests across 3 suites = 497 total, env template, seed script, accessibility improvements (heading hierarchy, ARIA, focus indicators, landmarks, skip links), question/correctAnswer sanitization, auth middleware tested, error handling tested, email service tested, admin service tested, OpenAPI spec generated, API docs, deployment docs, database docs, admin/user guides done, 8 code reviews completed)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -950,6 +950,12 @@
   validation, DragOrderPlayer stale closure on rapid drags, QuestionBankListPage missing Input
   label, beforeunload guard for quiz progress, dead code removal (listAvailableQuizzes),
   Footer year re-evaluation, CompletionsTab CSV download for Firefox, admin modal noValidate
+- Review 8 (16 backend + 30 frontend issues found): Fixed import numeric bounds validation
+  (timeLimit 0-480, passingScore 0-100, questionCount 1-500, maxAttempts 0-100), FeedbackTiming
+  enum validation on import, removed unused path import in uploads.ts, added timeSpent upper
+  bound (86400s), reduced health check info exposure, removed duplicate invite log in admin
+  route, fixed submitting stale closure in QuizPlayerPage handleSubmit, added Spinner to
+  QuizListPage loading, hid stats on DashboardPage error, added ExportButton error handling
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)
