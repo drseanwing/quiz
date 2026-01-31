@@ -201,4 +201,94 @@ describe('useAuth', () => {
     expect(result.current.user?.email).toBe('new@b.com');
     expect(setTokens).toHaveBeenCalledWith('at2', 'rt2');
   });
+
+  it('register sets error on failure', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+
+    mockedApi.post.mockRejectedValue({
+      response: { data: { error: { message: 'Email already registered' } } },
+    });
+
+    await act(async () => {
+      await result.current.register({
+        email: 'dup@b.com', password: 'Pass1234!', firstName: 'A', surname: 'B',
+      });
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.error).toBe('Email already registered');
+  });
+
+  it('isLoading is true during login', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+
+    let resolveLogin: (v: unknown) => void;
+    mockedApi.post.mockImplementation(() => new Promise(r => { resolveLogin = r; }));
+
+    // Start login (don't await)
+    let loginPromise: Promise<void>;
+    act(() => {
+      loginPromise = result.current.login({ email: 'a@b.com', password: 'p' });
+    });
+
+    expect(result.current.isLoading).toBe(true);
+
+    // Resolve and finish
+    await act(async () => {
+      resolveLogin!({
+        data: {
+          user: { id: 'u1', email: 'a@b.com', firstName: 'A', surname: 'B', role: 'USER' },
+          tokens: { accessToken: 'at', refreshToken: 'rt' },
+        },
+      });
+      await loginPromise;
+    });
+
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('handles forced logout event', async () => {
+    mockedGetAccessToken.mockReturnValue('token');
+    mockedApi.get.mockResolvedValue({
+      data: { id: 'u1', email: 'a@b.com', firstName: 'A', surname: 'B', role: 'USER' },
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    act(() => {
+      window.dispatchEvent(new Event('auth:logout'));
+    });
+
+    expect(result.current.user).toBeNull();
+    expect(result.current.isAuthenticated).toBe(false);
+  });
+
+  it('extracts error message from plain Error', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+
+    mockedApi.post.mockRejectedValue(new Error('Network timeout'));
+
+    await act(async () => {
+      await result.current.login({ email: 'a@b.com', password: 'x' });
+    });
+
+    expect(result.current.error).toBe('Network timeout');
+  });
+
+  it('uses fallback message for unknown error shape', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+
+    mockedApi.post.mockRejectedValue('string error');
+
+    await act(async () => {
+      await result.current.login({ email: 'a@b.com', password: 'x' });
+    });
+
+    expect(result.current.error).toBe('An unexpected error occurred');
+  });
 });
