@@ -252,7 +252,7 @@
 - ✅ Create allowed tags whitelist
 - ✅ Create allowed attributes whitelist
 - ✅ Add sanitization to question prompts
-- ⏳ Add sanitization to question options
+- ✅ Add sanitization to question options
 - ✅ Add sanitization to question feedback
 
 ### P2.5: Import/Export Service

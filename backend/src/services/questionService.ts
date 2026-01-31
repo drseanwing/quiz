@@ -12,7 +12,7 @@ import {
   AuthorizationError,
   ValidationError,
 } from '@/middleware/errorHandler';
-import { sanitizeHtml } from './sanitizer';
+import { sanitizeHtml, sanitizeOptionText, sanitizePlainText } from './sanitizer';
 import { canModifyBank, canAccessBank } from './questionBankService';
 
 export interface ICreateQuestionRequest {
@@ -141,6 +141,36 @@ export async function getQuestion(
 }
 
 /**
+ * Sanitize user-provided option content based on question type
+ */
+function sanitizeOptions(options: unknown, type: QuestionType): unknown {
+  if (!options || typeof options !== 'object') return options;
+
+  // Array-based options: MC, TF, Drag Order — sanitize text fields
+  if (Array.isArray(options)) {
+    return options.map((opt: unknown) => {
+      if (opt && typeof opt === 'object' && 'text' in opt) {
+        const o = opt as Record<string, unknown>;
+        return { ...o, text: sanitizeOptionText(String(o.text || '')) };
+      }
+      return opt;
+    });
+  }
+
+  // Slider: sanitize unit field
+  if (type === 'SLIDER') {
+    const o = options as Record<string, unknown>;
+    return {
+      ...o,
+      ...(typeof o.unit === 'string' && { unit: sanitizePlainText(o.unit) }),
+    };
+  }
+
+  // Image Map: no text fields to sanitize
+  return options;
+}
+
+/**
  * Create a new question in a question bank
  */
 export async function createQuestion(
@@ -163,7 +193,7 @@ export async function createQuestion(
       type: data.type,
       prompt: sanitizeHtml(data.prompt),
       promptImage: data.promptImage,
-      options: data.options as object,
+      options: sanitizeOptions(data.options, data.type) as object,
       correctAnswer: data.correctAnswer as object,
       feedback: sanitizeHtml(data.feedback),
       feedbackImage: data.feedbackImage,
@@ -194,7 +224,7 @@ export async function updateQuestion(
 ) {
   const existing = await prisma.question.findUnique({
     where: { id },
-    select: { id: true, bankId: true },
+    select: { id: true, bankId: true, type: true },
   });
 
   if (!existing) {
@@ -203,13 +233,15 @@ export async function updateQuestion(
 
   await verifyBankModifyAccess(existing.bankId, userId, userRole);
 
+  const effectiveType = data.type ?? existing.type;
+
   const question = await prisma.question.update({
     where: { id },
     data: {
       ...(data.type !== undefined && { type: data.type }),
       ...(data.prompt !== undefined && { prompt: sanitizeHtml(data.prompt) }),
       ...(data.promptImage !== undefined && { promptImage: data.promptImage }),
-      ...(data.options !== undefined && { options: data.options as object }),
+      ...(data.options !== undefined && { options: sanitizeOptions(data.options, effectiveType) as object }),
       ...(data.correctAnswer !== undefined && { correctAnswer: data.correctAnswer as object }),
       ...(data.feedback !== undefined && { feedback: sanitizeHtml(data.feedback) }),
       ...(data.feedbackImage !== undefined && { feedbackImage: data.feedbackImage }),
