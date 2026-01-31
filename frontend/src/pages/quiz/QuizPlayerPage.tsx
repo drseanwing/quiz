@@ -45,6 +45,7 @@ export function QuizPlayerPage() {
   const responsesRef = useRef(responses);
   const elapsedRef = useRef(0);
   const handleSubmitRef = useRef<() => void>(() => {});
+  const submittingRef = useRef(false);
   responsesRef.current = responses;
 
   // Load attempt
@@ -108,6 +109,7 @@ export function QuizPlayerPage() {
     if (!attemptId || loading) return;
 
     const id = setInterval(async () => {
+      if (submittingRef.current) return; // Skip auto-save during submission
       try {
         setSaveStatus('saving');
         await quizApi.saveProgress(attemptId!, responsesRef.current, elapsedRef.current);
@@ -158,6 +160,7 @@ export function QuizPlayerPage() {
   const handleSubmit = useCallback(async () => {
     if (!attemptId || submitting) return;
     setSubmitting(true);
+    submittingRef.current = true;
     setShowConfirm(false);
 
     try {

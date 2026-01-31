@@ -10,7 +10,7 @@ import { NotFoundError, ValidationError } from '@/middleware/errorHandler';
 import { canAccessBank } from '@/services/questionBankService';
 import type { ITokenPayload } from '@/utils/jwt';
 import { sanitizeHtml } from '@/services/sanitizer';
-import { sanitizeOptions } from '@/services/questionService';
+import { sanitizeOptions, sanitizeCorrectAnswer } from '@/services/questionService';
 import logger from '@/config/logger';
 
 const MAX_IMPORT_QUESTIONS = 500;
@@ -215,11 +215,11 @@ export async function importQuestionBank(
           bankId: bank.id,
           type: q.type,
           prompt: sanitizeHtml(q.prompt),
-          promptImage: q.promptImage,
+          promptImage: isValidUrl(q.promptImage) ? q.promptImage : null,
           options: sanitizeOptions(q.options, q.type) as object,
-          correctAnswer: q.correctAnswer as object,
+          correctAnswer: sanitizeCorrectAnswer(q.correctAnswer) as object,
           feedback: sanitizeHtml(q.feedback),
-          feedbackImage: q.feedbackImage,
+          feedbackImage: isValidUrl(q.feedbackImage) ? q.feedbackImage : null,
           referenceLink: isValidUrl(q.referenceLink) ? q.referenceLink : null,
           order: q.order ?? index,
         })),

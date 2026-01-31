@@ -247,8 +247,7 @@ function EditUserModal({
       firstName: form.firstName,
       surname: form.surname,
       idNumber: form.idNumber || null,
-      role: form.role,
-      isActive: form.isActive,
+      ...(isSelf ? {} : { role: form.role, isActive: form.isActive }),
     }),
     onSuccess: () => {
       onSuccess();

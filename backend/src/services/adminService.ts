@@ -121,7 +121,7 @@ export async function exportCompletionsCSV(filters: ICompletionFilters): Promise
 function csvEscape(value: string): string {
   // Prevent CSV formula injection: prefix dangerous leading chars with a single quote
   let safe = value;
-  if (/^[=+\-@\t\r]/.test(safe)) {
+  if (/^[=+\-@\t\r\n]/.test(safe)) {
     safe = `'${safe}`;
   }
   if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe !== value) {
@@ -345,7 +345,7 @@ export async function listInviteTokens(
 
   const rows: IInviteTokenRow[] = data.map(t => ({
     id: t.id,
-    token: `${t.token.substring(0, 8)}...`,
+    token: '****',
     email: t.email,
     firstName: t.firstName,
     surname: t.surname,
@@ -361,33 +361,3 @@ export async function listInviteTokens(
   };
 }
 
-export async function validateInviteToken(token: string): Promise<{
-  valid: boolean;
-  email?: string | undefined;
-  firstName?: string | undefined;
-  surname?: string | undefined;
-  bankId?: string | undefined;
-}> {
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-  const invite = await prisma.inviteToken.findUnique({ where: { token: hashedToken } });
-
-  if (!invite) return { valid: false };
-  if (invite.usedAt) return { valid: false };
-  if (invite.expiresAt < new Date()) return { valid: false };
-
-  return {
-    valid: true,
-    email: invite.email,
-    firstName: invite.firstName ?? undefined,
-    surname: invite.surname ?? undefined,
-    bankId: invite.bankId ?? undefined,
-  };
-}
-
-export async function markTokenUsed(token: string): Promise<void> {
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-  await prisma.inviteToken.update({
-    where: { token: hashedToken },
-    data: { usedAt: new Date() },
-  });
-}

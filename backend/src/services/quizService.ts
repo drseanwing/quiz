@@ -770,8 +770,9 @@ async function autoTimeoutAttempt(attemptId: string): Promise<void> {
   const total = calculateTotalScore(scores, attempt.bank.passingScore);
   const timeSpent = attempt.bank.timeLimit * 60;
 
-  await prisma.quizAttempt.update({
-    where: { id: attemptId },
+  // Use conditional update to prevent double-scoring race with submitAttempt
+  const updated = await prisma.quizAttempt.updateMany({
+    where: { id: attemptId, status: AttemptStatus.IN_PROGRESS },
     data: {
       status: AttemptStatus.TIMED_OUT,
       score: total.score,
@@ -783,9 +784,11 @@ async function autoTimeoutAttempt(attemptId: string): Promise<void> {
     },
   });
 
-  logger.info('Quiz attempt auto-timed-out', {
-    attemptId,
-    score: total.score,
-    maxScore: total.maxScore,
-  });
+  if (updated.count > 0) {
+    logger.info('Quiz attempt auto-timed-out', {
+      attemptId,
+      score: total.score,
+      maxScore: total.maxScore,
+    });
+  }
 }

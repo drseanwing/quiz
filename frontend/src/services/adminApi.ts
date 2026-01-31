@@ -63,7 +63,7 @@ export async function listCompletions(filters: ICompletionFilters): Promise<{
   params.set('pageSize', String(filters.pageSize || 20));
 
   const body = (await api.get(`/admin/completions?${params}`)) as unknown as IApiResponse<ICompletionRow[]>;
-  return { data: body.data, meta: body.meta! };
+  return { data: body.data, meta: body.meta ?? { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } };
 }
 
 export async function exportCompletionsCSV(filters: Omit<ICompletionFilters, 'page' | 'pageSize'>): Promise<Blob> {
@@ -117,7 +117,7 @@ export async function listLogs(filters: ILogFilters): Promise<{
   params.set('pageSize', String(filters.pageSize || 20));
 
   const body = (await api.get(`/admin/logs?${params}`)) as unknown as IApiResponse<ILogRow[]>;
-  return { data: body.data, meta: body.meta! };
+  return { data: body.data, meta: body.meta ?? { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } };
 }
 
 // Invite Tokens
@@ -151,7 +151,7 @@ export async function listInvites(page = 1, pageSize = 20): Promise<{
   meta: { page: number; pageSize: number; totalCount: number; totalPages: number };
 }> {
   const body = (await api.get(`/admin/invite-tokens?page=${page}&pageSize=${pageSize}`)) as unknown as IApiResponse<IInviteTokenRow[]>;
-  return { data: body.data, meta: body.meta! };
+  return { data: body.data, meta: body.meta ?? { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } };
 }
 
 // Users
@@ -204,7 +204,7 @@ export async function listUsers(filters: IUserFilters): Promise<{
   params.set('pageSize', String(filters.pageSize || 20));
 
   const body = (await api.get(`/users?${params}`)) as unknown as IApiResponse<IUserRow[]>;
-  return { data: body.data, meta: body.meta! };
+  return { data: body.data, meta: body.meta ?? { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } };
 }
 
 export async function createUser(data: ICreateUserRequest): Promise<IUserRow> {
@@ -260,7 +260,7 @@ export async function listAllBanks(filters: IQuestionBankFilters): Promise<{
   params.set('pageSize', String(filters.pageSize || 20));
 
   const body = (await api.get(`/question-banks?${params}`)) as unknown as IApiResponse<IQuestionBankRow[]>;
-  return { data: body.data, meta: body.meta! };
+  return { data: body.data, meta: body.meta ?? { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } };
 }
 
 export async function updateBankStatus(bankId: string, status: string): Promise<IQuestionBankRow> {

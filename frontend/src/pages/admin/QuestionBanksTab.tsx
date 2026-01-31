@@ -178,7 +178,7 @@ export function QuestionBanksTab() {
             </p>
             <div className={styles.confirmActions}>
               <Button
-                variant="primary"
+                variant="danger"
                 onClick={() => deleteMutation.mutate(deleteTarget.id)}
                 disabled={deleteMutation.isPending}
               >

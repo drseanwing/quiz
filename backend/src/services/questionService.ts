@@ -171,6 +171,26 @@ export function sanitizeOptions(options: unknown, type: QuestionType): unknown {
 }
 
 /**
+ * Sanitize correctAnswer JSON to prevent stored XSS.
+ * Strips HTML from any string values within the answer object.
+ */
+export function sanitizeCorrectAnswer(answer: unknown): unknown {
+  if (!answer || typeof answer !== 'object') return answer;
+  const obj = answer as Record<string, unknown>;
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'string') {
+      sanitized[key] = sanitizePlainText(value);
+    } else if (Array.isArray(value)) {
+      sanitized[key] = value.map(v => typeof v === 'string' ? sanitizePlainText(v) : v);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+
+/**
  * Validate and normalize a reference link URL.
  * Returns null for invalid URLs; only http(s) allowed.
  */
@@ -208,7 +228,7 @@ export async function createQuestion(
       prompt: sanitizeHtml(data.prompt),
       promptImage: data.promptImage,
       options: sanitizeOptions(data.options, data.type) as object,
-      correctAnswer: data.correctAnswer as object,
+      correctAnswer: sanitizeCorrectAnswer(data.correctAnswer) as object,
       feedback: sanitizeHtml(data.feedback),
       feedbackImage: data.feedbackImage,
       referenceLink: validateReferenceLink(data.referenceLink),
@@ -256,7 +276,7 @@ export async function updateQuestion(
       ...(data.prompt !== undefined && { prompt: sanitizeHtml(data.prompt) }),
       ...(data.promptImage !== undefined && { promptImage: data.promptImage }),
       ...(data.options !== undefined && { options: sanitizeOptions(data.options, effectiveType) as object }),
-      ...(data.correctAnswer !== undefined && { correctAnswer: data.correctAnswer as object }),
+      ...(data.correctAnswer !== undefined && { correctAnswer: sanitizeCorrectAnswer(data.correctAnswer) as object }),
       ...(data.feedback !== undefined && { feedback: sanitizeHtml(data.feedback) }),
       ...(data.feedbackImage !== undefined && { feedbackImage: data.feedbackImage }),
       ...(data.referenceLink !== undefined && { referenceLink: validateReferenceLink(data.referenceLink) }),

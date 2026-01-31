@@ -130,7 +130,10 @@ export function LogsTab() {
               <dt>Time</dt><dd>{new Date(selectedLog.createdAt).toLocaleString()}</dd>
             </dl>
             {selectedLog.details && (
-              <pre className={styles.json}>{JSON.stringify(selectedLog.details, null, 2)}</pre>
+              <pre className={styles.json}>{(() => {
+                const str = JSON.stringify(selectedLog.details, null, 2);
+                return str.length > 10000 ? str.slice(0, 10000) + '\n...(truncated)' : str;
+              })()}</pre>
             )}
           </div>
         )}

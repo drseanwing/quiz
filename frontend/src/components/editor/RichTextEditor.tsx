@@ -3,7 +3,7 @@
  * @description TipTap-based rich text editor for question content
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -25,6 +25,8 @@ export function RichTextEditor({
   placeholder,
   className = '',
 }: RichTextEditorProps) {
+  const isInternalUpdate = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -43,7 +45,9 @@ export function RichTextEditor({
     ],
     content,
     onUpdate: ({ editor: e }) => {
-      onChange(e.getHTML());
+      if (!isInternalUpdate.current) {
+        onChange(e.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -55,7 +59,9 @@ export function RichTextEditor({
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
+      isInternalUpdate.current = true;
       editor.commands.setContent(content);
+      isInternalUpdate.current = false;
     }
   }, [content, editor]);
 

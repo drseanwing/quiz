@@ -35,7 +35,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '3000', 10),
   appName: process.env.APP_NAME || 'REdI Quiz Platform',
-  appUrl: process.env.APP_URL || 'http://localhost',
+  appUrl: (process.env.APP_URL || 'http://localhost').replace(/\/+$/, ''),
 
   // Database
   database: {

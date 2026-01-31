@@ -47,8 +47,10 @@ export async function getResults(attemptId: string): Promise<IQuizResults> {
 }
 
 export async function listMyAttempts(bankId?: string): Promise<IAttemptSummary[]> {
-  const query = bankId ? `?bankId=${bankId}` : '';
-  const body = (await api.get(`/attempts/mine${query}`)) as unknown as IApiResponse<IAttemptSummary[]>;
+  const params = new URLSearchParams();
+  if (bankId) params.set('bankId', bankId);
+  const query = params.toString();
+  const body = (await api.get(`/attempts/mine${query ? `?${query}` : ''}`)) as unknown as IApiResponse<IAttemptSummary[]>;
   return body.data;
 }
 

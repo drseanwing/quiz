@@ -13,7 +13,6 @@ import { generateTokenPair, verifyRefreshToken, ITokenPair } from '@/utils/jwt';
 import {
   ValidationError,
   AuthenticationError,
-  NotFoundError,
   AppError,
 } from '@/middleware/errorHandler';
 import {
