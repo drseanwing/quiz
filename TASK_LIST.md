@@ -772,13 +772,14 @@
 ### P5.5: Testing
 
 #### P5.5.1: Backend Unit Tests
-- ⏳ Create auth service tests
-- ⏳ Create user service tests
-- ⏳ Create question bank service tests
-- ⏳ Create quiz service tests
+- ✅ Create auth service tests (7 tests: registration, login, token refresh, Prisma mocked)
+- ✅ Create user service tests (17 tests: getCurrentUser, updateProfile, changePassword, listUsers, createUser, updateUser, deactivateUser, adminResetPassword)
+- ✅ Create question bank service tests (10 tests: canAccessBank, canModifyBank authorization)
+- ✅ Create quiz service tests (11 tests: startQuiz validation, getAttempt ownership, listUserAttempts)
 - ✅ Create scoring service tests (47 tests, all 6 question types)
 - ⏳ Create email service tests
-- ⏳ Create import/export service tests
+- ✅ Create import/export service tests (12 tests: validation, structure, types, limits)
+- ✅ Create question service tests (18 tests: sanitizeOptions, validateReferenceLink)
 - ✅ Create password utility tests (21 tests)
 - ✅ Create sanitizer tests (22 tests: sanitizeHtml, sanitizePlainText, sanitizeOptionText)
 - ✅ Create lockout utility tests (18 tests: lockout tracking, case-insensitivity)
@@ -907,7 +908,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~55% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization, API docs, deployment docs, database docs, admin/user guides done)
+- Phase 5: ~60% complete (security headers, input validation, compression, indexes, 245 unit tests across 12 suites, env template, seed script, accessibility improvements, question sanitization, API docs, deployment docs, database docs, admin/user guides done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
