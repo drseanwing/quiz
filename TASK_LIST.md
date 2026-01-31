@@ -907,7 +907,7 @@
 - Phase 2: ~90% complete (P2.6.9 Drag Order Editor, P2.6.10 Image Map Editor frontend pending)
 - Phase 3: 100% complete
 - Phase 4: 100% complete
-- Phase 5: ~50% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization, API docs, deployment docs done)
+- Phase 5: ~55% complete (security headers, input validation, compression, indexes, 154 unit tests, env template, seed script, accessibility improvements, question sanitization, API docs, deployment docs, database docs, admin/user guides done)
 
 **Security Reviews Completed**: 2026-01-30
 - Review 1: Fixed role escalation, email domain bypass, auth middleware gaps
@@ -926,6 +926,12 @@
   rel="noopener noreferrer", DOMPurify ALLOWED_URI_REGEXP, Alert prop type→variant,
   dead /profile link, ErrorBoundary hides raw errors in production, quizApi
   double-unwrap fix
+- Review 5 (12 backend + 12 frontend issues found): Fixed stale JWT role via live DB
+  override, invite token TOCTOU race via atomic claim, imported option sanitization,
+  referenceLink URL validation, lockout store periodic cleanup, updateQuestionBank
+  field whitelist, export endpoint requireEditor, DragOrderPlayer unstable options,
+  QuizPlayerPage timer/save cleanup on unmount, search debounce, aria-label/htmlFor
+  accessibility, InvitesTab copy timeout cleanup
 
 **Known Deferred Items** (require infrastructure or significant architectural changes):
 - JWT token blacklist / refresh token revocation (needs Redis or DB table)
