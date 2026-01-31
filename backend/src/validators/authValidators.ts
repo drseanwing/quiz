@@ -99,7 +99,9 @@ export const resetPasswordValidator = [
     .isString()
     .withMessage('Reset token is required')
     .notEmpty()
-    .withMessage('Reset token cannot be empty'),
+    .withMessage('Reset token cannot be empty')
+    .isLength({ max: 256 })
+    .withMessage('Token exceeds maximum length'),
 
   body('password')
     .isString()

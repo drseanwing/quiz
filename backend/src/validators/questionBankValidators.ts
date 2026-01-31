@@ -36,8 +36,8 @@ export const createQuestionBankValidator = [
 
   body('timeLimit')
     .optional()
-    .isInt({ min: 0, max: 7200 })
-    .withMessage('Time limit must be between 0 and 7200 seconds')
+    .isInt({ min: 0, max: 480 })
+    .withMessage('Time limit must be between 0 and 480 minutes')
     .toInt(),
 
   body('randomQuestions')
@@ -111,8 +111,8 @@ export const updateQuestionBankValidator = [
 
   body('timeLimit')
     .optional()
-    .isInt({ min: 0, max: 7200 })
-    .withMessage('Time limit must be between 0 and 7200 seconds')
+    .isInt({ min: 0, max: 480 })
+    .withMessage('Time limit must be between 0 and 480 minutes')
     .toInt(),
 
   body('randomQuestions')

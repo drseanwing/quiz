@@ -11,6 +11,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { config } from './config';
 import logger from './config/logger';
+import { connectDatabase, disconnectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import { generalRateLimiter } from './middleware/rateLimiter';
 import routes from './routes';
@@ -99,24 +100,44 @@ app.use(errorHandler);
 
 // Start server
 const port = config.port;
-const server = app.listen(port, () => {
-  logger.info(`REdI Quiz Platform API started`, {
-    port,
-    environment: config.nodeEnv,
-    version: '1.0.0',
-  });
-});
 
-// Graceful shutdown
-function shutdown(signal: string) {
-  logger.info(`${signal} signal received: closing HTTP server`);
-  server.close(() => {
-    logger.info('HTTP server closed');
-    process.exit(0);
+async function start() {
+  await connectDatabase();
+
+  const server = app.listen(port, () => {
+    logger.info(`REdI Quiz Platform API started`, {
+      port,
+      environment: config.nodeEnv,
+      version: '1.0.0',
+    });
   });
+
+  // Graceful shutdown with timeout
+  const SHUTDOWN_TIMEOUT_MS = 10_000;
+
+  function shutdown(signal: string) {
+    logger.info(`${signal} signal received: closing HTTP server`);
+    server.close(() => {
+      logger.info('HTTP server closed');
+      disconnectDatabase().then(() => {
+        process.exit(0);
+      });
+    });
+
+    // Force exit if shutdown takes too long
+    setTimeout(() => {
+      logger.warn('Shutdown timed out, forcing exit');
+      process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS).unref();
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+start().catch((err) => {
+  logger.error('Failed to start server', { error: err });
+  process.exit(1);
+});
 
 export default app;
