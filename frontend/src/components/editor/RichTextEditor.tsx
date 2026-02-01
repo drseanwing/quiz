@@ -52,7 +52,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: styles.editorContent,
-        ...(placeholder ? { 'data-placeholder': placeholder } : {}),
+        ...(placeholder ? { 'data-placeholder': placeholder as string } : {}),
       },
     },
   });

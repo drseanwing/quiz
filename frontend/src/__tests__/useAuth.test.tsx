@@ -24,7 +24,7 @@ vi.mock('@/services/api', () => {
 
 import api, { getAccessToken, clearTokens, setTokens } from '@/services/api';
 
-const mockedApi = api as { get: ReturnType<typeof vi.fn>; post: ReturnType<typeof vi.fn> };
+const mockedApi = api as unknown as { get: ReturnType<typeof vi.fn>; post: ReturnType<typeof vi.fn> };
 const mockedGetAccessToken = getAccessToken as ReturnType<typeof vi.fn>;
 
 function wrapper({ children }: { children: ReactNode }) {

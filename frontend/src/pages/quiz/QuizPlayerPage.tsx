@@ -10,7 +10,7 @@ import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import * as quizApi from '@/services/quizApi';
-import type { IQuizQuestion, IImmediateFeedback, FeedbackTiming } from '@/types';
+import type { IQuizQuestion, IImmediateFeedback } from '@/types';
 import { AttemptStatus } from '@/types';
 import styles from './QuizPlayerPage.module.css';
 
@@ -28,7 +28,7 @@ export function QuizPlayerPage() {
   const [bankTitle, setBankTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
-  const [feedbackTiming, setFeedbackTiming] = useState<FeedbackTiming>('END' as FeedbackTiming);
+  const [, setFeedbackTiming] = useState<'END' | 'IMMEDIATE' | 'NONE'>('END');
   const [feedbackMap, setFeedbackMap] = useState<Record<string, IImmediateFeedback>>({});
 
   // UI state

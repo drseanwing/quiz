@@ -30,7 +30,7 @@ const TYPE_LABELS: Record<QuestionType, string> = {
 const questionSchema = z.object({
   type: z.nativeEnum(QuestionType),
   prompt: z.string().min(1, 'Question prompt is required'),
-  feedback: z.string().default(''),
+  feedback: z.string(),
   referenceLink: z.string().url('Must be a valid URL').nullable().or(z.literal('')),
 });
 
@@ -362,10 +362,10 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
 
   const saveMutation = useMutation({
     mutationFn: (data: QuestionFormData) => {
-      const payload = {
+      const payload: Partial<IQuestion> = {
         ...data,
-        options: options as object,
-        correctAnswer: correctAnswer as object,
+        options: options as IQuestionOption[] | Record<string, unknown>,
+        correctAnswer: correctAnswer,
         referenceLink: data.referenceLink || null,
       };
       return isEditing
@@ -379,9 +379,9 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
     },
   });
 
-  function onSubmit(data: QuestionFormData) {
+  const onSubmit: (data: QuestionFormData) => void = (data: QuestionFormData) => {
     saveMutation.mutate(data);
-  }
+  };
 
   function handleOptionsChange(
     newOptions: IQuestionOption[] | Record<string, unknown>,

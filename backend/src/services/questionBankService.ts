@@ -236,14 +236,14 @@ export async function createQuestionBank(
   const bank = await prisma.questionBank.create({
     data: {
       title: data.title,
-      description: data.description,
+      ...(data.description !== undefined && { description: data.description }),
       status: data.status || QuestionBankStatus.DRAFT,
       timeLimit: data.timeLimit ?? 0,
       randomQuestions: data.randomQuestions ?? true,
       randomAnswers: data.randomAnswers ?? true,
       passingScore: data.passingScore ?? 80,
       feedbackTiming: data.feedbackTiming || FeedbackTiming.END,
-      notificationEmail: data.notificationEmail,
+      ...(data.notificationEmail !== undefined && { notificationEmail: data.notificationEmail }),
       questionCount: data.questionCount ?? 10,
       maxAttempts: data.maxAttempts ?? 0,
       createdById,

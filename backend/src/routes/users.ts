@@ -139,12 +139,16 @@ router.get(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const search = req.query.search as string | undefined;
+      const role = req.query.role as UserRole | undefined;
+      const isActive = req.query.isActive !== undefined
+        ? req.query.isActive === 'true'
+        : undefined;
+
       const filters = {
-        search: req.query.search as string | undefined,
-        role: req.query.role as UserRole | undefined,
-        isActive: req.query.isActive !== undefined
-          ? req.query.isActive === 'true'
-          : undefined,
+        ...(search !== undefined && { search }),
+        ...(role !== undefined && { role }),
+        ...(isActive !== undefined && { isActive }),
       };
 
       const pagination = {
@@ -181,7 +185,7 @@ router.get(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = await userService.getUserById(req.params.id);
+      const user = await userService.getUserById(req.params.id as string);
 
       res.json({
         success: true,
@@ -263,7 +267,7 @@ router.patch(
         }
       }
 
-      const user = await userService.updateUser(req.params.id, req.body);
+      const user = await userService.updateUser(req.params.id as string, req.body);
 
       logger.info('User updated by admin', {
         updatedUserId: req.params.id,
@@ -302,7 +306,7 @@ router.delete(
         throw new AuthorizationError('Cannot deactivate your own account');
       }
 
-      const user = await userService.deactivateUser(req.params.id);
+      const user = await userService.deactivateUser(req.params.id as string);
 
       logger.info('User deactivated by admin', {
         deactivatedUserId: req.params.id,
@@ -339,7 +343,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await userService.adminResetPassword(
-        req.params.id,
+        req.params.id as string,
         req.body.password
       );
 

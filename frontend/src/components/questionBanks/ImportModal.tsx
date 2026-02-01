@@ -122,14 +122,14 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
             {validationErrors && validationErrors.length > 0 && (
               <ul className={styles.errorList}>
                 {validationErrors.map((err, i) => (
-                  <li key={i}>{err}</li>
+                  <li key={i}>{String(err)}</li>
                 ))}
               </ul>
             )}
           </Alert>
         )}
 
-        {fileData && !parseError && (
+        {!!fileData && !parseError && (
           <Alert variant="info" className={styles.alert}>
             Ready to import. This will create a new question bank.
           </Alert>

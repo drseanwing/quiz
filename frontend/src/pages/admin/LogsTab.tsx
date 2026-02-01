@@ -95,8 +95,8 @@ export function LogsTab() {
                     <td>{log.userName || '-'}</td>
                     <td className={styles.ip}>{log.ipAddress || '-'}</td>
                     <td>
-                      {log.details && (
-                        <button className={styles.detailBtn} onClick={() => setSelectedLog(log)} aria-label={`View details for ${log.action} event`}>
+                      {!!log.details && (
+                        <button className={styles.detailBtn} onClick={() => setSelectedLog(log)} aria-label={`View details for ${String(log.action)} event`}>
                           Details
                         </button>
                       )}
@@ -124,13 +124,13 @@ export function LogsTab() {
         {selectedLog && (
           <div className={styles.logDetail}>
             <dl>
-              <dt>Action</dt><dd>{selectedLog.action}</dd>
+              <dt>Action</dt><dd>{String(selectedLog.action)}</dd>
               <dt>Entity</dt><dd>{selectedLog.entityType} {selectedLog.entityId}</dd>
               <dt>User</dt><dd>{selectedLog.userName || selectedLog.userId || '-'}</dd>
               <dt>IP Address</dt><dd>{selectedLog.ipAddress || '-'}</dd>
               <dt>Time</dt><dd>{new Date(selectedLog.createdAt).toLocaleString()}</dd>
             </dl>
-            {selectedLog.details && (
+            {!!selectedLog.details && (
               <pre className={styles.json}>{(() => {
                 const str = JSON.stringify(selectedLog.details, null, 2);
                 return str.length > 10000 ? str.slice(0, 10000) + '\n...(truncated)' : str;

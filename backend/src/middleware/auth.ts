@@ -39,7 +39,7 @@ declare global {
  */
 export async function authenticate(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
@@ -127,7 +127,7 @@ export async function authenticate(
  */
 export async function optionalAuth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
@@ -180,7 +180,7 @@ export async function optionalAuth(
 export function requireRole(roles: UserRole | UserRole[]) {
   const roleArray = Array.isArray(roles) ? roles : [roles];
 
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new AuthenticationError('Authentication required');

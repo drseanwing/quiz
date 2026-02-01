@@ -6,7 +6,6 @@
 
 import { User, UserRole, Prisma } from '@prisma/client';
 import prisma from '@/config/database';
-import { config } from '@/config';
 import logger from '@/config/logger';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/utils/password';
 import {

@@ -13,7 +13,7 @@ import logger from '../config/logger';
 export class AppError extends Error {
   constructor(
     public code: string,
-    public message: string,
+    public override message: string,
     public statusCode: number = 500,
     public details?: Record<string, unknown>
   ) {

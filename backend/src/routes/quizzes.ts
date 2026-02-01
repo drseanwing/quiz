@@ -26,7 +26,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await quizService.startQuiz(
-        req.params.bankId,
+        req.params.bankId as string,
         req.user!.userId
       );
 

@@ -22,14 +22,12 @@ const router = Router();
  * Health check endpoint — verifies API + database connectivity
  */
 router.get('/health', async (_req: Request, res: Response) => {
-  const start = Date.now();
   let dbStatus: 'ok' | 'error' = 'ok';
   try {
     await prisma.$queryRaw`SELECT 1`;
   } catch {
     dbStatus = 'error';
   }
-  const latencyMs = Date.now() - start;
 
   const healthy = dbStatus === 'ok';
   res.status(healthy ? 200 : 503).json({

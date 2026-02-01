@@ -72,21 +72,21 @@ describe('MCPlayer', () => {
   it('calls onChange with optionId on single select click', async () => {
     const onChange = vi.fn();
     render(<MCPlayer options={mcOptions} answer={null} onChange={onChange} multi={false} disabled={false} />);
-    await userEvent.setup({ delay: null }).click(screen.getAllByRole('radio')[2]);
+    await userEvent.setup({ delay: null }).click(screen.getAllByRole('radio')[2]!);
     expect(onChange).toHaveBeenCalledWith('c');
   });
 
   it('calls onChange with array on multi toggle', async () => {
     const onChange = vi.fn();
     render(<MCPlayer options={mcOptions} answer={{ optionIds: ['a'] }} onChange={onChange} multi={true} disabled={false} />);
-    await userEvent.setup({ delay: null }).click(screen.getAllByRole('checkbox')[1]);
+    await userEvent.setup({ delay: null }).click(screen.getAllByRole('checkbox')[1]!);
     expect(onChange).toHaveBeenCalledWith(expect.arrayContaining(['a', 'b']));
   });
 
   it('removes option on multi toggle when already selected', async () => {
     const onChange = vi.fn();
     render(<MCPlayer options={mcOptions} answer={{ optionIds: ['a', 'b'] }} onChange={onChange} multi={true} disabled={false} />);
-    await userEvent.setup({ delay: null }).click(screen.getAllByRole('checkbox')[0]);
+    await userEvent.setup({ delay: null }).click(screen.getAllByRole('checkbox')[0]!);
     expect(onChange).toHaveBeenCalledWith(['b']);
   });
 
@@ -447,7 +447,7 @@ describe('QuestionRenderer', () => {
   it('wraps onChange with correct shape for MC single', async () => {
     const onChange = vi.fn();
     render(<QuestionRenderer question={makeQuestion()} questionIndex={0} totalQuestions={1} answer={null} onChange={onChange} />);
-    await userEvent.setup({ delay: null }).click(screen.getAllByRole('radio')[0]);
+    await userEvent.setup({ delay: null }).click(screen.getAllByRole('radio')[0]!);
     expect(onChange).toHaveBeenCalledWith({ optionId: 'a' });
   });
 

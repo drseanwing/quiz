@@ -141,7 +141,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
       passwordHash,
       firstName: data.firstName,
       surname: data.surname,
-      idNumber: data.idNumber,
+      ...(data.idNumber !== undefined && { idNumber: data.idNumber }),
       role,
       isActive: true,
     },

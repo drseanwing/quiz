@@ -33,7 +33,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const questions = await questionService.listQuestions(
-        req.params.bankId,
+        req.params.bankId as string,
         req.user!.userId,
         req.user!.role
       );
@@ -59,7 +59,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.getQuestion(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -85,7 +85,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.createQuestion(
-        req.params.bankId,
+        req.params.bankId as string,
         req.body,
         req.user!.userId,
         req.user!.role
@@ -119,7 +119,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.updateQuestion(
-        req.params.id,
+        req.params.id as string,
         req.body,
         req.user!.userId,
         req.user!.role
@@ -152,7 +152,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await questionService.deleteQuestion(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -184,7 +184,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.duplicateQuestion(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -217,7 +217,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const questions = await questionService.reorderQuestions(
-        req.params.bankId,
+        req.params.bankId as string,
         req.body.questionIds,
         req.user!.userId,
         req.user!.role

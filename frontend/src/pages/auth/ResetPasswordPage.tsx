@@ -6,7 +6,6 @@
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { GradientBar } from '@/components/common/GradientBar';
-import { Alert } from '@/components/common/Alert';
 import styles from './AuthPage.module.css';
 
 export function ResetPasswordPage() {

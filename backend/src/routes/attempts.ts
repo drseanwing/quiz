@@ -65,7 +65,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const attempt = await quizService.getAttempt(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId
       );
 
@@ -90,7 +90,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await quizService.saveProgress(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.body.responses,
         req.body.timeSpent
@@ -117,7 +117,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const results = await quizService.submitAttempt(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId
       );
 
@@ -186,7 +186,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const results = await quizService.getResults(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId
       );
 

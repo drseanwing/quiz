@@ -29,7 +29,7 @@ import logger from '@/config/logger';
  */
 export function handleValidationErrors(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void {
   const errors = validationResult(req);
@@ -84,7 +84,7 @@ export function handleValidationErrors(
  * );
  */
 export function validateRequiredFields(fields: string[]) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const missing: string[] = [];
 
     for (const field of fields) {

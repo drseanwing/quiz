@@ -43,7 +43,7 @@ describe('questionBankApi', () => {
 
       await questionBankApi.listQuestionBanks({ page: 2, pageSize: 10, search: 'cardio', status: 'ACTIVE' as any });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('page=2');
       expect(url).toContain('pageSize=10');
       expect(url).toContain('search=cardio');
@@ -55,7 +55,7 @@ describe('questionBankApi', () => {
 
       await questionBankApi.listQuestionBanks({ page: 1 });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('page=1');
       expect(url).not.toContain('search');
       expect(url).not.toContain('status');
@@ -253,7 +253,7 @@ describe('questionApi', () => {
 
       await questionApi.listQuestions('b1', { page: 2, pageSize: 5 });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('page=2');
       expect(url).toContain('pageSize=5');
     });
@@ -354,7 +354,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.listCompletions({ bankId: 'b1', passed: 'true', page: 1, pageSize: 20 });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('/admin/completions');
       expect(url).toContain('bankId=b1');
       expect(url).toContain('passed=true');
@@ -375,7 +375,7 @@ describe('adminApi', () => {
 
       await adminApi.listCompletions({ dateFrom: '2026-01-01', dateTo: '2026-01-31' });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('dateFrom=2026-01-01');
       expect(url).toContain('dateTo=2026-01-31');
     });
@@ -404,7 +404,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.listLogs({ action: 'LOGIN', entityType: 'USER' });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('/admin/logs');
       expect(url).toContain('action=LOGIN');
       expect(url).toContain('entityType=USER');
@@ -464,7 +464,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.listUsers({ search: 'john', role: 'ADMIN', isActive: 'true' });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('/users');
       expect(url).toContain('search=john');
       expect(url).toContain('role=ADMIN');
@@ -528,7 +528,7 @@ describe('adminApi', () => {
 
       const result = await adminApi.listAllBanks({ search: 'cardio', status: 'ACTIVE' });
 
-      const url = mockApi.get.mock.calls[0][0] as string;
+      const url = mockApi.get.mock.calls[0]![0] as string;
       expect(url).toContain('/question-banks');
       expect(url).toContain('search=cardio');
       expect(url).toContain('status=ACTIVE');

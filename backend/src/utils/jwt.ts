@@ -4,7 +4,7 @@
  * @description JWT token generation, verification, and management
  */
 
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { config } from '@/config';
 import logger from '@/config/logger';
 import { User, UserRole } from '@prisma/client';
@@ -69,9 +69,9 @@ export function generateAccessToken(user: Pick<User, 'id' | 'email' | 'role'>): 
     type: 'access',
   };
 
-  const token = jwt.sign(payload, config.jwt.secret, {
+  const token = jwt.sign(payload, config.jwt.secret as Secret, {
     expiresIn: config.jwt.expiresIn,
-  });
+  } as SignOptions);
 
   logger.debug('Generated access token', {
     userId: user.id,
@@ -100,9 +100,9 @@ export function generateRefreshToken(user: Pick<User, 'id' | 'email' | 'role'>):
     type: 'refresh',
   };
 
-  const token = jwt.sign(payload, config.jwt.refreshSecret, {
+  const token = jwt.sign(payload, config.jwt.refreshSecret as Secret, {
     expiresIn: config.jwt.refreshExpiresIn,
-  });
+  } as SignOptions);
 
   logger.debug('Generated refresh token', {
     userId: user.id,
@@ -297,6 +297,12 @@ function parseExpiryToSeconds(expiry: string): number {
   }
 
   const [, value, unit] = match;
+
+  if (!value || !unit) {
+    logger.warn('Invalid expiry format components, defaulting to 1 hour', { expiry });
+    return 3600;
+  }
+
   const numValue = parseInt(value, 10);
 
   const units: Record<string, number> = {
@@ -331,5 +337,5 @@ export function extractTokenFromHeader(authHeader: string | undefined): string |
     return null;
   }
 
-  return parts[1];
+  return parts[1] ?? null;
 }

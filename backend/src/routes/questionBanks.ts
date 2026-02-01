@@ -33,9 +33,12 @@ router.get(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const search = req.query.search as string | undefined;
+      const status = req.query.status as QuestionBankStatus | undefined;
+
       const filters = {
-        search: req.query.search as string | undefined,
-        status: req.query.status as QuestionBankStatus | undefined,
+        ...(search !== undefined && { search }),
+        ...(status !== undefined && { status }),
       };
 
       const pagination = {
@@ -72,7 +75,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bank = await questionBankService.getQuestionBank(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -131,7 +134,7 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bank = await questionBankService.updateQuestionBank(
-        req.params.id,
+        req.params.id as string,
         req.body,
         req.user!.userId,
         req.user!.role
@@ -165,7 +168,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await questionBankService.deleteQuestionBank(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -198,7 +201,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const bank = await questionBankService.duplicateQuestionBank(
-        req.params.id,
+        req.params.id as string,
         req.user!.userId,
         req.user!.role
       );
@@ -232,7 +235,7 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await importExportService.exportQuestionBank(
-        req.params.id,
+        req.params.id as string,
         req.user!
       );
 
