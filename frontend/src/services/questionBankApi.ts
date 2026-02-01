@@ -33,8 +33,8 @@ export async function listQuestionBanks(
   if (params.status) searchParams.set('status', params.status);
 
   const query = searchParams.toString();
-  const body = (await api.get(`/question-banks${query ? `?${query}` : ''}`)) as unknown as IApiResponse<IQuestionBankListResponse>;
-  return body.data;
+  const body = (await api.get(`/question-banks${query ? `?${query}` : ''}`)) as unknown as IApiResponse<IQuestionBank[]>;
+  return { banks: body.data, meta: body.meta! };
 }
 
 export async function getQuestionBank(id: string): Promise<IQuestionBank> {

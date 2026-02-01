@@ -95,4 +95,19 @@
 
   /* Gradient */
   --gradient-brand: linear-gradient(90deg, var(--redi-lime), var(--redi-teal), var(--redi-navy));
+
+  /* Semantic aliases (used by admin components) */
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+
+  --color-navy: var(--redi-navy);
+  --color-teal: var(--redi-teal);
+  --color-coral: var(--redi-coral);
+  --color-text-secondary: var(--redi-medium-gray);
+  --color-border: #E0E0E0;
+  --color-surface: var(--redi-light-gray);
+  --color-background: var(--redi-white);
 }
