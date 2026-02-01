@@ -8,6 +8,7 @@ import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { config } from '@/config';
 import logger from '@/config/logger';
 import { User, UserRole } from '@prisma/client';
+import prisma from '@/config/database';
 
 /**
  * JWT token payload interface
@@ -120,15 +121,25 @@ export function generateRefreshToken(user: Pick<User, 'id' | 'email' | 'role'>):
  * @returns Token pair with access token, refresh token, and expiry
  *
  * @example
- * const tokens = generateTokenPair(user);
+ * const tokens = await generateTokenPair(user);
  * // Returns: { accessToken: "...", refreshToken: "...", expiresIn: 3600 }
  */
-export function generateTokenPair(user: Pick<User, 'id' | 'email' | 'role'>): ITokenPair {
+export async function generateTokenPair(user: Pick<User, 'id' | 'email' | 'role'>): Promise<ITokenPair> {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
   // Calculate expiry in seconds
   const expiresIn = parseExpiryToSeconds(config.jwt.expiresIn);
+  const refreshExpiresInSeconds = parseExpiryToSeconds(config.jwt.refreshExpiresIn);
+
+  // Store refresh token in database
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + refreshExpiresInSeconds * 1000),
+    },
+  });
 
   logger.info('Generated token pair', {
     userId: user.id,

@@ -23,6 +23,11 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     allowedHosts: ['quiz.vps.resuseducation.com'],
+    hmr: {
+      host: 'quiz.vps.resuseducation.com',
+      protocol: 'wss',
+      clientPort: 443,
+    },
     watch: {
       usePolling: true,
     },

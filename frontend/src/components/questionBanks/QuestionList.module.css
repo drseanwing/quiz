@@ -42,3 +42,35 @@
   font-size: var(--text-base);
   margin: 0;
 }
+
+.sortBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.sortLabel {
+  font-size: var(--text-sm);
+  color: var(--redi-medium-gray);
+}
+
+.sortBtn {
+  background: none;
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--redi-dark-gray);
+  cursor: pointer;
+}
+
+.sortBtn:hover {
+  border-color: var(--redi-teal);
+}
+
+.sortBtnActive {
+  background-color: var(--redi-teal);
+  color: var(--redi-white);
+  border-color: var(--redi-teal);
+}

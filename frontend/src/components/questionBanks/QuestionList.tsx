@@ -3,6 +3,7 @@
  * @description List of questions within a question bank with CRUD operations
  */
 
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listQuestions, deleteQuestion, duplicateQuestion } from '@/services/questionApi';
 import { QuestionListItem } from './QuestionListItem';
@@ -12,6 +13,9 @@ import { Alert } from '@/components/common/Alert';
 import type { IQuestion } from '@/types';
 import styles from './QuestionList.module.css';
 
+type SortField = 'order' | 'type' | 'createdAt';
+type SortDir = 'asc' | 'desc';
+
 interface QuestionListProps {
   bankId: string;
   onEditQuestion: (question: IQuestion) => void;
@@ -20,6 +24,8 @@ interface QuestionListProps {
 
 export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: QuestionListProps) {
   const queryClient = useQueryClient();
+  const [sortField, setSortField] = useState<SortField>('order');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['questions', bankId],
@@ -58,6 +64,27 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
 
   const questions = data ?? [];
 
+  const sorted = useMemo(() => {
+    const copy = [...questions];
+    copy.sort((a, b) => {
+      let cmp = 0;
+      if (sortField === 'order') cmp = a.order - b.order;
+      else if (sortField === 'type') cmp = a.type.localeCompare(b.type);
+      else cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return copy;
+  }, [questions, sortField, sortDir]);
+
+  function toggleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -68,6 +95,24 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
           Add Question
         </Button>
       </div>
+
+      {questions.length > 1 && (
+        <div className={styles.sortBar}>
+          <span className={styles.sortLabel}>Sort by:</span>
+          {([['order', 'Order'], ['type', 'Type'], ['createdAt', 'Date']] as const).map(
+            ([field, label]) => (
+              <button
+                key={field}
+                type="button"
+                className={`${styles.sortBtn} ${sortField === field ? styles.sortBtnActive : ''}`}
+                onClick={() => toggleSort(field)}
+              >
+                {label} {sortField === field && (sortDir === 'asc' ? '\u2191' : '\u2193')}
+              </button>
+            ),
+          )}
+        </div>
+      )}
 
       {deleteMutation.error && (
         <Alert variant="error" className={styles.alert}>
@@ -83,7 +128,7 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
         </div>
       ) : (
         <div className={styles.list}>
-          {questions.map((question, index) => (
+          {sorted.map((question, index) => (
             <QuestionListItem
               key={question.id}
               question={question}

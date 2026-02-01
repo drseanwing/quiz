@@ -154,7 +154,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
   });
 
   // Generate authentication tokens
-  const tokens = generateTokenPair(user);
+  const tokens = await generateTokenPair(user);
 
   // Remove password hash from response
   const { passwordHash: _, ...userWithoutPassword } = user;
@@ -282,7 +282,7 @@ export async function loginUser(
   });
 
   // Generate authentication tokens
-  const tokens = generateTokenPair(user);
+  const tokens = await generateTokenPair(user);
 
   // Remove password hash from response
   const { passwordHash: _, ...userWithoutPassword } = user;
@@ -318,6 +318,19 @@ export async function refreshAccessToken(data: ITokenRefreshRequest): Promise<IT
     throw new AuthenticationError(result.error || 'Invalid refresh token');
   }
 
+  // Check if refresh token is in database and not revoked
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: { token: data.refreshToken },
+  });
+
+  if (!storedToken || storedToken.revoked) {
+    logger.warn('Token refresh failed: Token revoked or not found', {
+      userId: result.payload.userId,
+      revoked: storedToken?.revoked,
+    });
+    throw new AuthenticationError('Refresh token has been revoked');
+  }
+
   // Get current user data
   const user = await prisma.user.findUnique({
     where: { id: result.payload.userId },
@@ -339,19 +352,23 @@ export async function refreshAccessToken(data: ITokenRefreshRequest): Promise<IT
     throw new AuthenticationError('User account is deactivated');
   }
 
+  // Revoke the used refresh token (token rotation)
+  await prisma.refreshToken.update({
+    where: { id: storedToken.id },
+    data: { revoked: true },
+  });
+
   logger.info('Token refreshed successfully', {
     userId: user.id,
     email: user.email,
   });
 
   // Generate new token pair
-  return generateTokenPair(user);
+  return await generateTokenPair(user);
 }
 
 /**
  * Logout user (invalidate refresh token)
- * Note: JWT tokens cannot be truly invalidated without a blacklist
- * This is a placeholder for future token blacklist implementation
  *
  * @param userId - User ID
  *
@@ -363,8 +380,11 @@ export async function logoutUser(userId: string): Promise<void> {
     userId,
   });
 
-  // TODO: Implement refresh token blacklist
-  // For now, we rely on client-side token removal
+  // Revoke all refresh tokens for this user
+  await prisma.refreshToken.updateMany({
+    where: { userId, revoked: false },
+    data: { revoked: true },
+  });
 
   // Update last activity timestamp
   await prisma.user.update({
@@ -680,7 +700,7 @@ export async function loginWithToken(
   });
 
   // Generate authentication tokens
-  const tokens = generateTokenPair(user);
+  const tokens = await generateTokenPair(user);
 
   // Remove password hash from response
   const { passwordHash: _, ...userWithoutPassword } = user;

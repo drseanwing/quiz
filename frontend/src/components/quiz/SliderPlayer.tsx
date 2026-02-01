@@ -7,14 +7,14 @@ import { useState, useEffect } from 'react';
 import styles from './SliderPlayer.module.css';
 
 interface SliderPlayerProps {
-  options: { min: number; max: number; step: number; unit?: string };
+  options: { min: number; max: number; step: number; unit?: string; showTicks?: boolean };
   answer: { value?: number } | null;
   onChange: (value: number) => void;
   disabled: boolean;
 }
 
 export function SliderPlayer({ options, answer, onChange, disabled }: SliderPlayerProps) {
-  const { min, max, step, unit } = options;
+  const { min, max, step, unit, showTicks } = options;
   const [localValue, setLocalValue] = useState(answer?.value ?? (min + max) / 2);
 
   // Sync local value when answer prop changes (e.g., navigating back to this question)
@@ -49,7 +49,18 @@ export function SliderPlayer({ options, answer, onChange, disabled }: SliderPlay
         disabled={disabled}
         className={styles.slider}
         aria-label="Slider answer"
+        list={showTicks ? 'slider-ticks' : undefined}
       />
+      {showTicks && (
+        <datalist id="slider-ticks">
+          {Array.from(
+            { length: Math.floor((max - min) / step) + 1 },
+            (_, i) => min + i * step
+          ).map((val) => (
+            <option key={val} value={val} label={val === min || val === max || val === (min + max) / 2 ? String(val) : ''} />
+          ))}
+        </datalist>
+      )}
     </div>
   );
 }

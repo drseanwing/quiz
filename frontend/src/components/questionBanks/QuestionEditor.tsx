@@ -3,17 +3,35 @@
  * @description Modal editor for creating/editing individual questions
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { createQuestion, updateQuestion } from '@/services/questionApi';
 import { Modal } from '@/components/common/Modal';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
 import { Alert } from '@/components/common/Alert';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
+import { ImageUpload } from '@/components/common/ImageUpload';
 import { QuestionType } from '@/types';
 import type { IQuestion, IQuestionOption } from '@/types';
 import styles from './QuestionEditor.module.css';
@@ -272,6 +290,16 @@ function SliderEditor({ options, correctAnswer, onChange }: SliderEditorProps) {
           />
         </div>
       </div>
+      <div className={styles.optionRow} style={{ marginTop: 'var(--space-sm)' }}>
+        <input
+          type="checkbox"
+          id="showTicks"
+          checked={Boolean(options.showTicks)}
+          onChange={(e) => onChange({ ...options, showTicks: e.target.checked }, correctAnswer)}
+          className={styles.optionRadio}
+        />
+        <label htmlFor="showTicks" className={styles.smallLabel}>Show tick marks on slider</label>
+      </div>
       <label className={styles.optionLabel}>Correct Answer</label>
       <div className={styles.sliderGrid}>
         <div className={styles.sliderField}>
@@ -293,6 +321,304 @@ function SliderEditor({ options, correctAnswer, onChange }: SliderEditorProps) {
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Drag Order Editor ─────────────────────────────────────────────────────
+
+interface SortableEditorItemProps {
+  id: string;
+  text: string;
+  index: number;
+  onTextChange: (id: string, text: string) => void;
+  onRemove: (id: string) => void;
+  canRemove: boolean;
+}
+
+function SortableEditorItem({ id, text, index, onTextChange, onRemove, canRemove }: SortableEditorItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className={styles.optionRow}>
+      <span className={styles.dragHandle} {...attributes} {...listeners}>&#x2630;</span>
+      <span className={styles.orderIndex}>{index + 1}</span>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => onTextChange(id, e.target.value)}
+        className={styles.optionInput}
+      />
+      {canRemove && (
+        <button
+          type="button"
+          className={styles.removeOption}
+          onClick={() => onRemove(id)}
+          aria-label={`Remove item "${text}"`}
+        >
+          &times;
+        </button>
+      )}
+    </div>
+  );
+}
+
+interface DragOrderEditorProps {
+  options: IQuestionOption[];
+  correctAnswer: unknown;
+  onChange: (options: IQuestionOption[], correctAnswer: unknown) => void;
+}
+
+function DragOrderEditor({ options, correctAnswer, onChange }: DragOrderEditorProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  function addItem() {
+    const newId = crypto.randomUUID();
+    const newOptions = [...options, { id: newId, text: `Item ${options.length + 1}` }];
+    const answer = Array.isArray(correctAnswer) ? [...correctAnswer, newId] : newOptions.map(o => o.id);
+    onChange(newOptions, answer);
+  }
+
+  function removeItem(id: string) {
+    if (options.length <= 2) return;
+    const filtered = options.filter(o => o.id !== id);
+    const answer = Array.isArray(correctAnswer)
+      ? (correctAnswer as string[]).filter(a => a !== id)
+      : filtered.map(o => o.id);
+    onChange(filtered, answer);
+  }
+
+  function updateText(id: string, text: string) {
+    onChange(
+      options.map(o => o.id === id ? { ...o, text } : o),
+      correctAnswer
+    );
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = options.findIndex(o => o.id === active.id);
+    const newIndex = options.findIndex(o => o.id === over.id);
+    const reordered = arrayMove(options, oldIndex, newIndex);
+    // Correct answer order matches the item display order
+    onChange(reordered, reordered.map(o => o.id));
+  }
+
+  return (
+    <div className={styles.optionEditor}>
+      <label className={styles.optionLabel}>
+        Items (drag to set correct order)
+      </label>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={options.map(o => o.id)} strategy={verticalListSortingStrategy}>
+          {options.map((opt, i) => (
+            <SortableEditorItem
+              key={opt.id}
+              id={opt.id}
+              text={opt.text}
+              index={i}
+              onTextChange={updateText}
+              onRemove={removeItem}
+              canRemove={options.length > 2}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+      <Button type="button" size="sm" variant="outline" onClick={addItem}>
+        Add Item
+      </Button>
+    </div>
+  );
+}
+
+// ─── Image Map Editor ──────────────────────────────────────────────────────
+
+interface ImageRegion {
+  id: string;
+  type: 'circle' | 'rect';
+  cx?: number;
+  cy?: number;
+  r?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+interface ImageMapEditorProps {
+  options: Record<string, unknown>;
+  correctAnswer: unknown;
+  onChange: (options: Record<string, unknown>, correctAnswer: unknown) => void;
+}
+
+function ImageMapEditor({ options, correctAnswer, onChange }: ImageMapEditorProps) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const imageUrl = (options.image as string) || '';
+  const regions = (options.regions as ImageRegion[]) || [];
+  const correct = (correctAnswer as { regionId?: string }) || {};
+
+  function setImageUrl(url: string) {
+    onChange({ ...options, image: url }, correctAnswer);
+  }
+
+  function addRegion(type: 'circle' | 'rect') {
+    const id = crypto.randomUUID();
+    const newRegion: ImageRegion = type === 'circle'
+      ? { id, type: 'circle', cx: 150, cy: 150, r: 50 }
+      : { id, type: 'rect', x: 100, y: 100, width: 100, height: 80 };
+    const newRegions = [...regions, newRegion];
+    onChange({ ...options, regions: newRegions }, correctAnswer);
+  }
+
+  function updateRegion(id: string, field: string, value: number) {
+    const updated = regions.map(r => r.id === id ? { ...r, [field]: value } : r);
+    onChange({ ...options, regions: updated }, correctAnswer);
+  }
+
+  function removeRegion(id: string) {
+    const filtered = regions.filter(r => r.id !== id);
+    onChange(
+      { ...options, regions: filtered },
+      correct.regionId === id ? {} : correctAnswer
+    );
+  }
+
+  function selectCorrect(regionId: string) {
+    onChange(options, { regionId });
+  }
+
+  function handleImageClick(e: React.MouseEvent<HTMLImageElement>) {
+    if (!imgRef.current) return;
+    const rect = imgRef.current.getBoundingClientRect();
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
+    // If no regions, create one at click position
+    if (regions.length === 0) {
+      const id = crypto.randomUUID();
+      const newRegion: ImageRegion = { id, type: 'circle', cx: x, cy: y, r: 40 };
+      onChange({ ...options, regions: [newRegion] }, { regionId: id });
+    }
+  }
+
+  return (
+    <div className={styles.optionEditor}>
+      <ImageUpload
+        label="Image"
+        value={imageUrl}
+        onChange={setImageUrl}
+      />
+
+      {imageUrl && (
+        <div className={styles.imageMapPreview}>
+          <img
+            ref={imgRef}
+            src={imageUrl}
+            alt="Image map"
+            className={styles.imageMapImage}
+            onClick={handleImageClick}
+          />
+          <svg className={styles.imageMapOverlay}>
+            {regions.map(r => {
+              const isCorrect = correct.regionId === r.id;
+              if (r.type === 'circle') {
+                return (
+                  <circle
+                    key={r.id}
+                    cx={r.cx}
+                    cy={r.cy}
+                    r={r.r}
+                    fill={isCorrect ? 'rgba(0,180,160,0.3)' : 'rgba(100,100,100,0.2)'}
+                    stroke={isCorrect ? 'var(--redi-teal)' : 'var(--redi-medium-gray)'}
+                    strokeWidth="2"
+                  />
+                );
+              }
+              return (
+                <rect
+                  key={r.id}
+                  x={r.x}
+                  y={r.y}
+                  width={r.width}
+                  height={r.height}
+                  fill={isCorrect ? 'rgba(0,180,160,0.3)' : 'rgba(100,100,100,0.2)'}
+                  stroke={isCorrect ? 'var(--redi-teal)' : 'var(--redi-medium-gray)'}
+                  strokeWidth="2"
+                />
+              );
+            })}
+          </svg>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
+        <Button type="button" size="sm" variant="outline" onClick={() => addRegion('circle')}>
+          Add Circle Region
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => addRegion('rect')}>
+          Add Rectangle Region
+        </Button>
+      </div>
+
+      {regions.length > 0 && (
+        <>
+          <label className={styles.optionLabel}>Regions</label>
+          {regions.map((r, i) => (
+            <div key={r.id} className={styles.optionRow}>
+              <input
+                type="radio"
+                name="correctRegion"
+                checked={correct.regionId === r.id}
+                onChange={() => selectCorrect(r.id)}
+                className={styles.optionRadio}
+                aria-label={`Mark region ${i + 1} as correct`}
+              />
+              <span className={styles.smallLabel} style={{ minWidth: 80 }}>
+                {r.type === 'circle' ? 'Circle' : 'Rect'} #{i + 1}
+              </span>
+              {r.type === 'circle' ? (
+                <>
+                  <input type="number" value={r.cx ?? 0} onChange={(e) => updateRegion(r.id, 'cx', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="cx" />
+                  <input type="number" value={r.cy ?? 0} onChange={(e) => updateRegion(r.id, 'cy', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="cy" />
+                  <input type="number" value={r.r ?? 0} onChange={(e) => updateRegion(r.id, 'r', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="r" />
+                </>
+              ) : (
+                <>
+                  <input type="number" value={r.x ?? 0} onChange={(e) => updateRegion(r.id, 'x', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="x" />
+                  <input type="number" value={r.y ?? 0} onChange={(e) => updateRegion(r.id, 'y', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="y" />
+                  <input type="number" value={r.width ?? 0} onChange={(e) => updateRegion(r.id, 'width', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="w" />
+                  <input type="number" value={r.height ?? 0} onChange={(e) => updateRegion(r.id, 'height', Number(e.target.value))} className={styles.optionInput} style={{ width: 60 }} placeholder="h" />
+                </>
+              )}
+              <button
+                type="button"
+                className={styles.removeOption}
+                onClick={() => removeRegion(r.id)}
+                aria-label={`Remove region ${i + 1}`}
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
@@ -353,6 +679,8 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
   const [correctAnswer, setCorrectAnswer] = useState<unknown>(
     question ? fromScoringFormat(question.type, question.correctAnswer) : getDefaultCorrectAnswer(QuestionType.MULTIPLE_CHOICE_SINGLE)
   );
+  const [promptImage, setPromptImage] = useState<string>(question?.promptImage ?? '');
+  const [feedbackImage, setFeedbackImage] = useState<string>(question?.feedbackImage ?? '');
 
   const {
     register,
@@ -392,6 +720,8 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
       });
       setOptions(question.options);
       setCorrectAnswer(fromScoringFormat(question.type, question.correctAnswer));
+      setPromptImage(question.promptImage ?? '');
+      setFeedbackImage(question.feedbackImage ?? '');
     } else {
       reset({
         type: QuestionType.MULTIPLE_CHOICE_SINGLE,
@@ -401,6 +731,8 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
       });
       setOptions(getDefaultOptions(QuestionType.MULTIPLE_CHOICE_SINGLE));
       setCorrectAnswer(getDefaultCorrectAnswer(QuestionType.MULTIPLE_CHOICE_SINGLE));
+      setPromptImage('');
+      setFeedbackImage('');
     }
   }, [question, reset]);
 
@@ -410,6 +742,8 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
         ...data,
         options: options as IQuestionOption[] | Record<string, unknown>,
         correctAnswer: toScoringFormat(data.type, correctAnswer),
+        promptImage: promptImage || null,
+        feedbackImage: feedbackImage || null,
         referenceLink: data.referenceLink || null,
       };
       return isEditing
@@ -485,6 +819,12 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
           )}
         </div>
 
+        <ImageUpload
+          label="Prompt Image (optional)"
+          value={promptImage}
+          onChange={setPromptImage}
+        />
+
         {/* Type-specific answer editors */}
         {(questionType === QuestionType.MULTIPLE_CHOICE_SINGLE ||
           questionType === QuestionType.MULTIPLE_CHOICE_MULTI) && (
@@ -511,15 +851,20 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
           />
         )}
 
-        {(questionType === QuestionType.DRAG_ORDER ||
-          questionType === QuestionType.IMAGE_MAP) && (
-          <div className={styles.placeholder}>
-            <p>
-              {questionType === QuestionType.DRAG_ORDER
-                ? 'Drag-to-order editor coming soon.'
-                : 'Image map editor coming soon.'}
-            </p>
-          </div>
+        {questionType === QuestionType.DRAG_ORDER && (
+          <DragOrderEditor
+            options={Array.isArray(options) ? options : []}
+            correctAnswer={correctAnswer}
+            onChange={(opts, ans) => handleOptionsChange(opts, ans)}
+          />
+        )}
+
+        {questionType === QuestionType.IMAGE_MAP && (
+          <ImageMapEditor
+            options={typeof options === 'object' && !Array.isArray(options) ? options : {}}
+            correctAnswer={correctAnswer}
+            onChange={(opts, ans) => handleOptionsChange(opts, ans)}
+          />
         )}
 
         <div className={styles.field}>
@@ -536,6 +881,12 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
             )}
           />
         </div>
+
+        <ImageUpload
+          label="Feedback Image (optional)"
+          value={feedbackImage}
+          onChange={setFeedbackImage}
+        />
 
         <Input
           label="Reference Link"
