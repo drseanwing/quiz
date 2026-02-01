@@ -1,5 +1,3 @@
-version: '3.9'
-
 # Development override configuration
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
@@ -33,6 +31,7 @@ services:
     container_name: redi-quiz-frontend-dev
     environment:
       NODE_ENV: development
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:9471/api}
     volumes:
       - ./frontend:/app
       - /app/node_modules
