@@ -1,16 +1,17 @@
 /**
  * @file        Account lockout tracking
  * @module      Utils/Lockout
- * @description In-memory tracking of failed login attempts with timed lockout
+ * @description Database-backed tracking of failed login attempts with timed lockout
  */
 
+import { prisma } from '@/config/database';
 import { config } from '@/config';
 import logger from '@/config/logger';
 
 /**
  * Failed attempt record for a single email address
  */
-interface ILockoutRecord {
+export interface ILockoutRecord {
   /** Number of consecutive failed attempts */
   attempts: number;
   /** Timestamp when lockout expires (null if not locked) */
@@ -20,9 +21,11 @@ interface ILockoutRecord {
 }
 
 /**
- * In-memory store of failed login attempts keyed by lowercase email
+ * Get the start of the current lockout window
  */
-const lockoutStore = new Map<string, ILockoutRecord>();
+function getWindowStart(): Date {
+  return new Date(Date.now() - config.lockout.durationMinutes * 60 * 1000);
+}
 
 /**
  * Check whether an account is currently locked out
@@ -30,21 +33,19 @@ const lockoutStore = new Map<string, ILockoutRecord>();
  * @param email - User email address
  * @returns True if the account is locked out
  */
-export function isLockedOut(email: string): boolean {
+export async function isLockedOut(email: string): Promise<boolean> {
   const key = email.toLowerCase();
-  const record = lockoutStore.get(key);
+  const windowStart = getWindowStart();
 
-  if (!record || !record.lockedUntil) {
-    return false;
-  }
+  const failedCount = await prisma.loginAttempt.count({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+  });
 
-  if (record.lockedUntil > new Date()) {
-    return true;
-  }
-
-  // Lockout has expired — clear the record
-  lockoutStore.delete(key);
-  return false;
+  return failedCount >= config.lockout.maxAttempts;
 }
 
 /**
@@ -53,16 +54,43 @@ export function isLockedOut(email: string): boolean {
  * @param email - User email address
  * @returns Remaining seconds, or 0 if not locked
  */
-export function getLockoutRemaining(email: string): number {
+export async function getLockoutRemaining(email: string): Promise<number> {
   const key = email.toLowerCase();
-  const record = lockoutStore.get(key);
+  const windowStart = getWindowStart();
 
-  if (!record || !record.lockedUntil) {
+  const failedCount = await prisma.loginAttempt.count({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+  });
+
+  if (failedCount < config.lockout.maxAttempts) {
     return 0;
   }
 
+  // Find the oldest failed attempt in the window to calculate when lockout expires
+  const oldestInWindow = await prisma.loginAttempt.findFirst({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { createdAt: true },
+  });
+
+  if (!oldestInWindow) {
+    return 0;
+  }
+
+  const lockoutExpiresAt = new Date(
+    oldestInWindow.createdAt.getTime() + config.lockout.durationMinutes * 60 * 1000
+  );
+
   const remaining = Math.ceil(
-    (record.lockedUntil.getTime() - Date.now()) / 1000
+    (lockoutExpiresAt.getTime() - Date.now()) / 1000
   );
 
   return Math.max(0, remaining);
@@ -75,100 +103,127 @@ export function getLockoutRemaining(email: string): number {
  * @param email - User email address
  * @returns The updated lockout record
  */
-export function recordFailedAttempt(email: string): ILockoutRecord {
+export async function recordFailedAttempt(email: string): Promise<ILockoutRecord> {
   const key = email.toLowerCase();
-  const existing = lockoutStore.get(key);
 
-  const now = new Date();
-  let record: ILockoutRecord;
+  // Create the failed attempt record
+  await prisma.loginAttempt.create({
+    data: {
+      email: key,
+      success: false,
+    },
+  });
 
-  if (existing && !existing.lockedUntil) {
-    record = {
-      attempts: existing.attempts + 1,
-      lockedUntil: null,
-      firstAttemptAt: existing.firstAttemptAt,
-    };
-  } else {
-    record = {
-      attempts: 1,
-      lockedUntil: null,
-      firstAttemptAt: now,
-    };
-  }
+  const windowStart = getWindowStart();
 
-  // Check if threshold reached
-  if (record.attempts >= config.lockout.maxAttempts) {
-    const lockoutMs = config.lockout.durationMinutes * 60 * 1000;
-    record.lockedUntil = new Date(Date.now() + lockoutMs);
+  // Count failures in the current window
+  const failedCount = await prisma.loginAttempt.count({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+  });
+
+  // Find the first attempt in the window
+  const firstAttempt = await prisma.loginAttempt.findFirst({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { createdAt: true },
+  });
+
+  let lockedUntil: Date | null = null;
+
+  if (failedCount >= config.lockout.maxAttempts) {
+    lockedUntil = new Date(
+      (firstAttempt?.createdAt ?? new Date()).getTime() +
+        config.lockout.durationMinutes * 60 * 1000
+    );
 
     logger.warn('Account locked due to failed login attempts', {
       email: key,
-      attempts: record.attempts,
-      lockedUntil: record.lockedUntil,
+      attempts: failedCount,
+      lockedUntil,
       durationMinutes: config.lockout.durationMinutes,
     });
   }
 
-  lockoutStore.set(key, record);
-  return record;
+  return {
+    attempts: failedCount,
+    lockedUntil,
+    firstAttemptAt: firstAttempt?.createdAt ?? new Date(),
+  };
 }
 
 /**
- * Clear failed attempt tracking after a successful login
+ * Clear failed attempt tracking after a successful login.
+ * Inserts a success record so the count query window resets.
+ * Also deletes old failed attempts for the email to keep the table clean.
  *
  * @param email - User email address
  */
-export function clearFailedAttempts(email: string): void {
+export async function clearFailedAttempts(email: string): Promise<void> {
   const key = email.toLowerCase();
-  if (lockoutStore.has(key)) {
-    lockoutStore.delete(key);
-    logger.debug('Cleared failed login attempts', { email: key });
+
+  // Delete all failed attempts for this email (resets the window)
+  const { count } = await prisma.loginAttempt.deleteMany({
+    where: {
+      email: key,
+      success: false,
+    },
+  });
+
+  if (count > 0) {
+    logger.debug('Cleared failed login attempts', { email: key, deleted: count });
   }
 }
 
 /**
- * Get the current number of failed attempts for an email
+ * Get the current number of failed attempts for an email within the lockout window
  *
  * @param email - User email address
  * @returns Number of failed attempts
  */
-export function getFailedAttemptCount(email: string): number {
+export async function getFailedAttemptCount(email: string): Promise<number> {
   const key = email.toLowerCase();
-  const record = lockoutStore.get(key);
-  return record?.attempts ?? 0;
+  const windowStart = getWindowStart();
+
+  return prisma.loginAttempt.count({
+    where: {
+      email: key,
+      success: false,
+      createdAt: { gte: windowStart },
+    },
+  });
 }
 
 /**
- * Purge expired and stale lockout records to prevent unbounded memory growth.
- * Removes records where:
- * - The lockout has expired (lockedUntil <= now)
- * - The record never reached lockout threshold and is older than the lockout window
+ * Delete login attempt records older than 24 hours.
+ * Call from a scheduled job or at application startup.
  */
-function purgeExpiredRecords(): void {
-  const now = new Date();
-  const staleThresholdMs = config.lockout.durationMinutes * 60 * 1000;
-  let purged = 0;
-  for (const [key, record] of lockoutStore) {
-    if (record.lockedUntil && record.lockedUntil <= now) {
-      lockoutStore.delete(key);
-      purged++;
-    } else if (!record.lockedUntil && now.getTime() - record.firstAttemptAt.getTime() > staleThresholdMs) {
-      lockoutStore.delete(key);
-      purged++;
-    }
-  }
-  if (purged > 0) {
-    logger.debug('Purged expired lockout records', { purged, remaining: lockoutStore.size });
-  }
-}
+export async function cleanupOldAttempts(): Promise<number> {
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-// Periodic cleanup every 10 minutes
-const purgeTimer = setInterval(purgeExpiredRecords, 10 * 60 * 1000);
-purgeTimer.unref(); // Don't keep process alive for cleanup
+  const { count } = await prisma.loginAttempt.deleteMany({
+    where: {
+      createdAt: { lt: cutoff },
+    },
+  });
+
+  if (count > 0) {
+    logger.debug('Cleaned up old login attempt records', { deleted: count });
+  }
+
+  return count;
+}
 
 /**
  * Clear all lockout records (used for testing)
  */
-export function clearAllLockouts(): void {
-  lockoutStore.clear();
+export async function clearAllLockouts(): Promise<void> {
+  await prisma.loginAttempt.deleteMany({});
 }

@@ -190,8 +190,8 @@ export async function loginUser(
   });
 
   // Check account lockout before attempting login
-  if (isLockedOut(data.email)) {
-    const remaining = getLockoutRemaining(data.email);
+  if (await isLockedOut(data.email)) {
+    const remaining = await getLockoutRemaining(data.email);
     logger.warn('Login blocked: Account locked', {
       email: data.email,
       ip: ipAddress,
@@ -215,7 +215,7 @@ export async function loginUser(
   // Check all conditions after password verification to maintain timing consistency
   if (!user || !isPasswordValid) {
     // Record failed attempt for lockout tracking
-    recordFailedAttempt(data.email);
+    await recordFailedAttempt(data.email);
 
     // Audit log: failed login attempt
     await prisma.auditLog.create({
@@ -251,7 +251,7 @@ export async function loginUser(
   }
 
   // Clear failed attempts on successful login
-  clearFailedAttempts(data.email);
+  await clearFailedAttempts(data.email);
 
   // Update last login timestamp
   await prisma.user.update({
@@ -318,9 +318,12 @@ export async function refreshAccessToken(data: ITokenRefreshRequest): Promise<IT
     throw new AuthenticationError(result.error || 'Invalid refresh token');
   }
 
+  // Hash token to match stored hash
+  const hashedToken = crypto.createHash('sha256').update(data.refreshToken).digest('hex');
+
   // Check if refresh token is in database and not revoked
   const storedToken = await prisma.refreshToken.findUnique({
-    where: { token: data.refreshToken },
+    where: { token: hashedToken },
   });
 
   if (!storedToken || storedToken.revoked) {
@@ -485,8 +488,8 @@ export async function requestPasswordReset(
     message: 'If an account exists with this email, a password reset link has been sent',
   };
 
-  // Also return token in development/test for testing convenience
-  if (config.isDevelopment || config.isTest) {
+  // Also return token in test for testing convenience
+  if (config.isTest) {
     response.resetToken = resetToken;
   }
 

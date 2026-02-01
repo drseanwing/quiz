@@ -3,7 +3,7 @@
  * @description Slider question player
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import styles from './SliderPlayer.module.css';
 
 interface SliderPlayerProps {
@@ -14,6 +14,7 @@ interface SliderPlayerProps {
 }
 
 export function SliderPlayer({ options, answer, onChange, disabled }: SliderPlayerProps) {
+  const ticksId = useId();
   const { min, max, step, unit, showTicks } = options;
   const [localValue, setLocalValue] = useState(answer?.value ?? (min + max) / 2);
 
@@ -49,10 +50,10 @@ export function SliderPlayer({ options, answer, onChange, disabled }: SliderPlay
         disabled={disabled}
         className={styles.slider}
         aria-label="Slider answer"
-        list={showTicks ? 'slider-ticks' : undefined}
+        list={showTicks ? ticksId : undefined}
       />
       {showTicks && (
-        <datalist id="slider-ticks">
+        <datalist id={ticksId}>
           {Array.from(
             { length: Math.floor((max - min) / step) + 1 },
             (_, i) => min + i * step

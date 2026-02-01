@@ -235,6 +235,16 @@ model InviteToken {
   @@map("invite_tokens")
 }
 
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, createdAt])
+  @@map("login_attempts")
+}
+
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique

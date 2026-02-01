@@ -9,6 +9,7 @@ import { config } from '@/config';
 import logger from '@/config/logger';
 import { User, UserRole } from '@prisma/client';
 import prisma from '@/config/database';
+import crypto from 'crypto';
 
 /**
  * JWT token payload interface
@@ -132,10 +133,13 @@ export async function generateTokenPair(user: Pick<User, 'id' | 'email' | 'role'
   const expiresIn = parseExpiryToSeconds(config.jwt.expiresIn);
   const refreshExpiresInSeconds = parseExpiryToSeconds(config.jwt.refreshExpiresIn);
 
+  // Hash token before storing (security: prevents token exposure if DB compromised)
+  const hashedToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
   // Store refresh token in database
   await prisma.refreshToken.create({
     data: {
-      token: refreshToken,
+      token: hashedToken,
       userId: user.id,
       expiresAt: new Date(Date.now() + refreshExpiresInSeconds * 1000),
     },

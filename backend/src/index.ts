@@ -18,6 +18,11 @@ import routes from './routes';
 
 const app = express();
 
+// Development mode warning
+if (config.isDevelopment && config.port !== 3000) {
+  logger.warn('Running in development mode - ensure this is not a production deployment');
+}
+
 // Trust proxy (required behind nginx/Docker for correct req.ip and rate limiting)
 if (config.isProduction) {
   app.set('trust proxy', 1);

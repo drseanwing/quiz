@@ -71,7 +71,19 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
           </button>
         </div>
       ) : (
-        <div className={styles.dropzone} onClick={() => inputRef.current?.click()}>
+        <div
+          className={styles.dropzone}
+          onClick={() => inputRef.current?.click()}
+          tabIndex={0}
+          role="button"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          aria-label="Upload image"
+        >
           <span className={styles.dropzoneText}>
             {upload.isPending ? 'Uploading...' : 'Click to upload image'}
           </span>
@@ -84,6 +96,7 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
         accept="image/jpeg,image/png,image/gif,image/webp"
         onChange={handleFileChange}
         className={styles.hidden}
+        aria-label="Upload image file"
       />
 
       {error && <p className={styles.error}>{error}</p>}
