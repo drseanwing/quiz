@@ -165,6 +165,7 @@ export interface IUserRow {
   isActive: boolean;
   lastLoginAt: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface IUserFilters {

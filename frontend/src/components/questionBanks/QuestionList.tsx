@@ -23,7 +23,7 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['questions', bankId],
-    queryFn: () => listQuestions(bankId, { pageSize: 200 }),
+    queryFn: () => listQuestions(bankId),
   });
 
   const deleteMutation = useMutation({
@@ -56,7 +56,7 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
     );
   }
 
-  const questions = data?.questions ?? [];
+  const questions = data ?? [];
 
   return (
     <div className={styles.container}>

@@ -247,6 +247,117 @@ See the specification document for detailed schemas and scoring algorithms.
 - Completion notifications sent on passing score
 - All emails logged to database
 
+## API Contract Rules (Critical for Orchestrator Agents)
+
+This section documents hard-won lessons from API payload mismatch bugs. Future agents MUST follow these rules when modifying any API endpoint or frontend service.
+
+### Response Envelope Standard
+
+ALL backend API responses MUST follow this exact shape:
+
+```typescript
+// Success with single item
+{ success: true, data: T }
+
+// Success with paginated list
+{ success: true, data: T[], meta: { page, pageSize, totalCount, totalPages } }
+
+// Error
+{ success: false, error: { code, message, details? } }
+```
+
+The frontend Axios interceptor (`frontend/src/services/api.ts`) automatically strips the outer `response.data` wrapper. So when frontend code does `const body = await api.get(...)`, `body` is already the `{ success, data, meta? }` object.
+
+### Date Serialization Rule
+
+Backend service interfaces that describe API response shapes MUST use `string` (not `Date`) for all date fields. Prisma returns `Date` objects, but JSON serialization converts them to ISO 8601 strings. Always explicitly call `.toISOString()` when mapping Prisma results to response interfaces:
+
+```typescript
+// CORRECT
+interface IMyRow { createdAt: string; }
+const row: IMyRow = { createdAt: prismaResult.createdAt.toISOString() };
+
+// WRONG - type lies about runtime value
+interface IMyRow { createdAt: Date; }  // Will be string after JSON.stringify
+const row: IMyRow = { createdAt: prismaResult.createdAt };  // Implicit conversion
+```
+
+### Frontend API Service Pattern
+
+Every frontend API service function MUST:
+1. Cast the response correctly: `as unknown as IApiResponse<ExpectedType>`
+2. Extract and return `body.data` (not `body` itself)
+3. For paginated endpoints, return `{ data: body.data, meta: body.meta! }` or a named wrapper
+
+```typescript
+// Single item
+export async function getItem(id: string): Promise<IItem> {
+  const body = (await api.get(`/items/${id}`)) as unknown as IApiResponse<IItem>;
+  return body.data;
+}
+
+// Paginated list
+export async function listItems(): Promise<{ data: IItem[]; meta: IPaginationMeta }> {
+  const body = (await api.get('/items')) as unknown as IApiResponse<IItem[]>;
+  return { data: body.data, meta: body.meta! };
+}
+```
+
+### Type Alignment Checklist
+
+When adding or modifying an API endpoint, verify ALL of these:
+
+1. **Backend route handler** returns `{ success: true, data: <result> }`
+2. **Backend service interface** uses `string` for dates (not `Date`)
+3. **Backend validator** includes ALL fields the service accepts (even optional ones)
+4. **Frontend type definition** matches the exact shape backend returns
+5. **Frontend API service** casts and extracts correctly
+6. **Frontend component** destructures the response correctly
+7. **Test mocks** simulate the real API response shape (after interceptor)
+
+### Common Pitfalls
+
+| Pitfall | Example | Fix |
+|---------|---------|-----|
+| Backend returns array, frontend expects wrapper | `data: []` vs `data: { items: [], meta: {} }` | Align frontend to match backend |
+| Backend includes relation fields, frontend type missing them | `createdBy`, `_count` | Add optional fields to frontend type |
+| Validator missing fields that service accepts | No `options` in update validator | Add `body('field').optional()` |
+| Date type mismatch | Backend `Date`, frontend `string` | Use `string` + `.toISOString()` |
+| Test mock wrong shape | Mock returns nested `{data: {data: ...}}` | Mock the post-interceptor shape |
+| `sanitizeCorrectAnswer` corrupts arrays | `["1","3"]` becomes `{"0":"1","1":"3"}` | Always check `Array.isArray()` before `Object.entries()` |
+| correctAnswer shape mismatch | Editor saves `"1"`, scoring expects `{ optionId: "1" }` | Use `toScoringFormat`/`fromScoringFormat` in QuestionEditor |
+
+### Correct Answer Format Contract
+
+The scoring engine (`backend/src/services/scoringService.ts`) defines the authoritative format for `correctAnswer` and user `response` objects. Both MUST use structured objects, not bare primitives:
+
+| Question Type | correctAnswer format | User response format |
+|---------------|---------------------|---------------------|
+| MC Single | `{ optionId: "id" }` | `{ optionId: "id" }` |
+| MC Multi | `{ optionIds: ["id1","id2"] }` | `{ optionIds: ["id1","id2"] }` |
+| True/False | `{ value: true }` | `{ value: true }` |
+| Drag Order | `{ orderedIds: ["id1","id2","id3"] }` | `{ orderedIds: ["id1","id2","id3"] }` |
+| Image Map | `{ regionId: "id" }` | `{ x: number, y: number }` |
+| Slider | `{ value: 50, tolerance: 5 }` | `{ value: number }` |
+
+The `QuestionEditor` component uses bare UI values internally (e.g., `"1"` for option ID) and converts at the boundary via `toScoringFormat()` (save) and `fromScoringFormat()` (load).
+
+### Array Sanitization Rule
+
+When sanitizing JSON data (options, correctAnswer), ALWAYS check `Array.isArray()` BEFORE treating as `Record<string, unknown>`. JavaScript arrays are objects, so `typeof [] === 'object'` is true. Using `Object.entries()` on an array converts `["a","b"]` into `{"0":"a","1":"b"}`, silently corrupting the data.
+
+### Files to Check When Modifying API
+
+| Layer | Files |
+|-------|-------|
+| Backend routes | `backend/src/routes/*.ts` |
+| Backend services | `backend/src/services/*.ts` |
+| Backend validators | `backend/src/validators/*.ts` |
+| Frontend types | `frontend/src/types/index.ts` |
+| Frontend API services | `frontend/src/services/*Api.ts` |
+| Frontend consumers | `frontend/src/pages/**/*.tsx`, `frontend/src/components/**/*.tsx` |
+| Tests | `frontend/src/__tests__/services.test.ts` |
+
 ## Important Reminders
 
 1. **Always read files before modifying them**

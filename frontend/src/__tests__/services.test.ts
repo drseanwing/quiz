@@ -30,16 +30,16 @@ beforeEach(() => {
 describe('questionBankApi', () => {
   describe('listQuestionBanks', () => {
     it('calls GET /question-banks with no params by default', async () => {
-      mockApi.get.mockResolvedValue({ data: { banks: [], meta: { page: 1, totalCount: 0 } } });
+      mockApi.get.mockResolvedValue({ data: [], meta: { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } });
 
       const result = await questionBankApi.listQuestionBanks();
 
       expect(mockApi.get).toHaveBeenCalledWith('/question-banks');
-      expect(result).toEqual({ banks: [], meta: { page: 1, totalCount: 0 } });
+      expect(result).toEqual({ banks: [], meta: { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } });
     });
 
     it('builds query string from params', async () => {
-      mockApi.get.mockResolvedValue({ data: { banks: [], meta: {} } });
+      mockApi.get.mockResolvedValue({ data: [], meta: { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } });
 
       await questionBankApi.listQuestionBanks({ page: 2, pageSize: 10, search: 'cardio', status: 'ACTIVE' as any });
 
@@ -51,7 +51,7 @@ describe('questionBankApi', () => {
     });
 
     it('omits undefined params from query string', async () => {
-      mockApi.get.mockResolvedValue({ data: { banks: [], meta: {} } });
+      mockApi.get.mockResolvedValue({ data: [], meta: { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 } });
 
       await questionBankApi.listQuestionBanks({ page: 1 });
 
@@ -238,24 +238,14 @@ describe('quizApi', () => {
 
 describe('questionApi', () => {
   describe('listQuestions', () => {
-    it('calls GET /question-banks/:bankId/questions with no params', async () => {
-      const response = { questions: [], meta: { page: 1, totalCount: 0 } };
-      mockApi.get.mockResolvedValue({ data: response });
+    it('calls GET /question-banks/:bankId/questions and returns array', async () => {
+      const questions = [{ id: 'q1', type: 'MULTIPLE_CHOICE_SINGLE' }, { id: 'q2', type: 'TRUE_FALSE' }];
+      mockApi.get.mockResolvedValue({ data: questions });
 
       const result = await questionApi.listQuestions('b1');
 
       expect(mockApi.get).toHaveBeenCalledWith('/question-banks/b1/questions');
-      expect(result).toEqual(response);
-    });
-
-    it('includes pagination params', async () => {
-      mockApi.get.mockResolvedValue({ data: { questions: [], meta: {} } });
-
-      await questionApi.listQuestions('b1', { page: 2, pageSize: 5 });
-
-      const url = mockApi.get.mock.calls[0]![0] as string;
-      expect(url).toContain('page=2');
-      expect(url).toContain('pageSize=5');
+      expect(result).toEqual(questions);
     });
   });
 

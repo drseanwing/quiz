@@ -40,7 +40,7 @@ export interface IAttemptState {
   bankId: string;
   bankTitle: string;
   status: AttemptStatus;
-  startedAt: Date;
+  startedAt: string;
   timeSpent: number;
   timeLimit: number;
   feedbackTiming: FeedbackTiming;
@@ -76,8 +76,8 @@ export interface IQuizResults {
   percentage: number;
   passed: boolean;
   timeSpent: number;
-  startedAt: Date;
-  completedAt: Date | null;
+  startedAt: string;
+  completedAt: string | null;
   feedbackTiming: FeedbackTiming;
   questions: IQuestionResult[];
 }
@@ -108,8 +108,8 @@ export interface IAttemptSummary {
   maxScore: number;
   percentage: number;
   passed: boolean;
-  startedAt: Date;
-  completedAt: Date | null;
+  startedAt: string;
+  completedAt: string | null;
   timeSpent: number;
 }
 
@@ -356,7 +356,7 @@ export async function getAttempt(
     bankId: attempt.bankId,
     bankTitle: attempt.bank.title,
     status: attempt.status,
-    startedAt: attempt.startedAt,
+    startedAt: attempt.startedAt.toISOString(),
     timeSpent: attempt.timeSpent,
     timeLimit: attempt.bank.timeLimit,
     feedbackTiming: attempt.bank.feedbackTiming,
@@ -594,8 +594,8 @@ export async function submitAttempt(
     percentage: total.percentage,
     passed: total.passed,
     timeSpent,
-    startedAt: attempt.startedAt,
-    completedAt,
+    startedAt: attempt.startedAt.toISOString(),
+    completedAt: completedAt.toISOString(),
     feedbackTiming: attempt.bank.feedbackTiming,
     questions: attempt.bank.feedbackTiming !== FeedbackTiming.NONE ? questionResults : [],
   };
@@ -688,8 +688,8 @@ export async function getResults(
     percentage: attempt.percentage,
     passed: attempt.passed,
     timeSpent: attempt.timeSpent,
-    startedAt: attempt.startedAt,
-    completedAt: attempt.completedAt,
+    startedAt: attempt.startedAt.toISOString(),
+    completedAt: attempt.completedAt?.toISOString() ?? null,
     feedbackTiming: attempt.bank.feedbackTiming,
     questions: questionResults,
   };
@@ -734,8 +734,8 @@ export async function listUserAttempts(
       maxScore: a.maxScore,
       percentage: a.percentage,
       passed: a.passed,
-      startedAt: a.startedAt,
-      completedAt: a.completedAt,
+      startedAt: a.startedAt.toISOString(),
+      completedAt: a.completedAt?.toISOString() ?? null,
       timeSpent: a.timeSpent,
     })),
     meta: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },

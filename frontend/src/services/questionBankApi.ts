@@ -66,8 +66,37 @@ export async function duplicateQuestionBank(id: string): Promise<IQuestionBank> 
   return body.data;
 }
 
-export async function exportQuestionBank(id: string): Promise<unknown> {
-  const body = (await api.get(`/question-banks/${id}/export`)) as unknown as IApiResponse<unknown>;
+export interface IExportedQuestion {
+  type: string;
+  prompt: string;
+  promptImage: string | null;
+  options: unknown;
+  correctAnswer: unknown;
+  feedback: string;
+  feedbackImage: string | null;
+  referenceLink: string | null;
+  order: number;
+}
+
+export interface IExportedQuestionBank {
+  version: string;
+  exportedAt: string;
+  bank: {
+    title: string;
+    description: string | null;
+    timeLimit: number;
+    randomQuestions: boolean;
+    randomAnswers: boolean;
+    passingScore: number;
+    feedbackTiming: string;
+    questionCount: number;
+    maxAttempts: number;
+  };
+  questions: IExportedQuestion[];
+}
+
+export async function exportQuestionBank(id: string): Promise<IExportedQuestionBank> {
+  const body = (await api.get(`/question-banks/${id}/export`)) as unknown as IApiResponse<IExportedQuestionBank>;
   return body.data;
 }
 

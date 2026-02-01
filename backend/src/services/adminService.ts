@@ -33,7 +33,7 @@ export interface ICompletionRow {
   percentage: number;
   passed: boolean;
   status: AttemptStatus;
-  completedAt: Date | null;
+  completedAt: string | null;
   timeSpent: number;
 }
 
@@ -88,7 +88,7 @@ export async function listCompletions(
     percentage: a.percentage,
     passed: a.passed,
     status: a.status,
-    completedAt: a.completedAt,
+    completedAt: a.completedAt?.toISOString() ?? null,
     timeSpent: a.timeSpent,
   }));
 
@@ -116,7 +116,7 @@ export async function exportCompletionsCSV(filters: ICompletionFilters): Promise
       r.percentage.toFixed(1),
       r.passed ? 'Yes' : 'No',
       r.status,
-      r.completedAt ? r.completedAt.toISOString() : '',
+      r.completedAt ?? '',
       r.timeSpent,
     ].join(',')
   ).join('\n');
@@ -157,7 +157,7 @@ export interface ILogRow {
   entityId: string | null;
   details: unknown;
   ipAddress: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export async function listLogs(
@@ -206,7 +206,7 @@ export async function listLogs(
     entityId: l.entityId,
     details: l.details,
     ipAddress: l.ipAddress,
-    createdAt: l.createdAt,
+    createdAt: l.createdAt.toISOString(),
   }));
 
   return {
@@ -289,9 +289,9 @@ export interface IInviteTokenRow {
   firstName: string | null;
   surname: string | null;
   bankTitle: string | null;
-  expiresAt: Date;
-  usedAt: Date | null;
-  createdAt: Date;
+  expiresAt: string;
+  usedAt: string | null;
+  createdAt: string;
 }
 
 export async function createInviteToken(data: ICreateInviteRequest): Promise<IInviteTokenRow> {
@@ -333,9 +333,9 @@ export async function createInviteToken(data: ICreateInviteRequest): Promise<IIn
     firstName: invite.firstName,
     surname: invite.surname,
     bankTitle: invite.bank?.title ?? null,
-    expiresAt: invite.expiresAt,
-    usedAt: invite.usedAt,
-    createdAt: invite.createdAt,
+    expiresAt: invite.expiresAt.toISOString(),
+    usedAt: invite.usedAt?.toISOString() ?? null,
+    createdAt: invite.createdAt.toISOString(),
   };
 }
 
@@ -362,9 +362,9 @@ export async function listInviteTokens(
     firstName: t.firstName,
     surname: t.surname,
     bankTitle: t.bank?.title ?? null,
-    expiresAt: t.expiresAt,
-    usedAt: t.usedAt,
-    createdAt: t.createdAt,
+    expiresAt: t.expiresAt.toISOString(),
+    usedAt: t.usedAt?.toISOString() ?? null,
+    createdAt: t.createdAt.toISOString(),
   }));
 
   return {

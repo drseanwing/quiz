@@ -4,7 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "files.exclude": {
     "**/.git": true,
@@ -39,9 +39,7 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "eslint.workingDirectories": [
-    "./backend",
-    "./frontend"
-  ],
-  "prisma.showPrismaDataPlatformNotification": false
+  "eslint.workingDirectories": ["./backend", "./frontend"],
+  "prisma.showPrismaDataPlatformNotification": false,
+  "prisma.pinToPrisma6": true
 }

@@ -129,6 +129,8 @@ export interface IQuestionBank {
   questionCount: number;
   maxAttempts: number;
   createdById: string;
+  createdBy?: { id: string; firstName: string; surname: string; email: string };
+  _count?: { questions: number; attempts: number };
   createdAt: string;
   updatedAt: string;
 }

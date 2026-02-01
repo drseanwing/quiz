@@ -98,6 +98,12 @@ export const updateQuestionValidator = [
     .isIn(validTypes)
     .withMessage(`Question type must be one of: ${validTypes.join(', ')}`),
 
+  body('options')
+    .optional(),
+
+  body('correctAnswer')
+    .optional(),
+
   body('prompt')
     .optional()
     .trim()

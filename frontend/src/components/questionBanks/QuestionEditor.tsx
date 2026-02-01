@@ -297,6 +297,50 @@ function SliderEditor({ options, correctAnswer, onChange }: SliderEditorProps) {
   );
 }
 
+// ─── Scoring format conversion ──────────────────────────────────────────────
+
+/**
+ * Convert from scoring-engine format (stored in DB) to bare UI values.
+ * Scoring engine stores: { optionId: "1" }, { optionIds: ["1"] }, { value: true }, { orderedIds: [...] }
+ * UI state uses:         "1",               ["1"],                "true",          ["1","2","3"]
+ */
+function fromScoringFormat(type: QuestionType, answer: unknown): unknown {
+  if (!answer || typeof answer !== 'object') return answer;
+  const obj = answer as Record<string, unknown>;
+  switch (type) {
+    case QuestionType.MULTIPLE_CHOICE_SINGLE:
+      return obj.optionId ?? answer;
+    case QuestionType.MULTIPLE_CHOICE_MULTI:
+      return Array.isArray(obj.optionIds) ? obj.optionIds : answer;
+    case QuestionType.TRUE_FALSE:
+      return typeof obj.value === 'boolean' ? String(obj.value) : answer;
+    case QuestionType.DRAG_ORDER:
+      return Array.isArray(obj.orderedIds) ? obj.orderedIds : answer;
+    default:
+      return answer; // Slider & ImageMap already use object format
+  }
+}
+
+/**
+ * Convert from bare UI values to scoring-engine format for DB storage.
+ */
+function toScoringFormat(type: QuestionType, answer: unknown): unknown {
+  switch (type) {
+    case QuestionType.MULTIPLE_CHOICE_SINGLE:
+      return typeof answer === 'string' ? { optionId: answer } : answer;
+    case QuestionType.MULTIPLE_CHOICE_MULTI:
+      return Array.isArray(answer) ? { optionIds: answer } : answer;
+    case QuestionType.TRUE_FALSE:
+      if (answer === 'true') return { value: true };
+      if (answer === 'false') return { value: false };
+      return answer;
+    case QuestionType.DRAG_ORDER:
+      return Array.isArray(answer) ? { orderedIds: answer } : answer;
+    default:
+      return answer; // Slider & ImageMap already use object format
+  }
+}
+
 // ─── Main QuestionEditor ────────────────────────────────────────────────────
 
 export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEditorProps) {
@@ -307,7 +351,7 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
     question?.options ?? getDefaultOptions(QuestionType.MULTIPLE_CHOICE_SINGLE)
   );
   const [correctAnswer, setCorrectAnswer] = useState<unknown>(
-    question?.correctAnswer ?? getDefaultCorrectAnswer(QuestionType.MULTIPLE_CHOICE_SINGLE)
+    question ? fromScoringFormat(question.type, question.correctAnswer) : getDefaultCorrectAnswer(QuestionType.MULTIPLE_CHOICE_SINGLE)
   );
 
   const {
@@ -347,7 +391,7 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
         referenceLink: question.referenceLink ?? '',
       });
       setOptions(question.options);
-      setCorrectAnswer(question.correctAnswer);
+      setCorrectAnswer(fromScoringFormat(question.type, question.correctAnswer));
     } else {
       reset({
         type: QuestionType.MULTIPLE_CHOICE_SINGLE,
@@ -365,7 +409,7 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
       const payload: Partial<IQuestion> = {
         ...data,
         options: options as IQuestionOption[] | Record<string, unknown>,
-        correctAnswer: correctAnswer,
+        correctAnswer: toScoringFormat(data.type, correctAnswer),
         referenceLink: data.referenceLink || null,
       };
       return isEditing

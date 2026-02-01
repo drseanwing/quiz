@@ -7,31 +7,12 @@ import api from '@/services/api';
 import type {
   IQuestion,
   IApiResponse,
-  IPaginationMeta,
 } from '@/types';
 
-interface IQuestionListResponse {
-  questions: IQuestion[];
-  meta: IPaginationMeta;
-}
-
-interface IQuestionListParams {
-  page?: number;
-  pageSize?: number;
-}
-
-export async function listQuestions(
-  bankId: string,
-  params: IQuestionListParams = {}
-): Promise<IQuestionListResponse> {
-  const searchParams = new URLSearchParams();
-  if (params.page !== undefined) searchParams.set('page', String(params.page));
-  if (params.pageSize !== undefined) searchParams.set('pageSize', String(params.pageSize));
-
-  const query = searchParams.toString();
+export async function listQuestions(bankId: string): Promise<IQuestion[]> {
   const body = (await api.get(
-    `/question-banks/${bankId}/questions${query ? `?${query}` : ''}`
-  )) as unknown as IApiResponse<IQuestionListResponse>;
+    `/question-banks/${bankId}/questions`
+  )) as unknown as IApiResponse<IQuestion[]>;
   return body.data;
 }
 

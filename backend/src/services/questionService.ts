@@ -176,6 +176,13 @@ export function sanitizeOptions(options: unknown, type: QuestionType): unknown {
  */
 export function sanitizeCorrectAnswer(answer: unknown): unknown {
   if (!answer || typeof answer !== 'object') return answer;
+
+  // Handle arrays (e.g., MC Multi ["1","3"], Drag Order ["1","2","3"])
+  if (Array.isArray(answer)) {
+    return answer.map(v => typeof v === 'string' ? sanitizePlainText(v) : v);
+  }
+
+  // Handle objects (e.g., Slider {value: 50, tolerance: 5})
   const obj = answer as Record<string, unknown>;
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
