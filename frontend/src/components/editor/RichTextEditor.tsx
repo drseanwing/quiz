@@ -51,10 +51,11 @@ export function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: styles.editorContent,
-        ...(placeholder ? { 'data-placeholder': placeholder as string } : {}),
+        class: styles.editorContent ?? '',
+        ...(placeholder ? { 'data-placeholder': placeholder } : {}),
       },
     },
+    immediatelyRender: false,
   });
 
   useEffect(() => {
