@@ -5,18 +5,15 @@
 
 import { useState } from 'react';
 import type { IQuestion } from '@/types';
-import { QuestionType } from '@/types';
+import { TYPE_LABELS } from '@/lib/constants';
 import { Button } from '@/components/common/Button';
 import styles from './QuestionListItem.module.css';
 
-const TYPE_LABELS: Record<QuestionType, string> = {
-  [QuestionType.MULTIPLE_CHOICE_SINGLE]: 'Multiple Choice',
-  [QuestionType.MULTIPLE_CHOICE_MULTI]: 'Multiple Select',
-  [QuestionType.TRUE_FALSE]: 'True / False',
-  [QuestionType.DRAG_ORDER]: 'Drag to Order',
-  [QuestionType.IMAGE_MAP]: 'Image Map',
-  [QuestionType.SLIDER]: 'Slider',
-};
+const domParser = new DOMParser();
+
+function stripHtml(html: string): string {
+  return domParser.parseFromString(html, 'text/html').body.textContent || '';
+}
 
 interface QuestionListItemProps {
   question: IQuestion;
@@ -36,11 +33,6 @@ export function QuestionListItem({
   isDuplicating,
 }: QuestionListItemProps) {
   const [showConfirm, setShowConfirm] = useState(false);
-
-  function stripHtml(html: string): string {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || '';
-  }
 
   const promptPreview = stripHtml(question.prompt).slice(0, 120);
 

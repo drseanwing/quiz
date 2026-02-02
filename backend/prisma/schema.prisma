@@ -90,7 +90,7 @@ model QuestionBank {
   passingScore      Int                 @default(80) @map("passing_score")
   feedbackTiming    FeedbackTiming      @default(END) @map("feedback_timing")
   notificationEmail String?             @map("notification_email")
-  questionCount     Int                 @default(10) @map("question_count")
+  questionCount     Int                 @default(0) @map("question_count")
   maxAttempts       Int                 @default(0) @map("max_attempts")
   createdById       String              @map("created_by_id")
   createdAt         DateTime            @default(now()) @map("created_at")

@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import { queryKeys } from '@/lib/queryKeys';
+import { TYPE_LABELS } from '@/lib/constants';
 import * as quizApi from '@/services/quizApi';
 import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import { QuestionType, FeedbackTiming, type IQuestionResult } from '@/types';
@@ -138,15 +139,7 @@ function QuestionReviewCard({ question, index }: { question: IQuestionResult; in
 }
 
 function formatType(type: QuestionType): string {
-  const map: Record<string, string> = {
-    MULTIPLE_CHOICE_SINGLE: 'Multiple Choice',
-    MULTIPLE_CHOICE_MULTI: 'Multiple Select',
-    TRUE_FALSE: 'True/False',
-    DRAG_ORDER: 'Ordering',
-    IMAGE_MAP: 'Image Map',
-    SLIDER: 'Slider',
-  };
-  return map[type] || type;
+  return TYPE_LABELS[type] || type;
 }
 
 function formatAnswer(type: QuestionType, response: unknown, options: unknown): string {

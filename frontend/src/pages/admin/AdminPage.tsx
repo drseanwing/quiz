@@ -3,7 +3,7 @@
  * @description Admin dashboard with tabs for stats, completions, logs, invites
  */
 
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminDashboard } from './AdminDashboard';
 import { CompletionsTab } from './CompletionsTab';
 import { LogsTab } from './LogsTab';
@@ -24,7 +24,26 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function AdminPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as Tab) || 'dashboard';
+
+  function setTab(tab: Tab) {
+    setSearchParams({ tab });
+  }
+
+  function handleTabKeyDown(e: React.KeyboardEvent) {
+    const tabs: Tab[] = ['dashboard', 'users', 'banks', 'completions', 'logs', 'invites'];
+    const current = tabs.indexOf(activeTab);
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = tabs[(current + 1) % tabs.length] as Tab;
+      setTab(next);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prev = tabs[(current - 1 + tabs.length) % tabs.length] as Tab;
+      setTab(prev);
+    }
+  }
 
   return (
     <div className={styles.page}>
@@ -32,7 +51,7 @@ export function AdminPage() {
         <h1>Administration</h1>
       </header>
 
-      <nav className={styles.tabs} role="tablist" aria-label="Admin sections">
+      <nav className={styles.tabs} role="tablist" aria-label="Admin sections" onKeyDown={handleTabKeyDown}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -41,7 +60,7 @@ export function AdminPage() {
             aria-selected={activeTab === tab.id}
             aria-controls={`tabpanel-${tab.id}`}
             className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setTab(tab.id)}
           >
             {tab.label}
           </button>

@@ -24,7 +24,7 @@ export function Alert({
   return (
     <div
       className={`${styles.alert} ${styles[variant]} ${className}`}
-      role="alert"
+      role={variant === 'error' || variant === 'warning' ? 'alert' : 'status'}
     >
       <div className={styles.content}>{children}</div>
       {onDismiss && (

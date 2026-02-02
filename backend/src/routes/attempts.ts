@@ -145,13 +145,14 @@ router.post(
               }),
               prisma.user.findUnique({
                 where: { id: req.user!.userId },
-                select: { firstName: true, surname: true },
+                select: { firstName: true, surname: true, email: true },
               }),
             ]);
 
             if (bank?.notificationEmail && user) {
               await sendCompletionNotification(results.id, bank.notificationEmail, {
                 userName: `${user.firstName} ${user.surname}`,
+                userEmail: user.email,
                 bankTitle: results.bankTitle,
                 score: results.score,
                 maxScore: results.maxScore,

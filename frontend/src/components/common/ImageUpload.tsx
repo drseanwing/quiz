@@ -48,7 +48,10 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
     if (value) {
       const filename = value.split('/').pop();
       if (filename) {
-        deleteImage(filename).catch(() => {});
+        deleteImage(filename).catch((err) => {
+          console.warn('Failed to delete image:', err);
+          setError('Failed to delete image from server, but preview cleared');
+        });
       }
     }
     onChange('');

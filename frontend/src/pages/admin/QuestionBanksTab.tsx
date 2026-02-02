@@ -9,6 +9,7 @@ import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Modal } from '@/components/common/Modal';
+import { Pagination } from '@/components/common/Pagination';
 import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './QuestionBanksTab.module.css';
@@ -167,13 +168,12 @@ export function QuestionBanksTab() {
             </table>
           </div>
 
-          {data.meta.totalPages > 1 && (
-            <div className={styles.pagination}>
-              <Button variant="secondary" onClick={() => setPage(p => p - 1)} disabled={page <= 1}>Prev</Button>
-              <span>Page {data.meta.page} of {data.meta.totalPages}</span>
-              <Button variant="secondary" onClick={() => setPage(p => p + 1)} disabled={page >= data.meta.totalPages}>Next</Button>
-            </div>
-          )}
+          <Pagination
+            page={data.meta.page}
+            totalPages={data.meta.totalPages}
+            onPageChange={setPage}
+            label="Question banks pagination"
+          />
         </>
       )}
 

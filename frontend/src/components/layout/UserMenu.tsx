@@ -121,6 +121,17 @@ export function UserMenu({ user }: UserMenuProps) {
             Dashboard
           </Link>
 
+          <Link
+            to="/profile"
+            className={styles.menuItem}
+            role="menuitem"
+            tabIndex={-1}
+            ref={(el) => { menuItemsRef.current[1] = el; }}
+            onClick={() => setIsOpen(false)}
+          >
+            Profile
+          </Link>
+
           <div className={styles.divider} />
 
           <button
@@ -128,7 +139,7 @@ export function UserMenu({ user }: UserMenuProps) {
             onClick={handleLogout}
             role="menuitem"
             tabIndex={-1}
-            ref={(el) => { menuItemsRef.current[1] = el; }}
+            ref={(el) => { menuItemsRef.current[2] = el; }}
             type="button"
           >
             Sign Out

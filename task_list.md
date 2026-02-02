@@ -41,27 +41,27 @@ Compiled from comprehensive code review (6 perspectives: frontend, backend, secu
 
 ## MEDIUM
 
-- [ ] **BE-M1**: CSV export loads up to 50,000 rows into memory. Use streaming/cursor-based pagination. File: `backend/src/services/adminService.ts:106`.
-- [ ] **BE-M5**: Password reset token exposed in dev/test response. Only expose in `isTest`, not `isDevelopment`. File: `backend/src/services/authService.ts:488-491`.
-- [ ] **BE-M9**: Static file serving for uploads has no cache headers. Add `Cache-Control` headers. File: `backend/src/index.ts:79`.
-- [ ] **BE-M10**: `normalizeEmail()` in validators conflicts with manual `.toLowerCase()` in services. Pick one approach. Files: validators and services.
-- [ ] **FE-M1**: Duplicated `TYPE_LABELS` maps across 4 files. Extract to shared constant. Files: QuestionEditor, QuestionListItem, QuestionRenderer, QuizResultsPage.
-- [ ] **FE-M2**: Duplicated pagination UI across 6 admin tab components. Extract `<Pagination>` component.
-- [ ] **FE-M8**: `ImageUpload.handleRemove` silently swallows deletion errors. Show warning or only clear on success. File: `frontend/src/components/common/ImageUpload.tsx:51`.
-- [ ] **FE-M12**: `QuestionListItem.stripHtml` creates a new `DOMParser` on every render. Hoist to module scope. File: `frontend/src/components/questionBanks/QuestionListItem.tsx`.
-- [ ] **WF-M2**: No responsive/mobile-specific CSS. Admin tables overflow on mobile. Add `@media` queries for key breakpoints.
-- [ ] **WF-M4**: Admin tabs are not URL-driven. All tabs share `/admin` URL. Use URL search params for tab persistence.
-- [ ] **WF-M8**: QuestionEditor modal has no unsaved-changes guard. Escape/outside click loses all edits silently.
-- [ ] **A11Y-M1**: Input component uses `:focus` instead of `:focus-visible`. Removes native focus ring. File: `frontend/src/components/common/Input.module.css`.
-- [ ] **A11Y-M4**: Multiple `role="alert"` elements fire announcement storms. Use `role="status"` for success/info alerts. File: `frontend/src/components/common/Alert.tsx`.
-- [ ] **A11Y-M5**: Admin page tab panel keyboard navigation incomplete. No arrow-key navigation between tabs. File: `frontend/src/pages/admin/AdminPage.tsx`.
-- [ ] **BRAND-M1**: Montserrat and Bebas Neue fonts declared but never loaded. Add Google Fonts link to `index.html`.
-- [ ] **BRAND-M2**: Focus outline is 2px, brand guideline requires 3px. File: `frontend/src/styles/global.css:110-113`.
-- [ ] **SPEC-M1**: Image map scoring does not handle `poly` shape type. Only `rect` and `circle` implemented. File: `backend/src/services/scoringService.ts`.
-- [ ] **SPEC-M2**: Profile page missing from frontend. Spec references it in directory structure and UI layout.
-- [ ] **BE-H2**: `questionCount` default of 10 silently truncates quizzes. Default to 0 meaning "all questions". File: `backend/prisma/schema.prisma:93`.
-- [ ] **SEC-M5**: CORS allows `localhost` origins alongside production domain. Use separate production config.
-- [ ] **SPEC-L2**: Completion notification email body omits user email address. Add to template. File: `backend/src/services/emailService.ts`.
+- [x] **BE-M1**: CSV export loads up to 50,000 rows into memory. Use streaming/cursor-based pagination. File: `backend/src/services/adminService.ts:106`.
+- [x] **BE-M5**: Password reset token exposed in dev/test response. Only expose in `isTest`, not `isDevelopment`. File: `backend/src/services/authService.ts:488-491`. *(Already correctly implemented)*
+- [x] **BE-M9**: Static file serving for uploads has no cache headers. Add `Cache-Control` headers. File: `backend/src/index.ts:79`.
+- [x] **BE-M10**: `normalizeEmail()` in validators conflicts with manual `.toLowerCase()` in services. Pick one approach. Files: validators and services.
+- [x] **FE-M1**: Duplicated `TYPE_LABELS` maps across 4 files. Extract to shared constant. Files: QuestionEditor, QuestionListItem, QuestionRenderer, QuizResultsPage.
+- [x] **FE-M2**: Duplicated pagination UI across 6 admin tab components. Extract `<Pagination>` component.
+- [x] **FE-M8**: `ImageUpload.handleRemove` silently swallows deletion errors. Show warning or only clear on success. File: `frontend/src/components/common/ImageUpload.tsx:51`.
+- [x] **FE-M12**: `QuestionListItem.stripHtml` creates a new `DOMParser` on every render. Hoist to module scope. File: `frontend/src/components/questionBanks/QuestionListItem.tsx`.
+- [x] **WF-M2**: No responsive/mobile-specific CSS. Admin tables overflow on mobile. Add `@media` queries for key breakpoints.
+- [x] **WF-M4**: Admin tabs are not URL-driven. All tabs share `/admin` URL. Use URL search params for tab persistence.
+- [x] **WF-M8**: QuestionEditor modal has no unsaved-changes guard. Escape/outside click loses all edits silently.
+- [x] **A11Y-M1**: Input component uses `:focus` instead of `:focus-visible`. Removes native focus ring. File: `frontend/src/components/common/Input.module.css`.
+- [x] **A11Y-M4**: Multiple `role="alert"` elements fire announcement storms. Use `role="status"` for success/info alerts. File: `frontend/src/components/common/Alert.tsx`.
+- [x] **A11Y-M5**: Admin page tab panel keyboard navigation incomplete. No arrow-key navigation between tabs. File: `frontend/src/pages/admin/AdminPage.tsx`.
+- [x] **BRAND-M1**: Montserrat and Bebas Neue fonts declared but never loaded. Add Google Fonts link to `index.html`.
+- [x] **BRAND-M2**: Focus outline is 2px, brand guideline requires 3px. File: `frontend/src/styles/global.css:110-113`.
+- [x] **SPEC-M1**: Image map scoring does not handle `poly` shape type. Only `rect` and `circle` implemented. File: `backend/src/services/scoringService.ts`.
+- [x] **SPEC-M2**: Profile page missing from frontend. Spec references it in directory structure and UI layout.
+- [x] **BE-H2**: `questionCount` default of 10 silently truncates quizzes. Default to 0 meaning "all questions". File: `backend/prisma/schema.prisma:93`.
+- [x] **SEC-M5**: CORS allows `localhost` origins alongside production domain. Use separate production config.
+- [x] **SPEC-L2**: Completion notification email body omits user email address. Add to template. File: `backend/src/services/emailService.ts`.
 
 ## LOW
 

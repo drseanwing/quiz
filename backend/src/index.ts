@@ -80,7 +80,7 @@ app.use((req, _res, next) => {
 });
 
 // Serve uploaded files (requires authentication)
-app.use('/uploads', authenticate, express.static(path.resolve(config.upload.dir)));
+app.use('/uploads', authenticate, express.static(path.resolve(config.upload.dir), { maxAge: '7d', immutable: true }));
 
 // General rate limiting
 app.use('/api', generalRateLimiter);

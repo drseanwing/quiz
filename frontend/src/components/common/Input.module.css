@@ -29,7 +29,7 @@
   color: var(--redi-medium-gray);
 }
 
-.input:focus {
+.input:focus-visible {
   outline: none;
   border-color: var(--redi-teal);
   box-shadow: 0 0 0 3px rgba(43, 158, 158, 0.15);
@@ -39,7 +39,7 @@
   border-color: var(--redi-error);
 }
 
-.inputError:focus {
+.inputError:focus-visible {
   border-color: var(--redi-error);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
 }

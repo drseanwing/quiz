@@ -16,6 +16,7 @@ import { Alert } from '@/components/common/Alert';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
 import { ImageUpload } from '@/components/common/ImageUpload';
 import { queryKeys } from '@/lib/queryKeys';
+import { TYPE_LABELS } from '@/lib/constants';
 import { QuestionType } from '@/types';
 import type { IQuestion, IQuestionOption } from '@/types';
 import { McOptionEditor } from './McOptionEditor';
@@ -24,15 +25,6 @@ import { SliderEditor } from './SliderEditor';
 import { DragOrderEditor } from './DragOrderEditor';
 import { ImageMapEditor } from './ImageMapEditor';
 import styles from './QuestionEditor.module.css';
-
-const TYPE_LABELS: Record<QuestionType, string> = {
-  [QuestionType.MULTIPLE_CHOICE_SINGLE]: 'Multiple Choice (Single)',
-  [QuestionType.MULTIPLE_CHOICE_MULTI]: 'Multiple Choice (Multi)',
-  [QuestionType.TRUE_FALSE]: 'True / False',
-  [QuestionType.DRAG_ORDER]: 'Drag to Order',
-  [QuestionType.IMAGE_MAP]: 'Image Map',
-  [QuestionType.SLIDER]: 'Slider',
-};
 
 const questionSchema = z.object({
   type: z.nativeEnum(QuestionType),
@@ -164,7 +156,7 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
     control,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<QuestionFormData>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
@@ -245,10 +237,17 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
     setCorrectAnswer(newCorrectAnswer);
   }
 
+  function handleClose() {
+    if (isDirty && !window.confirm('Discard unsaved changes?')) {
+      return;
+    }
+    onClose();
+  }
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={isEditing ? 'Edit Question' : 'Add Question'}
       className={styles.modal}
     >
@@ -373,7 +372,7 @@ export function QuestionEditor({ bankId, question, isOpen, onClose }: QuestionEd
         />
 
         <div className={styles.actions}>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" loading={saveMutation.isPending}>

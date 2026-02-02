@@ -114,6 +114,7 @@ export async function sendCompletionNotification(
   notificationEmail: string,
   data: {
     userName: string;
+    userEmail: string;
     bankTitle: string;
     score: number;
     maxScore: number;
@@ -134,6 +135,7 @@ export async function sendCompletionNotification(
         </div>
         <div style="padding: 24px; border: 1px solid #e5e7eb;">
           <h2 style="color: #1B3A5F; margin-top: 0;">Quiz Completion Notification</h2>
+          <p><strong>Student:</strong> ${escapeHtml(data.userName)} (${escapeHtml(data.userEmail)})</p>
           <p><strong>${escapeHtml(data.userName)}</strong> has completed <strong>${escapeHtml(data.bankTitle)}</strong>.</p>
           <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin: 16px 0;">
             <p style="margin: 0 0 8px 0;"><strong>Result:</strong> <span style="color: ${statusColor}; font-weight: 700;">${passStatus}</span></p>

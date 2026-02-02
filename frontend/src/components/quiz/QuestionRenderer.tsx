@@ -4,6 +4,7 @@
  */
 
 import { QuestionType, type IQuizQuestion, type IImmediateFeedback } from '@/types';
+import { TYPE_LABELS } from '@/lib/constants';
 import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import { MCPlayer } from './MCPlayer';
 import { TFPlayer } from './TFPlayer';
@@ -131,13 +132,5 @@ function renderPlayer(
 }
 
 function formatQuestionType(type: QuestionType): string {
-  const map: Record<QuestionType, string> = {
-    [QuestionType.MULTIPLE_CHOICE_SINGLE]: 'Multiple Choice',
-    [QuestionType.MULTIPLE_CHOICE_MULTI]: 'Multiple Select',
-    [QuestionType.TRUE_FALSE]: 'True / False',
-    [QuestionType.DRAG_ORDER]: 'Drag to Order',
-    [QuestionType.IMAGE_MAP]: 'Image Map',
-    [QuestionType.SLIDER]: 'Slider',
-  };
-  return map[type] || type;
+  return TYPE_LABELS[type] || type;
 }

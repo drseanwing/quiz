@@ -99,29 +99,90 @@ export async function listCompletions(
 }
 
 /**
- * Export completions as CSV text
+ * Export completions as CSV text using cursor-based pagination
  */
 export async function exportCompletionsCSV(filters: ICompletionFilters): Promise<string> {
-  // Cap at 50,000 rows to prevent OOM on very large datasets
-  const all = await listCompletions(filters, { page: 1, pageSize: 50000 });
+  const BATCH_SIZE = 1000;
+
+  // Build where clause from filters
+  const where: Record<string, unknown> = {
+    status: { in: [AttemptStatus.COMPLETED, AttemptStatus.TIMED_OUT] },
+  };
+
+  if (filters.bankId) where.bankId = filters.bankId;
+  if (filters.userId) where.userId = filters.userId;
+  if (typeof filters.passed === 'boolean') where.passed = filters.passed;
+  if (filters.dateFrom || filters.dateTo) {
+    const completedAt: Record<string, Date> = {};
+    if (filters.dateFrom) {
+      const d = new Date(filters.dateFrom);
+      if (!isNaN(d.getTime())) completedAt.gte = d;
+    }
+    if (filters.dateTo) {
+      const d = new Date(filters.dateTo);
+      if (!isNaN(d.getTime())) completedAt.lte = d;
+    }
+    if (Object.keys(completedAt).length > 0) where.completedAt = completedAt;
+  }
 
   const header = 'Name,Email,Quiz,Score,Max Score,Percentage,Passed,Status,Completed At,Time (s)\n';
-  const rows = all.data.map(r =>
-    [
-      csvEscape(r.userName),
-      csvEscape(r.userEmail),
-      csvEscape(r.bankTitle),
-      r.score.toFixed(1),
-      r.maxScore,
-      r.percentage.toFixed(1),
-      r.passed ? 'Yes' : 'No',
-      r.status,
-      r.completedAt ?? '',
-      r.timeSpent,
-    ].join(',')
-  ).join('\n');
+  let csvContent = header;
+  let cursor: string | undefined;
 
-  return header + rows;
+  // Fetch records in batches using cursor-based pagination
+  while (true) {
+    const batch = await prisma.quizAttempt.findMany({
+      where,
+      include: {
+        user: { select: { firstName: true, surname: true, email: true } },
+        bank: { select: { title: true } },
+      },
+      take: BATCH_SIZE,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      orderBy: { completedAt: 'desc' },
+    });
+
+    if (batch.length === 0) break;
+
+    // Convert batch to CSV rows
+    const rows = batch.map(a => {
+      const row: ICompletionRow = {
+        id: a.id,
+        userName: `${a.user.firstName} ${a.user.surname}`,
+        userEmail: a.user.email,
+        bankTitle: a.bank.title,
+        score: a.score,
+        maxScore: a.maxScore,
+        percentage: a.percentage,
+        passed: a.passed,
+        status: a.status,
+        completedAt: a.completedAt?.toISOString() ?? null,
+        timeSpent: a.timeSpent,
+      };
+      return [
+        csvEscape(row.userName),
+        csvEscape(row.userEmail),
+        csvEscape(row.bankTitle),
+        row.score.toFixed(1),
+        row.maxScore,
+        row.percentage.toFixed(1),
+        row.passed ? 'Yes' : 'No',
+        row.status,
+        row.completedAt ?? '',
+        row.timeSpent,
+      ].join(',');
+    }).join('\n');
+
+    csvContent += rows;
+    if (batch.length > 0) csvContent += '\n';
+
+    const lastRecord = batch[batch.length - 1];
+    if (!lastRecord) break;
+    cursor = lastRecord.id;
+    if (batch.length < BATCH_SIZE) break;
+  }
+
+  return csvContent;
 }
 
 export function csvEscape(value: string): string {

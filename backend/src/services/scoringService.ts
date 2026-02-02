@@ -138,7 +138,7 @@ function scoreDragOrder(response: unknown, correctAnswer: unknown): IScoringResu
 function scoreImageMap(response: unknown, correctAnswer: unknown, options?: unknown): IScoringResult {
   const resp = response as { x?: number; y?: number };
   const correct = correctAnswer as { regionId?: string };
-  const opts = options as { regions?: Array<{ id: string; type: string; cx?: number; cy?: number; r?: number; x?: number; y?: number; width?: number; height?: number }> } | undefined;
+  const opts = options as { regions?: Array<{ id: string; type: string; cx?: number; cy?: number; r?: number; x?: number; y?: number; width?: number; height?: number; points?: number[] }> } | undefined;
 
   if (typeof resp.x !== 'number' || typeof resp.y !== 'number' || !correct.regionId || !opts?.regions) {
     return { score: 0, isCorrect: false };
@@ -155,9 +155,30 @@ function scoreImageMap(response: unknown, correctAnswer: unknown, options?: unkn
     hit = distance <= region.r;
   } else if (region.type === 'rect' && typeof region.x === 'number' && typeof region.y === 'number' && typeof region.width === 'number' && typeof region.height === 'number') {
     hit = resp.x >= region.x && resp.x <= region.x + region.width && resp.y >= region.y && resp.y <= region.y + region.height;
+  } else if (region.type === 'poly' && Array.isArray(region.points) && region.points.length >= 6) {
+    hit = isPointInPolygon(resp.x, resp.y, region.points);
   }
 
   return { score: hit ? 1 : 0, isCorrect: hit };
+}
+
+function isPointInPolygon(x: number, y: number, points: number[]): boolean {
+  let inside = false;
+  for (let i = 0, j = points.length - 2; i < points.length; j = i, i += 2) {
+    const xi = points[i];
+    const yi = points[i + 1];
+    const xj = points[j];
+    const yj = points[j + 1];
+
+    if (typeof xi !== 'number' || typeof yi !== 'number' || typeof xj !== 'number' || typeof yj !== 'number') {
+      continue;
+    }
+
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }
 
 function scoreSlider(response: unknown, correctAnswer: unknown): IScoringResult {

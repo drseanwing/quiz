@@ -294,7 +294,7 @@ export async function createUser(data: IAdminCreateUserRequest): Promise<SafeUse
 
   // Check for existing user
   const existing = await prisma.user.findUnique({
-    where: { email: data.email.toLowerCase() },
+    where: { email: data.email },
   });
 
   if (existing) {
@@ -313,7 +313,7 @@ export async function createUser(data: IAdminCreateUserRequest): Promise<SafeUse
 
   const user = await prisma.user.create({
     data: {
-      email: data.email.toLowerCase(),
+      email: data.email,
       passwordHash,
       firstName: data.firstName,
       surname: data.surname,

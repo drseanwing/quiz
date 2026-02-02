@@ -97,9 +97,14 @@ export const config = {
 
   // CORS
   cors: {
-    origin: (process.env.CORS_ORIGIN || 'http://localhost')
-      .split(',')
-      .map((o) => o.trim()),
+    origin: [
+      process.env.FRONTEND_URL,
+      ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5173', 'http://localhost:3000'] : []),
+      ...(process.env.CORS_ORIGIN || '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter((o) => o),
+    ].filter((o): o is string => Boolean(o)),
     credentials: process.env.CORS_CREDENTIALS === 'true',
   },
 

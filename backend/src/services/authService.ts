@@ -121,7 +121,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
-    where: { email: data.email.toLowerCase() },
+    where: { email: data.email },
   });
 
   if (existingUser) {
@@ -137,7 +137,7 @@ export async function registerUser(data: IRegisterRequest): Promise<IAuthRespons
   // Create user
   const user = await prisma.user.create({
     data: {
-      email: data.email.toLowerCase(),
+      email: data.email,
       passwordHash,
       firstName: data.firstName,
       surname: data.surname,
@@ -204,7 +204,7 @@ export async function loginUser(
 
   // Find user by email
   const user = await prisma.user.findUnique({
-    where: { email: data.email.toLowerCase() },
+    where: { email: data.email },
   });
 
   // Always perform bcrypt operation to prevent timing attacks
@@ -417,7 +417,7 @@ export async function requestPasswordReset(
 
   // Find user by email
   const user = await prisma.user.findUnique({
-    where: { email: data.email.toLowerCase() },
+    where: { email: data.email },
   });
 
   if (!user) {
@@ -634,7 +634,7 @@ export async function loginWithToken(
 
   // Check if user already exists
   let user = await prisma.user.findUnique({
-    where: { email: inviteRecord.email.toLowerCase() },
+    where: { email: inviteRecord.email },
   });
 
   if (user) {
@@ -671,7 +671,7 @@ export async function loginWithToken(
 
     user = await prisma.user.create({
       data: {
-        email: inviteRecord.email.toLowerCase(),
+        email: inviteRecord.email,
         passwordHash,
         firstName: inviteRecord.firstName || 'User',
         surname: inviteRecord.surname || 'Account',

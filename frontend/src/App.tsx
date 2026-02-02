@@ -22,6 +22,7 @@ import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 
 // Lazy-loaded pages (code splitting for larger page bundles)
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const QuestionBankListPage = lazy(() => import('@/pages/questionBanks/QuestionBankListPage').then(m => ({ default: m.QuestionBankListPage })));
 const QuestionBankEditorPage = lazy(() => import('@/pages/questionBanks/QuestionBankEditorPage').then(m => ({ default: m.QuestionBankEditorPage })));
 const QuizListPage = lazy(() => import('@/pages/quiz/QuizListPage').then(m => ({ default: m.QuizListPage })));
@@ -69,6 +70,17 @@ function App() {
                     <ProtectedRoute>
                       <Layout>
                         <DashboardPage />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ProfilePage />
                       </Layout>
                     </ProtectedRoute>
                   }

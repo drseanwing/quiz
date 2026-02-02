@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { Pagination } from '@/components/common/Pagination';
 import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './InvitesTab.module.css';
@@ -169,13 +170,12 @@ export function InvitesTab() {
             </table>
           </div>
 
-          {data.meta.totalPages > 1 && (
-            <div className={styles.pagination}>
-              <Button variant="secondary" onClick={() => setPage(p => p - 1)} disabled={page <= 1}>Prev</Button>
-              <span>Page {data.meta.page} of {data.meta.totalPages}</span>
-              <Button variant="secondary" onClick={() => setPage(p => p + 1)} disabled={page >= data.meta.totalPages}>Next</Button>
-            </div>
-          )}
+          <Pagination
+            page={data.meta.page}
+            totalPages={data.meta.totalPages}
+            onPageChange={setPage}
+            label="Invite tokens pagination"
+          />
         </>
       )}
     </div>
