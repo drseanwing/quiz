@@ -85,7 +85,7 @@ export const authRateLimiter = rateLimit({
  */
 export const uploadRateLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
-  max: 10,
+  max: parseInt(process.env.UPLOAD_RATE_LIMIT || '10', 10),
   message: {
     success: false,
     error: {

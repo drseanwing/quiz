@@ -44,3 +44,46 @@
   background-color: var(--redi-border);
   margin: 0 var(--space-xs);
 }
+
+.linkInput {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  padding: var(--space-xs);
+  background-color: var(--redi-white);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--redi-border);
+}
+
+.linkInput input {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--redi-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.linkInput button {
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--redi-teal);
+  color: var(--redi-white);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.linkInput button:hover {
+  background-color: var(--redi-teal-dark);
+}
+
+.linkInput button:last-child {
+  background-color: var(--redi-light-gray);
+  color: var(--redi-dark-gray);
+}
+
+.linkInput button:last-child:hover {
+  background-color: var(--redi-border);
+}

@@ -9,6 +9,8 @@ import path from 'path';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { config } from './config';
 import logger from './config/logger';
 import { connectDatabase, disconnectDatabase } from './config/database';
@@ -17,6 +19,7 @@ import { generalRateLimiter } from './middleware/rateLimiter';
 import { authenticate } from './middleware/auth';
 import routes from './routes';
 
+const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
 const app = express();
 
 // Development mode warning
@@ -112,7 +115,7 @@ async function start() {
     logger.info(`REdI Quiz Platform API started`, {
       port,
       environment: config.nodeEnv,
-      version: '1.0.0',
+      version: pkg.version,
     });
   });
 

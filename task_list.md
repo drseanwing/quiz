@@ -65,13 +65,13 @@ Compiled from comprehensive code review (6 perspectives: frontend, backend, secu
 
 ## LOW
 
-- [ ] **BE-L1**: Hardcoded version `'1.0.0'` in multiple places. Read from `package.json`. Files: `backend/src/routes/index.ts`, `backend/src/index.ts`.
-- [ ] **BE-L2**: Name regex `^[a-zA-Z\s'-]+$` excludes non-Latin characters. Use Unicode-aware pattern. Files: auth/user validators.
-- [ ] **BE-L5**: Upload rate limit max hardcoded to 10. Make configurable. File: `backend/src/middleware/rateLimiter.ts:88`.
-- [ ] **BE-L7**: Weak password blocklist (only 8 entries). Expand to top 1000 or use `zxcvbn`. File: `backend/src/utils/password.ts`.
-- [ ] **FE-L5**: `EditorToolbar` uses `window.prompt()` for URL input. Replace with custom popover. File: `frontend/src/components/editor/EditorToolbar.tsx`.
-- [ ] **WF-L1**: NotFoundPage links to `/dashboard` which requires auth. Should be context-aware.
-- [ ] **A11Y-L6**: Sort buttons in QuestionList lack `aria-sort` indication. File: `frontend/src/components/questionBanks/QuestionList.tsx`.
-- [ ] **BRAND-L1**: All headings use `font-weight: 700`. Spec requires H2/H3=600, H4=500. File: `frontend/src/styles/global.css`.
-- [ ] **BRAND-L2**: Footer missing Metro North Health and Queensland Government co-branding logos.
-- [ ] **BRAND-L3**: Email templates use solid navy header instead of Lime-Teal-Navy gradient bar.
+- [x] **BE-L1**: Hardcoded version `'1.0.0'` in multiple places. Read from `package.json`. Files: `backend/src/routes/index.ts`, `backend/src/index.ts`.
+- [x] **BE-L2**: Name regex `^[a-zA-Z\s'-]+$` excludes non-Latin characters. Use Unicode-aware pattern. Files: auth/user validators.
+- [x] **BE-L5**: Upload rate limit max hardcoded to 10. Make configurable. File: `backend/src/middleware/rateLimiter.ts:88`.
+- [x] **BE-L7**: Weak password blocklist (only 8 entries). Expand to top 1000 or use `zxcvbn`. File: `backend/src/utils/password.ts`.
+- [x] **FE-L5**: `EditorToolbar` uses `window.prompt()` for URL input. Replace with custom popover. File: `frontend/src/components/editor/EditorToolbar.tsx`.
+- [x] **WF-L1**: NotFoundPage links to `/dashboard` which requires auth. Should be context-aware.
+- [x] **A11Y-L6**: Sort buttons in QuestionList lack `aria-sort` indication. File: `frontend/src/components/questionBanks/QuestionList.tsx`.
+- [x] **BRAND-L1**: All headings use `font-weight: 700`. Spec requires H2/H3=600, H4=500. File: `frontend/src/styles/global.css`.
+- [BLOCKED] **BRAND-L2**: Footer missing Metro North Health and Queensland Government co-branding logos. *(No logo/branding asset files available)*
+- [BLOCKED] **BRAND-L3**: Email templates use solid navy header instead of Lime-Teal-Navy gradient bar. *(No gradient design specification available)*

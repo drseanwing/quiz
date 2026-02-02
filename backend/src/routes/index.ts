@@ -6,6 +6,8 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import prisma from '@/config/database';
 import authRoutes from './auth';
 import userRoutes from './users';
@@ -16,6 +18,7 @@ import quizRoutes from './quizzes';
 import attemptRoutes from './attempts';
 import adminRoutes from './admin';
 
+const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 const router = Router();
 
 /**
@@ -35,7 +38,7 @@ router.get('/health', async (_req: Request, res: Response) => {
     data: {
       status: healthy ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
-      version: '1.0.0',
+      version: pkg.version,
     },
   });
 });
@@ -48,7 +51,7 @@ router.get('/', (_req: Request, res: Response) => {
     success: true,
     data: {
       name: 'REdI Quiz Platform API',
-      version: '1.0.0',
+      version: pkg.version,
       description: 'Resuscitation EDucation Initiative Online Assessment System',
     },
   });

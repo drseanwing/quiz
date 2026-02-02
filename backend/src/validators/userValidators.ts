@@ -21,7 +21,7 @@ export const updateProfileValidator = [
     .isString()
     .isLength({ min: 1, max: 100 })
     .withMessage('First name must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('First name contains invalid characters'),
 
   body('surname')
@@ -30,7 +30,7 @@ export const updateProfileValidator = [
     .isString()
     .isLength({ min: 1, max: 100 })
     .withMessage('Surname must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('Surname contains invalid characters'),
 
   body('idNumber')
@@ -92,7 +92,7 @@ export const createUserValidator = [
     .withMessage('First name is required')
     .isLength({ min: 1, max: 100 })
     .withMessage('First name must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('First name contains invalid characters'),
 
   body('surname')
@@ -101,7 +101,7 @@ export const createUserValidator = [
     .withMessage('Surname is required')
     .isLength({ min: 1, max: 100 })
     .withMessage('Surname must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('Surname contains invalid characters'),
 
   body('idNumber')
@@ -132,7 +132,7 @@ export const updateUserValidator = [
     .isString()
     .isLength({ min: 1, max: 100 })
     .withMessage('First name must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('First name contains invalid characters'),
 
   body('surname')
@@ -141,7 +141,7 @@ export const updateUserValidator = [
     .isString()
     .isLength({ min: 1, max: 100 })
     .withMessage('Surname must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('Surname contains invalid characters'),
 
   body('idNumber')

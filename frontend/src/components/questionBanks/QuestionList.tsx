@@ -107,6 +107,8 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
                 type="button"
                 className={`${styles.sortBtn} ${sortField === field ? styles.sortBtnActive : ''}`}
                 onClick={() => toggleSort(field)}
+                aria-sort={sortField === field ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                aria-label={`Sort by ${label} ${sortField === field ? (sortDir === 'asc' ? 'ascending' : 'descending') : ''}`}
               >
                 {label} {sortField === field && (sortDir === 'asc' ? '\u2191' : '\u2193')}
               </button>

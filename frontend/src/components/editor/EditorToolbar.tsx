@@ -3,7 +3,7 @@
  * @description Toolbar for the rich text editor
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import styles from './EditorToolbar.module.css';
 
@@ -12,6 +12,9 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+
   const isValidUrl = useCallback((url: string): boolean => {
     return /^https?:\/\//i.test(url);
   }, []);
@@ -26,20 +29,27 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     editor.chain().focus().setImage({ src: url }).run();
   }, [editor, isValidUrl]);
 
-  const addLink = useCallback(() => {
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('Enter URL (must start with http:// or https://)', previousUrl);
-    if (url === null) return;
-    if (url === '') {
+  const applyLink = useCallback(() => {
+    if (linkUrl === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      setShowLinkInput(false);
+      setLinkUrl('');
       return;
     }
-    if (!isValidUrl(url)) {
+    if (!isValidUrl(linkUrl)) {
       window.alert('Only http:// and https:// URLs are allowed.');
       return;
     }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  }, [editor, isValidUrl]);
+    editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+    setShowLinkInput(false);
+    setLinkUrl('');
+  }, [editor, isValidUrl, linkUrl]);
+
+  const addLink = useCallback(() => {
+    const previousUrl = editor.getAttributes('link').href;
+    setLinkUrl(previousUrl || '');
+    setShowLinkInput(true);
+  }, [editor]);
 
   return (
     <div className={styles.toolbar} role="toolbar" aria-label="Text formatting">
@@ -158,6 +168,29 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           &#128247;
         </button>
       </div>
+
+      {showLinkInput && (
+        <div className={styles.linkInput}>
+          <input
+            type="url"
+            placeholder="https://..."
+            value={linkUrl}
+            onChange={e => setLinkUrl(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                applyLink();
+              }
+              if (e.key === 'Escape') {
+                setShowLinkInput(false);
+                setLinkUrl('');
+              }
+            }}
+            autoFocus
+          />
+          <button type="button" onClick={applyLink}>Apply</button>
+          <button type="button" onClick={() => { setShowLinkInput(false); setLinkUrl(''); }}>Cancel</button>
+        </div>
+      )}
 
       <div className={styles.divider} />
 

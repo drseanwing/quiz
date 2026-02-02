@@ -40,7 +40,7 @@ export const registerValidator = [
     .withMessage('First name is required')
     .isLength({ min: 1, max: 100 })
     .withMessage('First name must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('First name contains invalid characters'),
 
   body('surname')
@@ -49,7 +49,7 @@ export const registerValidator = [
     .withMessage('Surname is required')
     .isLength({ min: 1, max: 100 })
     .withMessage('Surname must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z\s'-]+$/)
+    .matches(/^[\p{L}\p{M}\s'-]+$/u)
     .withMessage('Surname contains invalid characters'),
 
   body('idNumber')
