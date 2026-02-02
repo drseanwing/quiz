@@ -11,6 +11,20 @@ const { window } = new JSDOM('');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const purify = DOMPurify(window as any);
 
+// Restrict URI schemes to http(s) and mailto only
+const ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i;
+
+// Strip data: URIs from src attributes
+purify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.hasAttribute('src') && /^data:/i.test(node.getAttribute('src') || '')) {
+    node.removeAttribute('src');
+  }
+  // Enforce rel="noopener noreferrer" on links with target="_blank"
+  if (node.tagName === 'A' && node.getAttribute('target') === '_blank') {
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+});
+
 /**
  * Allowed HTML tags for rich text content (question prompts, feedback)
  */
@@ -43,6 +57,7 @@ export function sanitizeHtml(dirty: string): string {
     ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
     ADD_ATTR: ['target'],
+    ALLOWED_URI_REGEXP,
   });
 }
 
@@ -64,5 +79,6 @@ export function sanitizeOptionText(dirty: string): string {
     ALLOWED_TAGS: ['strong', 'em', 'u', 'sub', 'sup', 'code', 'br', 'img'],
     ALLOWED_ATTR: ['src', 'alt', 'width', 'height'],
     ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP,
   });
 }

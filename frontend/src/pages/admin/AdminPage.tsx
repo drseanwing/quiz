@@ -25,14 +25,16 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as Tab) || 'dashboard';
+  const VALID_TABS: Tab[] = ['dashboard', 'users', 'banks', 'completions', 'logs', 'invites'];
+  const rawTab = searchParams.get('tab');
+  const activeTab: Tab = rawTab && VALID_TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'dashboard';
 
   function setTab(tab: Tab) {
     setSearchParams({ tab });
   }
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
-    const tabs: Tab[] = ['dashboard', 'users', 'banks', 'completions', 'logs', 'invites'];
+    const tabs = VALID_TABS;
     const current = tabs.indexOf(activeTab);
     if (e.key === 'ArrowRight') {
       e.preventDefault();

@@ -568,7 +568,7 @@ export async function resetPassword(
   // Hash new password
   const passwordHash = await hashPassword(data.password);
 
-  // Update password and invalidate all outstanding reset tokens for this user
+  // Update password, invalidate reset tokens, and revoke all refresh tokens
   await prisma.$transaction([
     prisma.user.update({
       where: { id: resetRecord.userId },
@@ -577,6 +577,10 @@ export async function resetPassword(
     prisma.passwordReset.updateMany({
       where: { userId: resetRecord.userId, usedAt: null },
       data: { usedAt: new Date() },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId: resetRecord.userId, revoked: false },
+      data: { revoked: true },
     }),
   ]);
 

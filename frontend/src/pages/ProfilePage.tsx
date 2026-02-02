@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/common/Button';
@@ -15,8 +15,6 @@ import styles from './ProfilePage.module.css';
 
 export function ProfilePage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-
   // Profile form state
   const [profileForm, setProfileForm] = useState({
     firstName: user?.firstName || '',
@@ -39,7 +37,8 @@ export function ProfilePage() {
     onSuccess: (updatedUser) => {
       toast.success('Profile updated successfully');
       // Update the auth context with new user data
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      // Note: auth context uses local state, not TanStack Query, so no invalidation needed
+      // The form already updates from the mutation response above
       setProfileForm({
         firstName: updatedUser.firstName,
         surname: updatedUser.surname,

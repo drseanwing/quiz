@@ -182,6 +182,7 @@ router.delete(
  */
 router.post(
   '/questions/:id/duplicate',
+  requireEditor,
   questionIdParamValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -215,6 +216,7 @@ router.post(
  */
 router.patch(
   '/question-banks/:bankId/questions/reorder',
+  requireEditor,
   reorderQuestionsValidator,
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {

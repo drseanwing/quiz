@@ -203,6 +203,12 @@ export async function changePassword(
     data: { passwordHash },
   });
 
+  // Revoke all existing refresh tokens to invalidate other sessions
+  await prisma.refreshToken.updateMany({
+    where: { userId, revoked: false },
+    data: { revoked: true },
+  });
+
   logger.info('Password changed successfully', { userId });
 
   return { message: 'Password changed successfully' };

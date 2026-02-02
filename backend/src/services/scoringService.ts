@@ -120,18 +120,21 @@ function scoreTrueFalse(response: unknown, correctAnswer: unknown): IScoringResu
 }
 
 function scoreDragOrder(response: unknown, correctAnswer: unknown): IScoringResult {
-  const resp = response as { orderedIds?: string[] };
-  const correct = correctAnswer as { orderedIds?: string[] };
+  const resp = response as { order?: string[]; orderedIds?: string[] };
+  const correct = correctAnswer as { order?: string[]; orderedIds?: string[] };
 
-  if (!Array.isArray(resp.orderedIds) || !Array.isArray(correct.orderedIds)) {
+  const respOrder = resp.order || resp.orderedIds;
+  const correctOrder = correct.order || correct.orderedIds;
+
+  if (!Array.isArray(respOrder) || !Array.isArray(correctOrder)) {
     return { score: 0, isCorrect: false };
   }
 
-  if (resp.orderedIds.length !== correct.orderedIds.length) {
+  if (respOrder.length !== correctOrder.length) {
     return { score: 0, isCorrect: false };
   }
 
-  const isCorrect = resp.orderedIds.every((id, i) => id === correct.orderedIds![i]);
+  const isCorrect = respOrder.every((id, i) => id === correctOrder[i]);
   return { score: isCorrect ? 1 : 0, isCorrect };
 }
 
