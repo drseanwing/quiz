@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './CompletionsTab.module.css';
 
@@ -21,7 +22,7 @@ export function CompletionsTab() {
   const [exportError, setExportError] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-completions', page, filters],
+    queryKey: queryKeys.adminCompletions(page, filters as Record<string, unknown>),
     queryFn: () => adminApi.listCompletions({ ...filters, page, pageSize: 20 }),
   });
 

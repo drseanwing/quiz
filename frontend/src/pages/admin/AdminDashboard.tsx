@@ -6,12 +6,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './AdminDashboard.module.css';
 
 export function AdminDashboard() {
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: queryKeys.adminStats,
     queryFn: adminApi.getStats,
   });
 

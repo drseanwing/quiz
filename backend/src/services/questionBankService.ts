@@ -330,7 +330,11 @@ export async function deleteQuestionBank(
     );
   }
 
-  await prisma.questionBank.delete({ where: { id } });
+  // Delete in transaction to handle orphan invite tokens
+  await prisma.$transaction([
+    prisma.inviteToken.deleteMany({ where: { bankId: id } }),
+    prisma.questionBank.delete({ where: { id } }),
+  ]);
 
   logger.info('Question bank deleted', {
     bankId: id,

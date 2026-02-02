@@ -13,7 +13,7 @@ interface FeedbackDisplayProps {
 
 export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
   return (
-    <div className={`${styles.container} ${feedback.isCorrect ? styles.correct : styles.incorrect}`}>
+    <div className={`${styles.container} ${feedback.isCorrect ? styles.correct : styles.incorrect}`} role="status" aria-live="polite">
       <div className={styles.badge}>
         {feedback.isCorrect ? 'Correct' : 'Incorrect'}
         {!feedback.isCorrect && feedback.score > 0 && (

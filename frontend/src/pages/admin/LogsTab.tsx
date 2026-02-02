@@ -9,6 +9,7 @@ import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Modal } from '@/components/common/Modal';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './LogsTab.module.css';
 
@@ -20,7 +21,7 @@ export function LogsTab() {
   const [selectedLog, setSelectedLog] = useState<adminApi.ILogRow | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-logs', page, filters],
+    queryKey: queryKeys.adminLogs(page, filters as Record<string, unknown>),
     queryFn: () => adminApi.listLogs({ ...filters, page, pageSize: 25 }),
   });
 
@@ -83,7 +84,7 @@ export function LogsTab() {
                   <th scope="col">Entity</th>
                   <th scope="col">User</th>
                   <th scope="col">IP</th>
-                  <th scope="col"><span className="sr-only">Details</span></th>
+                  <th scope="col"><span className="visually-hidden">Details</span></th>
                 </tr>
               </thead>
               <tbody>

@@ -4,6 +4,7 @@
  */
 
 import api from '@/services/api';
+import type { IApiResponse } from '@/types';
 
 export interface IUploadResult {
   filename: string;
@@ -19,10 +20,10 @@ export async function uploadImage(file: File): Promise<IUploadResult> {
   const formData = new FormData();
   formData.append('image', file);
 
-  const res = await api.post('/uploads/images', formData, {
+  const body = (await api.post('/uploads/images', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return res.data;
+  })) as unknown as IApiResponse<IUploadResult>;
+  return body.data;
 }
 
 /**

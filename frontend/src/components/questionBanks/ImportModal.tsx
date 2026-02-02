@@ -10,6 +10,7 @@ import { importQuestionBank } from '@/services/questionBankApi';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import styles from './ImportModal.module.css';
 
 interface ImportModalProps {
@@ -28,7 +29,7 @@ export function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const importMutation = useMutation({
     mutationFn: () => importQuestionBank(fileData),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['questionBanks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionBanks() });
       onClose();
       navigate(`/question-banks/${result.id}`);
     },

@@ -20,6 +20,7 @@ import { handleValidationErrors } from '@/middleware/validation';
 import { AuthorizationError } from '@/middleware/errorHandler';
 import { authenticate, requireAdmin } from '@/middleware/auth';
 import logger from '@/config/logger';
+import { logAudit, IAuditContext } from '@/services/auditService';
 
 const router = Router();
 
@@ -226,6 +227,20 @@ router.post(
         ip: req.ip,
       });
 
+      // Audit log: user created by admin
+      const auditContext: IAuditContext = {
+        userId: req.user!.userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+      };
+      await logAudit(
+        'USER_CREATED',
+        'user',
+        user.id,
+        { email: user.email, role: user.role, createdBy: req.user!.userId },
+        auditContext
+      );
+
       res.status(201).json({
         success: true,
         data: user,
@@ -274,6 +289,20 @@ router.patch(
         adminUserId: req.user!.userId,
         ip: req.ip,
       });
+
+      // Audit log: user updated by admin
+      const auditContext: IAuditContext = {
+        userId: req.user!.userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+      };
+      await logAudit(
+        'USER_UPDATED',
+        'user',
+        req.params.id as string,
+        { updatedFields: Object.keys(req.body), updatedBy: req.user!.userId },
+        auditContext
+      );
 
       res.json({
         success: true,

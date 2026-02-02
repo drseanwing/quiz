@@ -134,36 +134,39 @@ router.post(
       });
 
       // Fire-and-forget: email notification (separate from audit log)
-      (async () => {
-        try {
-          const [bank, user] = await Promise.all([
-            prisma.questionBank.findUnique({
-              where: { id: results.bankId },
-              select: { notificationEmail: true },
-            }),
-            prisma.user.findUnique({
-              where: { id: req.user!.userId },
-              select: { firstName: true, surname: true },
-            }),
-          ]);
+      // Only send completion email if the attempt passed (FR-NT-001)
+      if (results.passed) {
+        (async () => {
+          try {
+            const [bank, user] = await Promise.all([
+              prisma.questionBank.findUnique({
+                where: { id: results.bankId },
+                select: { notificationEmail: true },
+              }),
+              prisma.user.findUnique({
+                where: { id: req.user!.userId },
+                select: { firstName: true, surname: true },
+              }),
+            ]);
 
-          if (bank?.notificationEmail && user) {
-            await sendCompletionNotification(results.id, bank.notificationEmail, {
-              userName: `${user.firstName} ${user.surname}`,
-              bankTitle: results.bankTitle,
-              score: results.score,
-              maxScore: results.maxScore,
-              percentage: results.percentage,
-              passed: results.passed,
+            if (bank?.notificationEmail && user) {
+              await sendCompletionNotification(results.id, bank.notificationEmail, {
+                userName: `${user.firstName} ${user.surname}`,
+                bankTitle: results.bankTitle,
+                score: results.score,
+                maxScore: results.maxScore,
+                percentage: results.percentage,
+                passed: results.passed,
+              });
+            }
+          } catch (err) {
+            logger.error('Post-submission email notification failed', {
+              attemptId: results.id,
+              error: err instanceof Error ? err.message : 'Unknown error',
             });
           }
-        } catch (err) {
-          logger.error('Post-submission email notification failed', {
-            attemptId: results.id,
-            error: err instanceof Error ? err.message : 'Unknown error',
-          });
-        }
-      })();
+        })();
+      }
 
       res.json({
         success: true,

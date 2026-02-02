@@ -15,29 +15,29 @@ Compiled from comprehensive code review (6 perspectives: frontend, backend, secu
 
 ## HIGH
 
-- [ ] **SEC-H2**: JWT tokens stored in `localStorage` vulnerable to XSS. Consider moving refresh token to HttpOnly cookie.
-- [ ] **SEC-H3**: Uploaded files served without authentication via `express.static`. Add auth middleware or signed URLs. File: `backend/src/index.ts:79`.
-- [ ] **SEC-H5**: `trust proxy` only enabled for production. Enable in all environments behind a reverse proxy. File: `backend/src/index.ts:22-24`.
-- [ ] **BE-H1**: Missing transaction in `deleteQuestionBank` leaves orphan invite tokens. Add `onDelete: SetNull` or delete in transaction. File: `backend/src/services/questionBankService.ts:333`.
-- [ ] **BE-H3**: No audit logging for admin user CRUD operations (create, update role, deactivate, reset password). Wire up existing `auditService` functions. Files: `backend/src/routes/users.ts`.
-- [ ] **BE-H5**: `options` and `correctAnswer` validators accept any type without structural validation per question type. File: `backend/src/validators/questionValidators.ts:57-63`.
-- [ ] **BE-H6**: `getAttempt` re-shuffles answer options on every load when `randomAnswers=true`. Only shuffle on attempt creation, not on reload. File: `backend/src/services/quizService.ts:350-351`.
-- [ ] **BE-H8**: Missing `requireEditor` middleware on question create/update/delete/duplicate/reorder routes. File: `backend/src/routes/questions.ts`.
-- [ ] **FE-H1**: `QuestionEditor.tsx` is 910+ lines with 8 inline components. Extract `DragOrderEditor`, `ImageMapEditor`, `SliderEditor`, `McOptionEditor`, `TfEditor` to separate files.
-- [ ] **FE-H5**: `uploadApi.ts` return pattern inconsistent with rest of codebase (missing `as unknown as IApiResponse` cast). File: `frontend/src/services/uploadApi.ts`.
-- [ ] **FE-H6**: `QuizPlayerPage` uses manual `useState`/`useEffect` fetch instead of TanStack Query. Refactor to `useQuery`. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:52-81`.
-- [ ] **FE-H8**: No query key factory. Scattered string literal query keys risk cache invalidation bugs. Create `queryKeys.ts`. Files: all query consumers.
-- [ ] **WF-C1**: Quiz start button not disabled when max attempts exhausted. Add guard check. File: `frontend/src/pages/quiz/QuizListPage.tsx:152-158`.
-- [ ] **WF-C3**: Timer expiry auto-submit can fire during ongoing submission (race condition). Clear interval once submission begins. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:84-101`.
-- [ ] **WF-H1**: No toast/notification system. Success feedback relies on inline alerts. Add a toast provider (e.g., react-hot-toast or sonner).
-- [ ] **WF-H2**: Admin Create/Edit User modals have no client-side validation (no react-hook-form/zod). Refactor to match auth form patterns. File: `frontend/src/pages/admin/UsersTab.tsx`.
-- [ ] **WF-H4**: No confirmation dialog for admin question bank status change (immediate on select change). File: `frontend/src/pages/admin/QuestionBanksTab.tsx:132-139`.
-- [ ] **A11Y-H1**: Quiz progress bar has no `role="progressbar"` or aria value attributes. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:239-249`.
-- [ ] **A11Y-H2**: `sr-only` class used in LogsTab but never defined. Should be `visually-hidden`. File: `frontend/src/pages/admin/LogsTab.tsx:86`.
-- [ ] **A11Y-H3**: FeedbackDisplay has no live region announcement. Add `role="status"` and `aria-live="polite"`. File: `frontend/src/components/quiz/FeedbackDisplay.tsx`.
-- [ ] **A11Y-C3**: Admin form inputs have no programmatic label association (no `htmlFor`/`id`). File: `frontend/src/pages/admin/UsersTab.tsx`.
-- [ ] **BRAND-H1**: Logo SVG file missing from `public/assets/`. Header uses text instead of logo image. Add `redi-logo.svg`.
-- [ ] **SPEC-H1**: Completion email sent on ALL results, not just pass as specified in FR-NT-001. Add `if (results.passed)` guard. File: `backend/src/routes/attempts.ts:137-166`.
+- [DEFERRED] **SEC-H2**: JWT tokens stored in `localStorage` vulnerable to XSS. Consider moving refresh token to HttpOnly cookie. *(Architectural change, deferred to future sprint)*
+- [x] **SEC-H3**: Uploaded files served without authentication via `express.static`. Add auth middleware or signed URLs. File: `backend/src/index.ts:79`.
+- [x] **SEC-H5**: `trust proxy` only enabled for production. Enable in all environments behind a reverse proxy. File: `backend/src/index.ts:22-24`.
+- [x] **BE-H1**: Missing transaction in `deleteQuestionBank` leaves orphan invite tokens. Add `onDelete: SetNull` or delete in transaction. File: `backend/src/services/questionBankService.ts:333`.
+- [x] **BE-H3**: No audit logging for admin user CRUD operations (create, update role, deactivate, reset password). Wire up existing `auditService` functions. Files: `backend/src/routes/users.ts`.
+- [x] **BE-H5**: `options` and `correctAnswer` validators accept any type without structural validation per question type. File: `backend/src/validators/questionValidators.ts:57-63`.
+- [x] **BE-H6**: `getAttempt` re-shuffles answer options on every load when `randomAnswers=true`. Only shuffle on attempt creation, not on reload. File: `backend/src/services/quizService.ts:350-351`.
+- [x] **BE-H8**: Missing `requireEditor` middleware on question create/update/delete/duplicate/reorder routes. File: `backend/src/routes/questions.ts`.
+- [x] **FE-H1**: `QuestionEditor.tsx` is 910+ lines with 8 inline components. Extract `DragOrderEditor`, `ImageMapEditor`, `SliderEditor`, `McOptionEditor`, `TfEditor` to separate files.
+- [x] **FE-H5**: `uploadApi.ts` return pattern inconsistent with rest of codebase (missing `as unknown as IApiResponse` cast). File: `frontend/src/services/uploadApi.ts`.
+- [x] **FE-H6**: `QuizPlayerPage` uses manual `useState`/`useEffect` fetch instead of TanStack Query. Refactor to `useQuery`. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:52-81`.
+- [x] **FE-H8**: No query key factory. Scattered string literal query keys risk cache invalidation bugs. Create `queryKeys.ts`. Files: all query consumers.
+- [x] **WF-C1**: Quiz start button not disabled when max attempts exhausted. Add guard check. File: `frontend/src/pages/quiz/QuizListPage.tsx:152-158`.
+- [x] **WF-C3**: Timer expiry auto-submit can fire during ongoing submission (race condition). Clear interval once submission begins. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:84-101`.
+- [x] **WF-H1**: No toast/notification system. Success feedback relies on inline alerts. Add a toast provider (e.g., react-hot-toast or sonner).
+- [x] **WF-H2**: Admin Create/Edit User modals have no client-side validation (no react-hook-form/zod). Refactor to match auth form patterns. File: `frontend/src/pages/admin/UsersTab.tsx`.
+- [x] **WF-H4**: No confirmation dialog for admin question bank status change (immediate on select change). File: `frontend/src/pages/admin/QuestionBanksTab.tsx:132-139`.
+- [x] **A11Y-H1**: Quiz progress bar has no `role="progressbar"` or aria value attributes. File: `frontend/src/pages/quiz/QuizPlayerPage.tsx:239-249`.
+- [x] **A11Y-H2**: `sr-only` class used in LogsTab but never defined. Should be `visually-hidden`. File: `frontend/src/pages/admin/LogsTab.tsx:86`.
+- [x] **A11Y-H3**: FeedbackDisplay has no live region announcement. Add `role="status"` and `aria-live="polite"`. File: `frontend/src/components/quiz/FeedbackDisplay.tsx`.
+- [x] **A11Y-C3**: Admin form inputs have no programmatic label association (no `htmlFor`/`id`). File: `frontend/src/pages/admin/UsersTab.tsx`.
+- [BLOCKED] **BRAND-H1**: Logo SVG file missing from `public/assets/`. Header uses text instead of logo image. Add `redi-logo.svg`. *(No logo file available)*
+- [x] **SPEC-H1**: Completion email sent on ALL results, not just pass as specified in FR-NT-001. Add `if (results.passed)` guard. File: `backend/src/routes/attempts.ts:137-166`.
 
 ## MEDIUM
 

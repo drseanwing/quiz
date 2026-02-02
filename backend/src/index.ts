@@ -14,6 +14,7 @@ import logger from './config/logger';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import { generalRateLimiter } from './middleware/rateLimiter';
+import { authenticate } from './middleware/auth';
 import routes from './routes';
 
 const app = express();
@@ -24,9 +25,7 @@ if (config.isDevelopment && config.port !== 3000) {
 }
 
 // Trust proxy (required behind nginx/Docker for correct req.ip and rate limiting)
-if (config.isProduction) {
-  app.set('trust proxy', 1);
-}
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(
@@ -80,8 +79,8 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.resolve(config.upload.dir)));
+// Serve uploaded files (requires authentication)
+app.use('/uploads', authenticate, express.static(path.resolve(config.upload.dir)));
 
 // General rate limiting
 app.use('/api', generalRateLimiter);

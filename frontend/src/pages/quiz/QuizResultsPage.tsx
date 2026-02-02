@@ -7,6 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
+import { queryKeys } from '@/lib/queryKeys';
 import * as quizApi from '@/services/quizApi';
 import { sanitizeHtml, safeUrl } from '@/utils/sanitize';
 import { QuestionType, FeedbackTiming, type IQuestionResult } from '@/types';
@@ -17,7 +18,7 @@ export function QuizResultsPage() {
   const navigate = useNavigate();
 
   const { data: results, isLoading, error } = useQuery({
-    queryKey: ['quiz-results', attemptId],
+    queryKey: queryKeys.quizResults(attemptId!),
     queryFn: () => quizApi.getResults(attemptId!),
     enabled: !!attemptId,
   });

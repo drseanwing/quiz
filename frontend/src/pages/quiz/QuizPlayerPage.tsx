@@ -5,12 +5,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { QuestionRenderer } from '@/components/quiz/QuestionRenderer';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
+import { queryKeys } from '@/lib/queryKeys';
 import * as quizApi from '@/services/quizApi';
-import type { IQuizQuestion, IImmediateFeedback } from '@/types';
+import type { IImmediateFeedback } from '@/types';
 import { AttemptStatus } from '@/types';
 import styles from './QuizPlayerPage.module.css';
 
@@ -21,21 +23,33 @@ export function QuizPlayerPage() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
 
-  // Quiz state
-  const [questions, setQuestions] = useState<IQuizQuestion[]>([]);
+  // Fetch quiz data with TanStack Query
+  const { data: attemptData, isLoading, error: queryError } = useQuery({
+    queryKey: queryKeys.quizAttempt(attemptId!),
+    queryFn: async () => {
+      if (!attemptId) throw new Error('No attempt ID');
+      return await quizApi.getAttempt(attemptId);
+    },
+    enabled: !!attemptId,
+  });
+
+  // Redirect if attempt is not in progress
+  useEffect(() => {
+    if (attemptData && attemptData.status !== AttemptStatus.IN_PROGRESS) {
+      navigate(`/results/${attemptId}`, { replace: true });
+    }
+  }, [attemptData, attemptId, navigate]);
+
+  // Initialize state from query data
   const [responses, setResponses] = useState<Record<string, unknown>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [bankTitle, setBankTitle] = useState('');
-  const [timeLimit, setTimeLimit] = useState(0);
-  const [startedAt, setStartedAt] = useState<Date | null>(null);
-  const [, setFeedbackTiming] = useState<'END' | 'IMMEDIATE' | 'NONE'>('END');
   const [feedbackMap, setFeedbackMap] = useState<Record<string, IImmediateFeedback>>({});
+  const [startedAt, setStartedAt] = useState<Date | null>(null);
 
   // UI state
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   // Timer state
@@ -48,49 +62,26 @@ export function QuizPlayerPage() {
   const submittingRef = useRef(false);
   responsesRef.current = responses;
 
-  // Load attempt
+  // Sync state when query data loads
   useEffect(() => {
-    if (!attemptId) return;
-
-    async function load() {
-      try {
-        setLoading(true);
-        const state = await quizApi.getAttempt(attemptId!);
-
-        if (state.status !== AttemptStatus.IN_PROGRESS) {
-          navigate(`/results/${attemptId}`, { replace: true });
-          return;
-        }
-
-        setQuestions(state.questions);
-        setResponses(state.responses);
-        setBankTitle(state.bankTitle);
-        setTimeLimit(state.timeLimit);
-        setStartedAt(new Date(state.startedAt));
-        setFeedbackTiming(state.feedbackTiming);
-        elapsedRef.current = state.timeSpent;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to load quiz';
-        setError(msg);
-      } finally {
-        setLoading(false);
-      }
+    if (attemptData) {
+      setResponses(attemptData.responses);
+      setStartedAt(new Date(attemptData.startedAt));
+      elapsedRef.current = attemptData.timeSpent;
     }
-
-    load();
-  }, [attemptId, navigate]);
+  }, [attemptData]);
 
   // Timer countdown (uses ref to avoid stale closure)
   useEffect(() => {
-    if (!startedAt || timeLimit <= 0) return;
+    if (!startedAt || !attemptData?.timeLimit || attemptData.timeLimit <= 0) return;
 
     function tick() {
       const elapsed = Math.floor((Date.now() - startedAt!.getTime()) / 1000);
       elapsedRef.current = elapsed;
-      const remaining = timeLimit * 60 - elapsed;
+      const remaining = attemptData!.timeLimit * 60 - elapsed;
       setTimeRemaining(remaining);
 
-      if (remaining <= 0) {
+      if (remaining <= 0 && !submittingRef.current) {
         handleSubmitRef.current();
       }
     }
@@ -98,7 +89,7 @@ export function QuizPlayerPage() {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [startedAt, timeLimit]);
+  }, [startedAt, attemptData?.timeLimit]);
 
   // Refs for debounce / auto-save status reset timers
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,7 +97,7 @@ export function QuizPlayerPage() {
 
   // Auto-save
   useEffect(() => {
-    if (!attemptId || loading) return;
+    if (!attemptId || isLoading) return;
 
     const id = setInterval(async () => {
       if (submittingRef.current) return; // Skip auto-save during submission
@@ -122,7 +113,7 @@ export function QuizPlayerPage() {
     }, AUTO_SAVE_INTERVAL);
 
     return () => clearInterval(id);
-  }, [attemptId, loading]);
+  }, [attemptId, isLoading]);
 
   // Cleanup debounce and status reset timers on unmount
   useEffect(() => {
@@ -181,7 +172,7 @@ export function QuizPlayerPage() {
       navigate(`/results/${attemptId}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to submit quiz';
-      setError(msg);
+      setSubmitError(msg);
       setSubmitting(false);
       submittingRef.current = false;
     }
@@ -190,11 +181,13 @@ export function QuizPlayerPage() {
   // Keep ref in sync with latest handleSubmit
   handleSubmitRef.current = handleSubmit;
 
-  // Navigation
+  // Extract data from query result
+  const questions = attemptData?.questions ?? [];
+  const bankTitle = attemptData?.bankTitle ?? '';
   const currentQuestion = questions[currentIndex];
   const answeredCount = questions.filter(q => q.id in responses).length;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>Loading quiz...</div>
@@ -202,10 +195,11 @@ export function QuizPlayerPage() {
     );
   }
 
-  if (error) {
+  if (queryError) {
+    const errorMessage = queryError instanceof Error ? queryError.message : 'Failed to load quiz';
     return (
       <div className={styles.page}>
-        <Alert variant="error">{error}</Alert>
+        <Alert variant="error">{errorMessage}</Alert>
         <Button onClick={() => navigate('/quizzes')}>Back to Quizzes</Button>
       </div>
     );
@@ -213,6 +207,7 @@ export function QuizPlayerPage() {
 
   return (
     <div className={styles.page}>
+      {submitError && <Alert variant="error">{submitError}</Alert>}
       {/* Header */}
       <header className={styles.header}>
         <h1 className={styles.title}>{bankTitle}</h1>
@@ -237,7 +232,14 @@ export function QuizPlayerPage() {
 
       {/* Progress */}
       <div className={styles.progress}>
-        <div className={styles.progressBar}>
+        <div
+          className={styles.progressBar}
+          role="progressbar"
+          aria-valuenow={answeredCount}
+          aria-valuemin={0}
+          aria-valuemax={questions.length}
+          aria-label="Quiz progress"
+        >
           <div
             className={styles.progressFill}
             style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}

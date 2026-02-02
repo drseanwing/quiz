@@ -9,6 +9,7 @@ import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Modal } from '@/components/common/Modal';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './QuestionBanksTab.module.css';
 
@@ -31,7 +32,7 @@ export function QuestionBanksTab() {
   const [mutationError, setMutationError] = useState('');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-banks', page, appliedFilters],
+    queryKey: queryKeys.adminBanks(page, appliedFilters as Record<string, unknown>),
     queryFn: () => adminApi.listAllBanks({ ...appliedFilters, page, pageSize: 20 }),
   });
 
@@ -55,11 +56,11 @@ export function QuestionBanksTab() {
       adminApi.updateBankStatus(bankId, status),
     onSuccess: () => {
       setMutationError('');
-      queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminBanks() });
     },
     onError: (err: unknown) => {
       setMutationError(err instanceof Error ? err.message : 'Failed to update status');
-      queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminBanks() });
     },
   });
 
@@ -67,7 +68,7 @@ export function QuestionBanksTab() {
     mutationFn: (bankId: string) => adminApi.deleteBank(bankId),
     onSuccess: () => {
       setMutationError('');
-      queryClient.invalidateQueries({ queryKey: ['admin-banks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminBanks() });
       setDeleteTarget(null);
     },
     onError: (err: unknown) => {
@@ -132,7 +133,14 @@ export function QuestionBanksTab() {
                       <select
                         value={bank.status}
                         className={`${styles.statusSelect} ${styles[STATUS_COLORS[bank.status] || '']}`}
-                        onChange={e => statusMutation.mutate({ bankId: bank.id, status: e.target.value })}
+                        onChange={e => {
+                          const newStatus = e.target.value;
+                          if (window.confirm(`Change status of "${bank.title}" to ${newStatus}?`)) {
+                            statusMutation.mutate({ bankId: bank.id, status: newStatus });
+                          } else {
+                            e.target.value = bank.status;
+                          }
+                        }}
                         aria-label={`Status for ${bank.title}`}
                       >
                         {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}

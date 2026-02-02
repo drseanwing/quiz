@@ -144,6 +144,7 @@ model QuizAttempt {
   completedAt   DateTime?     @map("completed_at")
   timeSpent     Int           @default(0) @map("time_spent")
   questionOrder Json          @map("question_order")
+  questionsData Json?         @map("questions_data")
   responses     Json
 
   // Relations

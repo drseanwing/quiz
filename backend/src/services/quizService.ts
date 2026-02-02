@@ -225,6 +225,12 @@ export async function startQuiz(
   const questionOrder = selectedQuestions.map(q => q.id);
   const quizQuestions = selectedQuestions.map(q => toQuizQuestion(q, bank.randomAnswers));
 
+  // Store the shuffled questions data so we don't re-shuffle on subsequent loads
+  const questionsData = quizQuestions.map(q => ({
+    id: q.id,
+    options: q.options,
+  }));
+
   // Use serializable transaction to prevent race conditions on attempt limits
   const attempt = await prisma.$transaction(async (tx) => {
     // Check attempt limit
@@ -273,6 +279,7 @@ export async function startQuiz(
         bankId,
         status: AttemptStatus.IN_PROGRESS,
         questionOrder: questionOrder,
+        questionsData: questionsData as object,
         responses: {},
       },
     });
@@ -341,13 +348,30 @@ export async function getAttempt(
     },
   });
 
-  // Reorder according to questionOrder
+  // Build a map of stored shuffled options (if available)
+  const storedQuestionsData = (attempt.questionsData as Array<{ id: string; options: unknown }> | null) || [];
+  const storedOptionsMap = new Map(storedQuestionsData.map(q => [q.id, q.options]));
+
+  // Reorder according to questionOrder, using stored shuffled options if available
   const questionMap = new Map(questions.map(q => [q.id, q]));
   const orderedQuestions: IQuizQuestion[] = [];
   for (const qId of questionOrder) {
     const q = questionMap.get(qId);
     if (q) {
-      orderedQuestions.push(toQuizQuestion(q, attempt.bank.randomAnswers));
+      // Use stored shuffled options if available, otherwise use original order
+      const storedOptions = storedOptionsMap.get(qId);
+      if (storedOptions !== undefined) {
+        orderedQuestions.push({
+          id: q.id,
+          type: q.type,
+          prompt: q.prompt,
+          promptImage: q.promptImage,
+          options: storedOptions,
+        });
+      } else {
+        // Fallback: no stored data (old attempts), don't shuffle
+        orderedQuestions.push(toQuizQuestion(q, false));
+      }
     }
   }
 

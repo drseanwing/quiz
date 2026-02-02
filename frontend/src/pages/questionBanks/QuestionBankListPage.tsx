@@ -13,6 +13,7 @@ import { Input } from '@/components/common/Input';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { ImportModal } from '@/components/questionBanks/ImportModal';
+import { queryKeys } from '@/lib/queryKeys';
 import { QuestionBankStatus } from '@/types';
 import styles from './QuestionBankListPage.module.css';
 
@@ -42,7 +43,7 @@ export function QuestionBankListPage() {
   }, [search]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['questionBanks', { search: debouncedSearch, status: statusFilter, page }],
+    queryKey: queryKeys.questionBanks({ search: debouncedSearch, status: statusFilter, page }),
     queryFn: () =>
       listQuestionBanks({
         search: debouncedSearch || undefined,

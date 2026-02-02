@@ -22,6 +22,7 @@ import { Spinner } from '@/components/common/Spinner';
 import { QuestionList } from '@/components/questionBanks/QuestionList';
 import { QuestionEditor } from '@/components/questionBanks/QuestionEditor';
 import { ExportButton } from '@/components/questionBanks/ExportButton';
+import { queryKeys } from '@/lib/queryKeys';
 import { QuestionBankStatus, FeedbackTiming } from '@/types';
 import type { IQuestion } from '@/types';
 import styles from './QuestionBankEditorPage.module.css';
@@ -64,7 +65,7 @@ export function QuestionBankEditorPage() {
   const [editingQuestion, setEditingQuestion] = useState<IQuestion | null>(null);
 
   const { data: bank, isLoading: isFetching, error: fetchError } = useQuery({
-    queryKey: ['questionBank', id],
+    queryKey: queryKeys.questionBank(id!),
     queryFn: () => getQuestionBank(id!),
     enabled: !!id,
   });
@@ -122,11 +123,11 @@ export function QuestionBankEditorPage() {
         : updateQuestionBank(id!, payload);
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['questionBanks'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionBanks() });
       if (isNew) {
         navigate(`/question-banks/${result.id}`, { replace: true });
       } else {
-        queryClient.invalidateQueries({ queryKey: ['questionBank', id] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.questionBank(id!) });
       }
     },
   });

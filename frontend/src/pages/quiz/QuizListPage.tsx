@@ -10,6 +10,7 @@ import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { Spinner } from '@/components/common/Spinner';
+import { queryKeys } from '@/lib/queryKeys';
 import * as quizApi from '@/services/quizApi';
 import * as questionBankApi from '@/services/questionBankApi';
 import type { IQuestionBank, IAttemptSummary } from '@/types';
@@ -23,12 +24,12 @@ export function QuizListPage() {
   const [startingBankId, setStartingBankId] = useState<string | null>(null);
 
   const { data: banksResult, isLoading: banksLoading } = useQuery({
-    queryKey: ['available-quizzes'],
+    queryKey: queryKeys.availableQuizzes,
     queryFn: () => questionBankApi.listQuestionBanks({ pageSize: 100 }),
   });
 
   const { data: attempts, isLoading: attemptsLoading } = useQuery({
-    queryKey: ['my-attempts'],
+    queryKey: queryKeys.myAttempts,
     queryFn: () => quizApi.listMyAttempts(),
   });
 
@@ -39,7 +40,7 @@ export function QuizListPage() {
     },
     onSuccess: (result) => {
       setStartingBankId(null);
-      queryClient.invalidateQueries({ queryKey: ['my-attempts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.myAttempts });
       navigate(`/quiz/${result.attemptId}`);
     },
     onError: (err) => {
@@ -150,13 +151,27 @@ export function QuizListPage() {
                           Resume
                         </Button>
                       ) : (
-                        <Button
-                          variant="primary"
-                          onClick={() => startMutation.mutate(bank.id)}
-                          disabled={startMutation.isPending && startingBankId === bank.id}
-                        >
-                          {startMutation.isPending && startingBankId === bank.id ? 'Starting...' : 'Start Quiz'}
-                        </Button>
+                        <>
+                          {bank.maxAttempts > 0 && completedAttempts.length >= bank.maxAttempts ? (
+                            <>
+                              <Button
+                                variant="primary"
+                                disabled
+                              >
+                                Start Quiz
+                              </Button>
+                              <p className={styles.maxAttemptsReached}>Maximum attempts reached</p>
+                            </>
+                          ) : (
+                            <Button
+                              variant="primary"
+                              onClick={() => startMutation.mutate(bank.id)}
+                              disabled={startMutation.isPending && startingBankId === bank.id}
+                            >
+                              {startMutation.isPending && startingBankId === bank.id ? 'Starting...' : 'Start Quiz'}
+                            </Button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

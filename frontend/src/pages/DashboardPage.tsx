@@ -10,6 +10,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import * as quizApi from '@/services/quizApi';
 import { UserRole, AttemptStatus } from '@/types';
 import styles from './DashboardPage.module.css';
@@ -19,7 +20,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   const { data: attempts, isLoading, error } = useQuery({
-    queryKey: ['my-attempts'],
+    queryKey: queryKeys.myAttempts,
     queryFn: () => quizApi.listMyAttempts(),
   });
 

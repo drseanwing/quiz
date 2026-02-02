@@ -10,6 +10,7 @@ import { QuestionListItem } from './QuestionListItem';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import type { IQuestion } from '@/types';
 import styles from './QuestionList.module.css';
 
@@ -28,23 +29,23 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['questions', bankId],
+    queryKey: queryKeys.questions(bankId),
     queryFn: () => listQuestions(bankId),
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteQuestion,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions', bankId] });
-      queryClient.invalidateQueries({ queryKey: ['questionBank', bankId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questions(bankId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionBank(bankId) });
     },
   });
 
   const duplicateMutation = useMutation({
     mutationFn: duplicateQuestion,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions', bankId] });
-      queryClient.invalidateQueries({ queryKey: ['questionBank', bankId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questions(bankId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionBank(bankId) });
     },
   });
 

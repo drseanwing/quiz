@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './InvitesTab.module.css';
 
@@ -33,14 +34,14 @@ export function InvitesTab() {
   }, []);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-invites', page],
+    queryKey: queryKeys.adminInvites(page),
     queryFn: () => adminApi.listInvites(page, 20),
   });
 
   const createMutation = useMutation({
     mutationFn: adminApi.createInvite,
     onSuccess: (invite) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-invites'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminInvites() });
       setFormSuccess(`Invite sent to ${invite.email}`);
       setEmail('');
       setFirstName('');

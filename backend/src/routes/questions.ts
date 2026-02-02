@@ -14,7 +14,7 @@ import {
   reorderQuestionsValidator,
 } from '@/validators/questionValidators';
 import { handleValidationErrors } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { authenticate, requireEditor } from '@/middleware/auth';
 import logger from '@/config/logger';
 
 const router = Router();
@@ -82,6 +82,7 @@ router.post(
   '/question-banks/:bankId/questions',
   createQuestionValidator,
   handleValidationErrors,
+  requireEditor,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.createQuestion(
@@ -116,6 +117,7 @@ router.patch(
   '/questions/:id',
   updateQuestionValidator,
   handleValidationErrors,
+  requireEditor,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const question = await questionService.updateQuestion(
@@ -149,6 +151,7 @@ router.delete(
   '/questions/:id',
   questionIdParamValidator,
   handleValidationErrors,
+  requireEditor,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await questionService.deleteQuestion(

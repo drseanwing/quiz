@@ -10,6 +10,7 @@ import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Modal } from '@/components/common/Modal';
 import { useAuth } from '@/hooks/useAuth';
+import { queryKeys } from '@/lib/queryKeys';
 import * as adminApi from '@/services/adminApi';
 import styles from './UsersTab.module.css';
 
@@ -29,7 +30,7 @@ export function UsersTab() {
   const [resetPwUser, setResetPwUser] = useState<adminApi.IUserRow | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-users', page, appliedFilters],
+    queryKey: queryKeys.adminUsers(page, appliedFilters as Record<string, unknown>),
     queryFn: () => adminApi.listUsers({ ...appliedFilters, page, pageSize: 20 }),
   });
 
@@ -51,7 +52,7 @@ export function UsersTab() {
   }
 
   function invalidateUsers() {
-    queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers() });
   }
 
   return (
@@ -189,6 +190,10 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
+    if (!form.firstName.trim()) { setErrorMsg('First name is required'); return; }
+    if (!form.surname.trim()) { setErrorMsg('Surname is required'); return; }
+    if (!form.email.trim() || !form.email.includes('@')) { setErrorMsg('Valid email is required'); return; }
+    if (form.password.length < 8) { setErrorMsg('Password must be at least 8 characters'); return; }
     mutation.mutate();
   }
 
@@ -197,15 +202,15 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       <form className={styles.modalForm} onSubmit={handleSubmit} noValidate>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
-          <label>First Name <input required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
-          <label>Surname <input required value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} /></label>
+          <label htmlFor="create-firstName">First Name <input id="create-firstName" required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
+          <label htmlFor="create-surname">Surname <input id="create-surname" required value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} /></label>
         </div>
-        <label>Email <input type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></label>
-        <label>Password <input type="password" required minLength={8} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} /></label>
+        <label htmlFor="create-email">Email <input id="create-email" type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></label>
+        <label htmlFor="create-password">Password <input id="create-password" type="password" required minLength={8} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} /></label>
         <div className={styles.formRow}>
-          <label>ID Number <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))} /></label>
-          <label>Role
-            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+          <label htmlFor="create-idNumber">ID Number <input id="create-idNumber" value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))} /></label>
+          <label htmlFor="create-role">Role
+            <select id="create-role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
               {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </label>
@@ -263,6 +268,8 @@ function EditUserModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
+    if (!form.firstName.trim()) { setErrorMsg('First name is required'); return; }
+    if (!form.surname.trim()) { setErrorMsg('Surname is required'); return; }
     mutation.mutate();
   }
 
@@ -271,20 +278,20 @@ function EditUserModal({
       <form className={styles.modalForm} onSubmit={handleSubmit} noValidate>
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         <div className={styles.formRow}>
-          <label>First Name <input required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
-          <label>Surname <input required value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} /></label>
+          <label htmlFor="edit-firstName">First Name <input id="edit-firstName" required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} /></label>
+          <label htmlFor="edit-surname">Surname <input id="edit-surname" required value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} /></label>
         </div>
-        <label>Email <input type="email" disabled value={user.email} /></label>
+        <label htmlFor="edit-email">Email <input id="edit-email" type="email" disabled value={user.email} /></label>
         <div className={styles.formRow}>
-          <label>ID Number <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))} /></label>
-          <label>Role
-            <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} disabled={isSelf}>
+          <label htmlFor="edit-idNumber">ID Number <input id="edit-idNumber" value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))} /></label>
+          <label htmlFor="edit-role">Role
+            <select id="edit-role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} disabled={isSelf}>
               {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </label>
         </div>
-        <label className={styles.checkboxLabel}>
-          <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} disabled={isSelf} />
+        <label htmlFor="edit-isActive" className={styles.checkboxLabel}>
+          <input id="edit-isActive" type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} disabled={isSelf} />
           Active
         </label>
         {isSelf && <p className={styles.modalNote}>You cannot change your own role or active status.</p>}
@@ -347,8 +354,8 @@ function ResetPasswordModal({
         {errorMsg && <Alert variant="error">{errorMsg}</Alert>}
         {successMsg && <Alert variant="success">{successMsg}</Alert>}
         <p className={styles.modalNote}>Set a new password for <strong>{user.email}</strong></p>
-        <label>New Password <input type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} /></label>
-        <label>Confirm Password <input type="password" required minLength={8} value={confirm} onChange={e => setConfirm(e.target.value)} /></label>
+        <label htmlFor="reset-password">New Password <input id="reset-password" type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} /></label>
+        <label htmlFor="reset-confirm">Confirm Password <input id="reset-confirm" type="password" required minLength={8} value={confirm} onChange={e => setConfirm(e.target.value)} /></label>
         <div className={styles.modalActions}>
           <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Resetting...' : 'Reset Password'}</Button>
           <Button variant="secondary" type="button" onClick={onClose}>Close</Button>
