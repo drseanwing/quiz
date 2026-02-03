@@ -70,8 +70,8 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Install dumb-init
-RUN apk add --no-cache dumb-init curl
+# Install dumb-init and OpenSSL (required by Prisma)
+RUN apk add --no-cache dumb-init curl openssl
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

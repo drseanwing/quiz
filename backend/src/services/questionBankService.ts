@@ -11,6 +11,7 @@ import {
   AppError,
   NotFoundError,
 } from '@/middleware/errorHandler';
+import { Cache, buildCacheKey } from '@/utils/cache';
 
 /**
  * Safe question bank type (with creator info)
@@ -108,6 +109,25 @@ const questionBankSelect = {
   },
 } as const;
 
+// Cache for question bank listings (30 seconds TTL)
+const bankListCache = new Cache<IPaginatedResult<QuestionBankWithCreator>>();
+const BANK_LIST_CACHE_PREFIX = 'banks:list';
+const BANK_LIST_CACHE_TTL = 30;
+
+/**
+ * Invalidate all question bank list cache entries
+ */
+function invalidateBankListCache(): void {
+  bankListCache.deletePattern(BANK_LIST_CACHE_PREFIX);
+}
+
+/**
+ * Clear the bank list cache (for testing)
+ */
+export function clearBankListCache(): void {
+  bankListCache.clear();
+}
+
 /**
  * Check if a user can access a question bank
  */
@@ -145,6 +165,20 @@ export async function listQuestionBanks(
   userId: string,
   userRole: UserRole
 ): Promise<IPaginatedResult<QuestionBankWithCreator>> {
+  // Build cache key from all parameters
+  const cacheKey = buildCacheKey(BANK_LIST_CACHE_PREFIX, {
+    ...filters,
+    ...pagination,
+    userId,
+    userRole,
+  });
+
+  // Check cache first
+  const cached = bankListCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const { page, pageSize } = pagination;
   const skip = (page - 1) * pageSize;
 
@@ -195,7 +229,7 @@ export async function listQuestionBanks(
     prisma.questionBank.count({ where }),
   ]);
 
-  return {
+  const result: IPaginatedResult<QuestionBankWithCreator> = {
     data: data as unknown as QuestionBankWithCreator[],
     meta: {
       page,
@@ -204,6 +238,11 @@ export async function listQuestionBanks(
       totalPages: Math.ceil(totalCount / pageSize),
     },
   };
+
+  // Cache the result
+  bankListCache.set(cacheKey, result, BANK_LIST_CACHE_TTL);
+
+  return result;
 }
 
 /**
@@ -257,6 +296,9 @@ export async function createQuestionBank(
     createdBy: createdById,
   });
 
+  // Invalidate list cache
+  invalidateBankListCache();
+
   return bank as unknown as QuestionBankWithCreator;
 }
 
@@ -302,6 +344,9 @@ export async function updateQuestionBank(
     updatedBy: userId,
   });
 
+  // Invalidate list cache
+  invalidateBankListCache();
+
   return bank as unknown as QuestionBankWithCreator;
 }
 
@@ -340,6 +385,9 @@ export async function deleteQuestionBank(
     bankId: id,
     deletedBy: userId,
   });
+
+  // Invalidate list cache
+  invalidateBankListCache();
 }
 
 /**
@@ -411,6 +459,9 @@ export async function duplicateQuestionBank(
     newBankId: bank.id,
     duplicatedBy: userId,
   });
+
+  // Invalidate list cache
+  invalidateBankListCache();
 
   return bank as unknown as QuestionBankWithCreator;
 }

@@ -5,7 +5,22 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listQuestions, deleteQuestion, duplicateQuestion } from '@/services/questionApi';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { listQuestions, deleteQuestion, duplicateQuestion, reorderQuestions } from '@/services/questionApi';
 import { QuestionListItem } from './QuestionListItem';
 import { Button } from '@/components/common/Button';
 import { Spinner } from '@/components/common/Spinner';
@@ -49,6 +64,19 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
     },
   });
 
+  const reorderMutation = useMutation({
+    mutationFn: (questionIds: string[]) => reorderQuestions(bankId, questionIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.questions(bankId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionBank(bankId) });
+    },
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   if (isLoading) {
     return (
       <div className={styles.loading}>
@@ -84,6 +112,23 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
       setSortField(field);
       setSortDir('asc');
     }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sorted.findIndex((q) => q.id === active.id);
+    const newIndex = sorted.findIndex((q) => q.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically reorder in cache
+    const reordered = arrayMove(sorted, oldIndex, newIndex);
+    queryClient.setQueryData(queryKeys.questions(bankId), reordered);
+
+    // Call API with new order
+    reorderMutation.mutate(reordered.map((q) => q.id));
   }
 
   return (
@@ -130,22 +175,30 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
           </p>
         </div>
       ) : (
-        <div className={styles.list}>
-          {sorted.map((question, index) => (
-            <QuestionListItem
-              key={question.id}
-              question={question}
-              index={index}
-              onEdit={onEditQuestion}
-              onDuplicate={(id) => duplicateMutation.mutate(id)}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              isDuplicating={
-                duplicateMutation.isPending &&
-                duplicateMutation.variables === question.id
-              }
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sorted.map((q) => q.id)} strategy={verticalListSortingStrategy}>
+            <div className={styles.list}>
+              {sorted.map((question, index) => (
+                <QuestionListItem
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  onEdit={onEditQuestion}
+                  onDuplicate={(id) => duplicateMutation.mutate(id)}
+                  onDelete={(id) => deleteMutation.mutate(id)}
+                  isDuplicating={
+                    duplicateMutation.isPending &&
+                    duplicateMutation.variables === question.id
+                  }
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

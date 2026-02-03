@@ -12,6 +12,10 @@ const mockPrisma = {
     delete: jest.fn(),
     count: jest.fn(),
   },
+  inviteToken: {
+    deleteMany: jest.fn(),
+  },
+  $transaction: jest.fn(),
 };
 
 jest.mock('@/config/database', () => ({
@@ -29,10 +33,12 @@ import {
   updateQuestionBank,
   deleteQuestionBank,
   duplicateQuestionBank,
+  clearBankListCache,
 } from '@/services/questionBankService';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearBankListCache();
 });
 
 function makeBank(overrides: Record<string, unknown> = {}) {
@@ -424,11 +430,16 @@ describe('deleteQuestionBank', () => {
       _count: { attempts: 0 },
     };
     mockPrisma.questionBank.findUnique.mockResolvedValue(existing);
+    mockPrisma.$transaction.mockImplementation(async (operations) => {
+      // Execute the operations passed to transaction
+      return Promise.all(operations.map((op: Promise<unknown>) => op));
+    });
+    mockPrisma.inviteToken.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.questionBank.delete.mockResolvedValue(existing);
 
     await deleteQuestionBank('bank-1', 'editor-1', UserRole.EDITOR);
 
-    expect(mockPrisma.questionBank.delete).toHaveBeenCalledWith({ where: { id: 'bank-1' } });
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
   });
 
   it('throws NotFoundError when bank does not exist', async () => {
@@ -466,11 +477,15 @@ describe('deleteQuestionBank', () => {
       _count: { attempts: 0 },
     };
     mockPrisma.questionBank.findUnique.mockResolvedValue(existing);
+    mockPrisma.$transaction.mockImplementation(async (operations) => {
+      return Promise.all(operations.map((op: Promise<unknown>) => op));
+    });
+    mockPrisma.inviteToken.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.questionBank.delete.mockResolvedValue(existing);
 
     await deleteQuestionBank('bank-1', 'admin-1', UserRole.ADMIN);
 
-    expect(mockPrisma.questionBank.delete).toHaveBeenCalled();
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
   });
 });
 

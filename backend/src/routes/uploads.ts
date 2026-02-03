@@ -7,8 +7,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, requireEditor } from '@/middleware/auth';
 import { uploadRateLimiter } from '@/middleware/rateLimiter';
-import { imageUpload, validateMagicBytes } from '@/config/upload';
-import { getImageUrl, deleteImage } from '@/services/uploadService';
+import { imageUpload, validateMagicBytes, optimizeImage } from '@/config/upload';
+import { getImageUrl, deleteImage, recordUpload } from '@/services/uploadService';
 import { ValidationError } from '@/middleware/errorHandler';
 import logger from '@/config/logger';
 
@@ -49,7 +49,20 @@ router.post(
       // Validate magic bytes match claimed MIME type
       await validateMagicBytes(req.file.path, req.file.mimetype);
 
+      // Optimize image (resize and compress)
+      await optimizeImage(req.file.path, req.file.mimetype);
+
       const url = getImageUrl(req.file.filename);
+
+      // Record upload in database
+      await recordUpload({
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        uploadedById: req.user!.userId,
+        associatedEntity: req.body.associatedEntity, // Optional: "question:{id}" or "bank:{id}"
+      });
 
       logger.info('Image uploaded', {
         filename: req.file.filename,
@@ -96,7 +109,7 @@ router.delete(
         throw new ValidationError('Invalid filename');
       }
 
-      await deleteImage(filename);
+      await deleteImage(filename, req.user!.userId, req.user!.role);
 
       logger.info('Image deleted via API', {
         filename,

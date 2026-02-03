@@ -33,7 +33,8 @@
   max-width: 400px;
 }
 
-.statusFilter {
+.statusFilter,
+.sortSelect {
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--redi-border);
   border-radius: var(--radius-md);
@@ -43,7 +44,8 @@
   cursor: pointer;
 }
 
-.statusFilter:focus {
+.statusFilter:focus,
+.sortSelect:focus {
   outline: 2px solid var(--redi-teal);
   outline-offset: 2px;
 }

@@ -62,6 +62,7 @@ beforeEach(() => {
 describe('sendCompletionNotification', () => {
   const baseData = {
     userName: 'Jane Doe',
+    userEmail: 'jane@example.com',
     bankTitle: 'Safety Quiz',
     score: 8,
     maxScore: 10,
@@ -218,6 +219,7 @@ describe('sendCompletionNotification (mock mode)', () => {
 
     await sendCompletionNotification('attempt-1', 'admin@example.com', {
       userName: 'Test',
+      userEmail: 'test@example.com',
       bankTitle: 'Quiz',
       score: 5,
       maxScore: 10,
@@ -234,6 +236,7 @@ describe('sendCompletionNotification (mock mode)', () => {
 
     await sendCompletionNotification('attempt-1', 'admin@example.com', {
       userName: 'Test',
+      userEmail: 'test@example.com',
       bankTitle: 'Quiz',
       score: 5,
       maxScore: 10,
@@ -250,6 +253,7 @@ describe('sendCompletionNotification (mock mode)', () => {
 
     await sendCompletionNotification('attempt-1', 'admin@example.com', {
       userName: 'Test',
+      userEmail: 'test@example.com',
       bankTitle: 'Quiz',
       score: 5,
       maxScore: 10,

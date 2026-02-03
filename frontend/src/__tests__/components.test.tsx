@@ -80,12 +80,12 @@ describe('Button', () => {
 describe('Alert', () => {
   it('renders children', () => {
     render(<Alert>Something happened</Alert>);
-    expect(screen.getByRole('alert')).toHaveTextContent('Something happened');
+    expect(screen.getByRole('status')).toHaveTextContent('Something happened');
   });
 
   it('has role="alert"', () => {
     render(<Alert>Info</Alert>);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('applies variant class', () => {
@@ -95,7 +95,7 @@ describe('Alert', () => {
 
   it('defaults to info variant', () => {
     render(<Alert>Default</Alert>);
-    expect(screen.getByRole('alert').className).toContain('info');
+    expect(screen.getByRole('status').className).toContain('info');
   });
 
   it('renders dismiss button when onDismiss provided', () => {

@@ -69,11 +69,19 @@
   color: var(--redi-dark-gray);
 }
 
+.optionContainer {
+  margin-bottom: var(--space-md);
+}
+
 .optionRow {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+}
+
+.optionImageUpload {
+  margin-left: calc(18px + var(--space-sm));
 }
 
 .optionRadio {

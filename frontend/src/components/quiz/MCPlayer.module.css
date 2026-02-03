@@ -26,6 +26,11 @@
   background: var(--teal-light, rgba(43, 158, 158, 0.05));
 }
 
+.option:focus-within {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
 .option.selected {
   border-color: var(--teal);
   background: var(--teal-light, rgba(43, 158, 158, 0.08));

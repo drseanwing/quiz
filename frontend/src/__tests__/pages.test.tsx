@@ -556,8 +556,8 @@ describe('QuizResultsPage', () => {
     mockQuizApi.getResults.mockResolvedValue(makeResults());
     renderWithProviders(<QuizResultsPage />);
     await waitFor(() => {
-      expect(screen.getByText('True/False')).toBeInTheDocument();
-      expect(screen.getByText('Multiple Choice')).toBeInTheDocument();
+      expect(screen.getByText('True / False')).toBeInTheDocument();
+      expect(screen.getByText('Multiple Choice (Single)')).toBeInTheDocument();
     });
   });
 

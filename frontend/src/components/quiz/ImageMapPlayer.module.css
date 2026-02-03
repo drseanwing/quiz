@@ -25,6 +25,11 @@
   cursor: crosshair;
 }
 
+.image:focus-visible {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
 .marker {
   position: absolute;
   width: 20px;

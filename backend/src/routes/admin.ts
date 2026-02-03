@@ -17,8 +17,13 @@ import { authenticate, requireAdmin } from '@/middleware/auth';
 import * as emailService from '@/services/emailService';
 import { logDataExport } from '@/services/auditService';
 import logger from '@/config/logger';
+import { Cache } from '@/utils/cache';
+import { cleanupOrphanedFiles } from '@/services/orphanCleanupService';
 
 const router = Router();
+
+// Cache for platform stats (60 seconds TTL)
+const statsCache = new Cache<adminService.IPlatformStats>();
 
 // All admin routes require authentication + admin role
 router.use(authenticate);
@@ -26,13 +31,20 @@ router.use(requireAdmin);
 
 /**
  * GET /api/admin/stats
- * Platform statistics
+ * Platform statistics (cached for 60 seconds)
  */
 router.get(
   '/stats',
   async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const stats = await adminService.getPlatformStats();
+      const cacheKey = 'platform-stats';
+      let stats = statsCache.get(cacheKey);
+
+      if (!stats) {
+        stats = await adminService.getPlatformStats();
+        statsCache.set(cacheKey, stats, 60);
+      }
+
       res.json({ success: true, data: stats });
     } catch (error) {
       next(error);
@@ -187,6 +199,47 @@ router.get(
 
       const result = await adminService.listInviteTokens(pagination);
       res.json({ success: true, data: result.data, meta: result.meta });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/admin/uploads/cleanup
+ * Clean up orphaned upload files
+ * Query params:
+ *   - dryRun: boolean (default: true) - if true, only scan for orphans without deleting
+ */
+router.post(
+  '/uploads/cleanup',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const dryRun = req.query.dryRun !== 'false'; // Default to true
+
+      logger.info('Orphan cleanup initiated', {
+        userId: req.user!.userId,
+        dryRun,
+      });
+
+      const result = await cleanupOrphanedFiles(dryRun);
+
+      res.json({
+        success: true,
+        data: {
+          dryRun,
+          orphansFound: result.orphansFound.length,
+          filesDeleted: result.filesDeleted.length,
+          totalSize: result.totalSize,
+          orphans: result.orphansFound.map((f) => ({
+            filename: f.filename,
+            size: f.size,
+            uploadedAt: f.uploadedAt,
+            uploadedBy: f.uploadedBy,
+          })),
+          errors: result.errors,
+        },
+      });
     } catch (error) {
       next(error);
     }

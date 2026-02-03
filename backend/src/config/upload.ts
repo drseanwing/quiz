@@ -8,6 +8,7 @@ import multer from 'multer';
 import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
+import sharp from 'sharp';
 import { config } from '@/config';
 import { ValidationError } from '@/middleware/errorHandler';
 import logger from '@/config/logger';
@@ -16,9 +17,16 @@ const uploadDir = config.upload.dir;
 
 // Ensure upload directory exists
 function ensureUploadDir(): void {
-  const imagesDir = path.join(uploadDir, 'images');
-  if (!fs.existsSync(imagesDir)) {
-    fs.mkdirSync(imagesDir, { recursive: true });
+  try {
+    const imagesDir = path.join(uploadDir, 'images');
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
+    }
+  } catch (err) {
+    // Non-fatal in test environments; log warning
+    if (process.env.NODE_ENV !== 'test') {
+      console.error('Failed to create upload directory:', err);
+    }
   }
 }
 
@@ -119,6 +127,76 @@ export async function validateMagicBytes(filePath: string, claimedMime: string):
     }
   } finally {
     try { fs.closeSync(fd); } catch { /* already closed */ }
+  }
+}
+
+/**
+ * Optimize uploaded image using sharp
+ * - Resize if larger than max dimensions
+ * - Compress to reduce file size
+ * - Convert to optimal format
+ */
+export async function optimizeImage(filePath: string, mimetype: string): Promise<void> {
+  const MAX_WIDTH = 2048;
+  const MAX_HEIGHT = 2048;
+  const JPEG_QUALITY = 85;
+  const PNG_QUALITY = 85;
+  const WEBP_QUALITY = 85;
+
+  try {
+    const image = sharp(filePath);
+    const metadata = await image.metadata();
+
+    // Skip optimization if image is already small
+    if (!metadata.width || !metadata.height) {
+      logger.warn('Could not read image dimensions, skipping optimization', { filePath });
+      return;
+    }
+
+    const needsResize = metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT;
+
+    // Determine output format and quality
+    let pipeline = image;
+
+    if (needsResize) {
+      pipeline = pipeline.resize(MAX_WIDTH, MAX_HEIGHT, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+    }
+
+    // Apply format-specific compression
+    if (mimetype === 'image/jpeg') {
+      pipeline = pipeline.jpeg({ quality: JPEG_QUALITY, mozjpeg: true });
+    } else if (mimetype === 'image/png') {
+      pipeline = pipeline.png({ quality: PNG_QUALITY, compressionLevel: 9 });
+    } else if (mimetype === 'image/webp') {
+      pipeline = pipeline.webp({ quality: WEBP_QUALITY });
+    } else if (mimetype === 'image/gif') {
+      // GIF optimization is limited; sharp doesn't support animated GIFs well
+      // Just resize if needed
+      if (needsResize) {
+        pipeline = pipeline.png({ quality: PNG_QUALITY });
+      } else {
+        return; // Skip optimization for GIFs
+      }
+    }
+
+    // Write optimized image to temporary file
+    const tempPath = `${filePath}.tmp`;
+    await pipeline.toFile(tempPath);
+
+    // Replace original with optimized version
+    fs.renameSync(tempPath, filePath);
+
+    logger.info('Image optimized', {
+      filePath,
+      originalSize: metadata.size,
+      originalDimensions: `${metadata.width}x${metadata.height}`,
+    });
+  } catch (error) {
+    logger.error('Image optimization failed', { filePath, error });
+    // Don't throw - allow upload to proceed with unoptimized image
   }
 }
 

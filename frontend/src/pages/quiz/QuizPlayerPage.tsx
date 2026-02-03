@@ -183,6 +183,47 @@ export function QuizPlayerPage() {
 
   // Extract data from query result
   const questions = attemptData?.questions ?? [];
+
+  // Keyboard navigation: Arrow keys to navigate between questions
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Don't interfere with form inputs
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        return;
+      }
+
+      const questionsLength = questions.length;
+
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          if (currentIndex > 0) {
+            e.preventDefault();
+            setCurrentIndex(prev => Math.max(0, prev - 1));
+          }
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+          if (currentIndex < questionsLength - 1) {
+            e.preventDefault();
+            setCurrentIndex(prev => Math.min(questionsLength - 1, prev + 1));
+          }
+          break;
+        case 'Home':
+          e.preventDefault();
+          setCurrentIndex(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          setCurrentIndex(questionsLength - 1);
+          break;
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, questions.length]);
   const bankTitle = attemptData?.bankTitle ?? '';
   const currentQuestion = questions[currentIndex];
   const answeredCount = questions.filter(q => q.id in responses).length;

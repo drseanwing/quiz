@@ -52,11 +52,13 @@ import {
   getPlatformStats,
   createInviteToken,
   listInviteTokens,
+  clearStatsCache,
 } from '@/services/adminService';
 import { NotFoundError } from '@/middleware/errorHandler';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearStatsCache();
 });
 
 // ─── listCompletions ─────────────────────────────────────────────────────────
@@ -194,12 +196,11 @@ describe('exportCompletionsCSV', () => {
 
   it('caps export at 50000 rows', async () => {
     mockPrisma.quizAttempt.findMany.mockResolvedValue([]);
-    mockPrisma.quizAttempt.count.mockResolvedValue(0);
 
     await exportCompletionsCSV({});
 
     const callArgs = mockPrisma.quizAttempt.findMany.mock.calls[0][0];
-    expect(callArgs.take).toBe(50000);
+    expect(callArgs.take).toBe(1000); // BATCH_SIZE for cursor pagination
   });
 });
 

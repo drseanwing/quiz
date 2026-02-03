@@ -73,6 +73,7 @@ model User {
   auditLogs      AuditLog[]
   passwordResets PasswordReset[]
   refreshTokens  RefreshToken[]
+  uploads        Upload[]
 
   @@index([role])
   @@index([isActive])
@@ -258,4 +259,24 @@ model RefreshToken {
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
+}
+
+model Upload {
+  id               String    @id @default(uuid())
+  filename         String    @unique
+  originalName     String    @map("original_name")
+  mimetype         String
+  size             Int
+  uploadedById     String    @map("uploaded_by_id")
+  uploadedAt       DateTime  @default(now()) @map("uploaded_at")
+  associatedEntity String?   @map("associated_entity") // Format: "question:{id}" or "bank:{id}"
+  deletedAt        DateTime? @map("deleted_at")
+
+  // Relations
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([uploadedById])
+  @@index([associatedEntity])
+  @@index([deletedAt])
+  @@map("uploads")
 }

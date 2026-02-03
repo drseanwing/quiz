@@ -10,6 +10,7 @@ import prisma from '@/config/database';
 import logger from '@/config/logger';
 import { NotFoundError } from '@/middleware/errorHandler';
 import type { IPaginationParams, IPaginatedResult } from './questionBankService';
+import { Cache } from '@/utils/cache';
 
 // ---------------------------------------------------------------------------
 // Completions (quiz attempt results)
@@ -292,7 +293,24 @@ export interface IPlatformStats {
   passRate: number;
 }
 
+// Cache for platform stats (60 seconds TTL)
+const statsCache = new Cache<IPlatformStats>();
+const STATS_CACHE_KEY = 'platform:stats';
+const STATS_CACHE_TTL = 60;
+
+/**
+ * Clear the stats cache (for testing)
+ */
+export function clearStatsCache(): void {
+  statsCache.clear();
+}
+
 export async function getPlatformStats(): Promise<IPlatformStats> {
+  // Check cache first
+  const cached = statsCache.get(STATS_CACHE_KEY);
+  if (cached) {
+    return cached;
+  }
   const [
     totalUsers,
     activeUsers,
@@ -318,7 +336,7 @@ export async function getPlatformStats(): Promise<IPlatformStats> {
     }),
   ]);
 
-  return {
+  const stats: IPlatformStats = {
     totalUsers,
     activeUsers,
     totalBanks,
@@ -329,6 +347,11 @@ export async function getPlatformStats(): Promise<IPlatformStats> {
     averageScore: Math.round((scoreAgg._avg.percentage ?? 0) * 100) / 100,
     passRate: completedAttempts > 0 ? Math.round((passedCount / completedAttempts) * 100) : 0,
   };
+
+  // Cache the result
+  statsCache.set(STATS_CACHE_KEY, stats, STATS_CACHE_TTL);
+
+  return stats;
 }
 
 // ---------------------------------------------------------------------------

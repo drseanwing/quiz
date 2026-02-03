@@ -24,6 +24,12 @@
   cursor: grabbing;
 }
 
+.dragHandle:focus-visible {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .dragIcon {
   font-size: var(--text-lg);
   line-height: 1;

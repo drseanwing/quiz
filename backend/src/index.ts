@@ -142,9 +142,12 @@ async function start() {
   process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-start().catch((err) => {
-  logger.error('Failed to start server', { error: err });
-  process.exit(1);
-});
+// Only auto-start when not running under a test runner
+if (process.env.NODE_ENV !== 'test') {
+  start().catch((err) => {
+    logger.error('Failed to start server', { error: err });
+    process.exit(1);
+  });
+}
 
 export default app;

@@ -1,6 +1,19 @@
 /**
  * Tests for JWT utility functions
  */
+
+// Mock Prisma client
+const mockPrisma = {
+  refreshToken: {
+    create: jest.fn().mockResolvedValue({}),
+  },
+};
+
+jest.mock('@/config/database', () => ({
+  __esModule: true,
+  default: mockPrisma,
+}));
+
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -15,6 +28,10 @@ const mockUser = {
   email: 'test@example.com',
   role: 'STUDENT' as const,
 };
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
 describe('extractTokenFromHeader', () => {
   it('extracts token from valid Bearer header', () => {
@@ -81,16 +98,16 @@ describe('generateRefreshToken', () => {
 });
 
 describe('generateTokenPair', () => {
-  it('returns both tokens and expiresIn', () => {
-    const pair = generateTokenPair(mockUser);
+  it('returns both tokens and expiresIn', async () => {
+    const pair = await generateTokenPair(mockUser);
     expect(pair.accessToken).toBeTruthy();
     expect(pair.refreshToken).toBeTruthy();
     expect(typeof pair.expiresIn).toBe('number');
     expect(pair.expiresIn).toBeGreaterThan(0);
   });
 
-  it('access and refresh tokens are different', () => {
-    const pair = generateTokenPair(mockUser);
+  it('access and refresh tokens are different', async () => {
+    const pair = await generateTokenPair(mockUser);
     expect(pair.accessToken).not.toBe(pair.refreshToken);
   });
 });

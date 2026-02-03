@@ -27,6 +27,11 @@
   border-color: var(--teal);
 }
 
+.item:focus-visible {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
 .item.dragging {
   box-shadow: var(--shadow-lg);
   border-color: var(--teal);

@@ -17,15 +17,30 @@ import {
 import { handleValidationErrors } from '@/middleware/validation';
 import { authenticate, requireEditor } from '@/middleware/auth';
 import logger from '@/config/logger';
+import { Cache, buildCacheKey } from '@/utils/cache';
 
 const router = Router();
+
+// Cache for question banks list (30 seconds TTL)
+const questionBanksCache = new Cache<questionBankService.IPaginatedResult<questionBankService.QuestionBankWithCreator>>();
+const questionBankCache = new Cache<questionBankService.QuestionBankWithCreator>();
+
+// Helper to invalidate caches on write operations
+function invalidateBankCaches(bankId?: string): void {
+  questionBanksCache.clear();
+  if (bankId) {
+    questionBankCache.delete(`bank:${bankId}`);
+  } else {
+    questionBankCache.clear();
+  }
+}
 
 // All question bank routes require authentication
 router.use(authenticate);
 
 /**
  * GET /api/question-banks
- * List question banks with filtering and pagination
+ * List question banks with filtering and pagination (cached for 30 seconds)
  */
 router.get(
   '/',
@@ -46,12 +61,30 @@ router.get(
         pageSize: Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 20)),
       };
 
-      const result = await questionBankService.listQuestionBanks(
-        filters,
-        pagination,
-        req.user!.userId,
-        req.user!.role
-      );
+      // Build cache key including user context and filters
+      const cacheKey = buildCacheKey('banks-list', {
+        userId: req.user!.userId,
+        role: req.user!.role,
+        search: search || '',
+        status: status || '',
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+      });
+
+      let result = questionBanksCache.get(cacheKey);
+
+      if (!result) {
+        result = await questionBankService.listQuestionBanks(
+          filters,
+          pagination,
+          req.user!.userId,
+          req.user!.role
+        );
+        questionBanksCache.set(cacheKey, result, 30);
+      }
+
+      // Add cache headers for conditional requests
+      res.setHeader('Cache-Control', 'private, max-age=30');
 
       res.json({
         success: true,
@@ -66,7 +99,7 @@ router.get(
 
 /**
  * GET /api/question-banks/:id
- * Get a single question bank by ID
+ * Get a single question bank by ID (cached for 30 seconds)
  */
 router.get(
   '/:id',
@@ -74,11 +107,26 @@ router.get(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const bank = await questionBankService.getQuestionBank(
-        req.params.id as string,
-        req.user!.userId,
-        req.user!.role
-      );
+      const bankId = req.params.id as string;
+      const cacheKey = buildCacheKey(`bank:${bankId}`, {
+        userId: req.user!.userId,
+        role: req.user!.role,
+      });
+
+      let bank = questionBankCache.get(cacheKey);
+
+      if (!bank) {
+        bank = await questionBankService.getQuestionBank(
+          bankId,
+          req.user!.userId,
+          req.user!.role
+        );
+        questionBankCache.set(cacheKey, bank, 30);
+      }
+
+      // Add cache headers for conditional requests
+      res.setHeader('Cache-Control', 'private, max-age=30');
+      res.setHeader('Last-Modified', bank.updatedAt.toUTCString());
 
       res.json({
         success: true,
@@ -105,6 +153,9 @@ router.post(
         req.body,
         req.user!.userId
       );
+
+      // Invalidate caches on write
+      invalidateBankCaches();
 
       logger.info('Question bank created', {
         bankId: bank.id,
@@ -133,15 +184,19 @@ router.patch(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const bankId = req.params.id as string;
       const bank = await questionBankService.updateQuestionBank(
-        req.params.id as string,
+        bankId,
         req.body,
         req.user!.userId,
         req.user!.role
       );
 
+      // Invalidate caches on write
+      invalidateBankCaches(bankId);
+
       logger.info('Question bank updated', {
-        bankId: req.params.id,
+        bankId,
         userId: req.user!.userId,
         ip: req.ip,
       });
@@ -167,14 +222,18 @@ router.delete(
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const bankId = req.params.id as string;
       await questionBankService.deleteQuestionBank(
-        req.params.id as string,
+        bankId,
         req.user!.userId,
         req.user!.role
       );
 
+      // Invalidate caches on write
+      invalidateBankCaches(bankId);
+
       logger.info('Question bank deleted', {
-        bankId: req.params.id,
+        bankId,
         userId: req.user!.userId,
         ip: req.ip,
       });
@@ -205,6 +264,9 @@ router.post(
         req.user!.userId,
         req.user!.role
       );
+
+      // Invalidate caches on write
+      invalidateBankCaches();
 
       logger.info('Question bank duplicated', {
         originalBankId: req.params.id,
@@ -262,6 +324,9 @@ router.post(
         req.body,
         req.user!.userId
       );
+
+      // Invalidate caches on write
+      invalidateBankCaches();
 
       logger.info('Question bank imported via API', {
         bankId: result.id,

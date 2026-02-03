@@ -19,6 +19,11 @@
   border-color: var(--teal);
 }
 
+.btn:focus-visible {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
 .btn.selected {
   border-color: var(--teal);
   background: var(--teal);

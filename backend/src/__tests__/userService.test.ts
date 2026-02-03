@@ -25,6 +25,9 @@ const mockPrisma = {
     update: jest.fn(),
     count: jest.fn(),
   },
+  refreshToken: {
+    updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+  },
 };
 
 jest.mock('@/config/database', () => ({
@@ -194,7 +197,7 @@ describe('createUser', () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
     mockPrisma.user.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
       ...mockUser,
-      email: data.email,
+      email: (data.email as string).toLowerCase(),
       firstName: data.firstName,
       surname: data.surname,
       role: data.role,

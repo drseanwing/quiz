@@ -26,6 +26,11 @@
   cursor: pointer;
 }
 
+.slider:focus-visible {
+  outline: 3px solid var(--redi-teal);
+  outline-offset: 2px;
+}
+
 .slider::-webkit-slider-thumb {
   appearance: none;
   width: 24px;

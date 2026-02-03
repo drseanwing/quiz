@@ -236,8 +236,8 @@
 #### P2.3.2: Upload Service
 - ✅ Create image upload handler
 - ✅ Create image deletion handler
-- ⏳ Create upload ownership tracker
-- ⏳ Create orphan file cleanup utility
+- ✅ Create upload ownership tracker
+- ✅ Create orphan file cleanup utility
 
 #### P2.3.3: Upload Routes
 - ✅ Create POST /api/uploads/images endpoint
@@ -288,13 +288,13 @@
 - ✅ Create RichTextEditor component
 - ✅ Add image insertion support
 - ✅ Add toolbar configuration
-- ⏳ Add HTML output sanitization
+- ✅ Add HTML output sanitization
 
 #### P2.6.3: Question Bank List UI
 - ✅ Create QuestionBankList page
 - ✅ Create QuestionBankCard component
 - ✅ Add filtering controls
-- ⏳ Add sorting controls
+- ✅ Add sorting controls
 - ✅ Add create new button
 
 #### P2.6.4: Question Bank Editor UI
@@ -309,7 +309,7 @@
 #### P2.6.5: Question List UI
 - ✅ Create QuestionList component
 - ✅ Create QuestionListItem component
-- ⏳ Add drag-to-reorder functionality
+- ✅ Add drag-to-reorder functionality
 - ✅ Add question count display
 - ✅ Add delete confirmation modal
 
@@ -319,14 +319,14 @@
 - ✅ Create prompt editor
 - ✅ Create feedback editor
 - ✅ Create reference link input
-- ⏳ Add image upload for prompt
-- ⏳ Add image upload for feedback
+- ✅ Add image upload for prompt
+- ✅ Add image upload for feedback
 
 #### P2.6.7: Multiple Choice Editor
 - ✅ Create MultipleChoiceEditor component
 - ✅ Add option list management
 - ✅ Add option text editing
-- ⏳ Add option image upload
+- ✅ Add option image upload
 - ✅ Add correct answer selection
 - ✅ Add multi-select mode toggle
 
@@ -335,17 +335,17 @@
 - ✅ Add correct answer radio buttons
 
 #### P2.6.9: Drag Order Editor
-- ⏳ Create DragOrderEditor component
-- ⏳ Add item list management
-- ⏳ Add correct order definition
-- ⏳ Add preview ordering
+- ✅ Create DragOrderEditor component
+- ✅ Add item list management
+- ✅ Add correct order definition
+- ✅ Add preview ordering
 
 #### P2.6.10: Image Map Editor
-- ⏳ Create ImageMapEditor component
-- ⏳ Add image upload
-- ⏳ Add region drawing tool
-- ⏳ Add region shape selector
-- ⏳ Add correct region marking
+- ✅ Create ImageMapEditor component
+- ✅ Add image upload
+- ✅ Add region drawing tool
+- ✅ Add region shape selector
+- ✅ Add correct region marking
 
 #### P2.6.11: Slider Editor
 - ✅ Create SliderEditor component
@@ -354,7 +354,7 @@
 - ✅ Add unit input
 - ✅ Add correct value input
 - ✅ Add tolerance input
-- ⏳ Add tick marks configuration
+- ✅ Add tick marks configuration
 
 #### P2.6.12: Import/Export UI
 - ✅ Create ImportModal component
@@ -696,17 +696,17 @@
 ### P5.2: Accessibility
 
 #### P5.2.1: Color Contrast
-- ⏳ Audit all text colors
-- ⏳ Fix failing contrast ratios
-- ⏳ Test with contrast checker
-- ⏳ Add high contrast mode support
+- ✅ Audit all text colors
+- ✅ Fix failing contrast ratios
+- ✅ Test with contrast checker
+- ✅ Add high contrast mode support
 
 #### P5.2.2: Keyboard Navigation
-- ⏳ Test all forms with keyboard
-- ⏳ Test modal dialogs with keyboard
-- ⏳ Test quiz player with keyboard
+- ✅ Test all forms with keyboard
+- ✅ Test modal dialogs with keyboard
+- ✅ Test quiz player with keyboard
 - ✅ Add visible focus indicators
-- ⏳ Fix tab order issues
+- ✅ Fix tab order issues
 
 #### P5.2.3: Screen Reader Support
 - ✅ Add ARIA labels to inputs (search, filters, selects)
@@ -978,4 +978,84 @@
 - localStorage token storage (needs httpOnly cookie backend infrastructure)
 - ImageMapPlayer coordinate normalization (needs responsive layout coordinate system)
 
-**Last Updated**: 2026-01-31
+---
+
+## CODE REVIEW ISSUES
+
+Compiled from comprehensive code review (6 perspectives: frontend, backend, security, workflow, accessibility, brand/spec compliance).
+
+### Critical
+
+- [BLOCKED] **SEC-C1**: Scrub Power Automate webhook URL from `.env.example` (contains live signature). Replace with placeholder. Rotate the webhook in Power Automate portal. *(Requires manual webhook rotation)*
+- [x] **SEC-C3**: Password reset token leaked in API response when `NODE_ENV=development`. Ensure production deploys use `NODE_ENV=production`. Add startup guard refusing dev mode on non-localhost.
+- [x] **BE-C1**: Hash refresh tokens with SHA-256 before database storage (currently plaintext). Match existing pattern used for password reset and invite tokens.
+- [x] **BE-C3**: In-memory lockout store (`Map`) does not persist across restarts or scale across processes. Move to database-backed storage.
+- [x] **FE-C2**: Static `id="slider-ticks"` on SliderPlayer datalist causes DOM ID collision when multiple slider questions exist. Use `useId()` for unique IDs.
+- [x] **A11Y-C1**: ImageMapPlayer is mouse-only; completely inaccessible to keyboard/screen reader users. Add `tabIndex`, `role`, `onKeyDown` support.
+- [x] **A11Y-C2**: ImageUpload dropzone is a non-focusable click-only `<div>`. Add `tabIndex={0}`, `role="button"`, `onKeyDown`.
+- [x] **A11Y-C4**: No `prefers-reduced-motion` media query anywhere in the codebase. Add global rule to `global.css`.
+
+### High
+
+- [DEFERRED] **SEC-H2**: JWT tokens stored in `localStorage` vulnerable to XSS. Consider moving refresh token to HttpOnly cookie. *(Architectural change, deferred to future sprint)*
+- [x] **SEC-H3**: Uploaded files served without authentication via `express.static`. Add auth middleware or signed URLs.
+- [x] **SEC-H5**: `trust proxy` only enabled for production. Enable in all environments behind a reverse proxy.
+- [x] **BE-H1**: Missing transaction in `deleteQuestionBank` leaves orphan invite tokens. Add `onDelete: SetNull` or delete in transaction.
+- [x] **BE-H3**: No audit logging for admin user CRUD operations (create, update role, deactivate, reset password). Wire up existing `auditService` functions.
+- [x] **BE-H5**: `options` and `correctAnswer` validators accept any type without structural validation per question type.
+- [x] **BE-H6**: `getAttempt` re-shuffles answer options on every load when `randomAnswers=true`. Only shuffle on attempt creation, not on reload.
+- [x] **BE-H8**: Missing `requireEditor` middleware on question create/update/delete/duplicate/reorder routes.
+- [x] **FE-H1**: `QuestionEditor.tsx` is 910+ lines with 8 inline components. Extract editors to separate files.
+- [x] **FE-H5**: `uploadApi.ts` return pattern inconsistent with rest of codebase (missing `as unknown as IApiResponse` cast).
+- [x] **FE-H6**: `QuizPlayerPage` uses manual `useState`/`useEffect` fetch instead of TanStack Query. Refactor to `useQuery`.
+- [x] **FE-H8**: No query key factory. Scattered string literal query keys risk cache invalidation bugs. Create `queryKeys.ts`.
+- [x] **WF-C1**: Quiz start button not disabled when max attempts exhausted. Add guard check.
+- [x] **WF-C3**: Timer expiry auto-submit can fire during ongoing submission (race condition). Clear interval once submission begins.
+- [x] **WF-H1**: No toast/notification system. Success feedback relies on inline alerts. Add a toast provider.
+- [x] **WF-H2**: Admin Create/Edit User modals have no client-side validation. Refactor to match auth form patterns.
+- [x] **WF-H4**: No confirmation dialog for admin question bank status change (immediate on select change).
+- [x] **A11Y-H1**: Quiz progress bar has no `role="progressbar"` or aria value attributes.
+- [x] **A11Y-H2**: `sr-only` class used in LogsTab but never defined. Should be `visually-hidden`.
+- [x] **A11Y-H3**: FeedbackDisplay has no live region announcement. Add `role="status"` and `aria-live="polite"`.
+- [x] **A11Y-C3**: Admin form inputs have no programmatic label association (no `htmlFor`/`id`).
+- [BLOCKED] **BRAND-H1**: Logo SVG file missing from `public/assets/`. Header uses text instead of logo image. *(No logo file available)*
+- [x] **SPEC-H1**: Completion email sent on ALL results, not just pass as specified in FR-NT-001. Add `if (results.passed)` guard.
+
+### Medium
+
+- [x] **BE-M1**: CSV export loads up to 50,000 rows into memory. Use streaming/cursor-based pagination.
+- [x] **BE-M5**: Password reset token exposed in dev/test response. Only expose in `isTest`, not `isDevelopment`.
+- [x] **BE-M9**: Static file serving for uploads has no cache headers. Add `Cache-Control` headers.
+- [x] **BE-M10**: `normalizeEmail()` in validators conflicts with manual `.toLowerCase()` in services. Pick one approach.
+- [x] **FE-M1**: Duplicated `TYPE_LABELS` maps across 4 files. Extract to shared constant.
+- [x] **FE-M2**: Duplicated pagination UI across 6 admin tab components. Extract `<Pagination>` component.
+- [x] **FE-M8**: `ImageUpload.handleRemove` silently swallows deletion errors. Show warning or only clear on success.
+- [x] **FE-M12**: `QuestionListItem.stripHtml` creates a new `DOMParser` on every render. Hoist to module scope.
+- [x] **WF-M2**: No responsive/mobile-specific CSS. Admin tables overflow on mobile. Add `@media` queries.
+- [x] **WF-M4**: Admin tabs are not URL-driven. All tabs share `/admin` URL. Use URL search params for tab persistence.
+- [x] **WF-M8**: QuestionEditor modal has no unsaved-changes guard. Escape/outside click loses all edits silently.
+- [x] **A11Y-M1**: Input component uses `:focus` instead of `:focus-visible`. Removes native focus ring.
+- [x] **A11Y-M4**: Multiple `role="alert"` elements fire announcement storms. Use `role="status"` for success/info alerts.
+- [x] **A11Y-M5**: Admin page tab panel keyboard navigation incomplete. No arrow-key navigation between tabs.
+- [x] **BRAND-M1**: Montserrat and Bebas Neue fonts declared but never loaded. Add Google Fonts link to `index.html`.
+- [x] **BRAND-M2**: Focus outline is 2px, brand guideline requires 3px.
+- [x] **SPEC-M1**: Image map scoring does not handle `poly` shape type. Only `rect` and `circle` implemented.
+- [x] **SPEC-M2**: Profile page missing from frontend. Spec references it in directory structure and UI layout.
+- [x] **BE-H2**: `questionCount` default of 10 silently truncates quizzes. Default to 0 meaning "all questions".
+- [x] **SEC-M5**: CORS allows `localhost` origins alongside production domain. Use separate production config.
+- [x] **SPEC-L2**: Completion notification email body omits user email address. Add to template.
+
+### Low
+
+- [x] **BE-L1**: Hardcoded version `'1.0.0'` in multiple places. Read from `package.json`.
+- [x] **BE-L2**: Name regex `^[a-zA-Z\s'-]+$` excludes non-Latin characters. Use Unicode-aware pattern.
+- [x] **BE-L5**: Upload rate limit max hardcoded to 10. Make configurable.
+- [x] **BE-L7**: Weak password blocklist (only 8 entries). Expand to top 1000 or use `zxcvbn`.
+- [x] **FE-L5**: `EditorToolbar` uses `window.prompt()` for URL input. Replace with custom popover.
+- [x] **WF-L1**: NotFoundPage links to `/dashboard` which requires auth. Should be context-aware.
+- [x] **A11Y-L6**: Sort buttons in QuestionList lack `aria-sort` indication.
+- [x] **BRAND-L1**: All headings use `font-weight: 700`. Spec requires H2/H3=600, H4=500.
+- [BLOCKED] **BRAND-L2**: Footer missing Metro North Health and Queensland Government co-branding logos. *(No logo/branding asset files available)*
+- [BLOCKED] **BRAND-L3**: Email templates use solid navy header instead of Lime-Teal-Navy gradient bar. *(No gradient design specification available)*
+
+**Last Updated**: 2026-02-03

@@ -21,6 +21,8 @@ interface IQuestionBankListParams {
   pageSize?: number;
   search?: string;
   status?: QuestionBankStatus;
+  sortBy?: 'title' | 'createdAt' | 'updatedAt' | 'status' | 'questionCount';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export async function listQuestionBanks(
@@ -31,6 +33,8 @@ export async function listQuestionBanks(
   if (params.pageSize !== undefined) searchParams.set('pageSize', String(params.pageSize));
   if (params.search) searchParams.set('search', params.search);
   if (params.status) searchParams.set('status', params.status);
+  if (params.sortBy) searchParams.set('sortBy', params.sortBy);
+  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
 
   const query = searchParams.toString();
   const body = (await api.get(`/question-banks${query ? `?${query}` : ''}`)) as unknown as IApiResponse<IQuestionBank[]>;

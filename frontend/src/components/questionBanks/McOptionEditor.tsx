@@ -4,6 +4,7 @@
  */
 
 import { Button } from '@/components/common/Button';
+import { ImageUpload } from '@/components/common/ImageUpload';
 import type { IQuestionOption } from '@/types';
 import styles from './QuestionEditor.module.css';
 
@@ -42,6 +43,13 @@ export function McOptionEditor({ options, correctAnswer, isMulti, onChange }: Mc
     );
   }
 
+  function updateImage(id: string, image: string) {
+    onChange(
+      options.map((o) => (o.id === id ? { ...o, image: image || undefined } : o)),
+      correctAnswer
+    );
+  }
+
   function toggleCorrect(id: string) {
     if (isMulti) {
       const answers = Array.isArray(correctAnswer) ? (correctAnswer as string[]) : [];
@@ -63,31 +71,40 @@ export function McOptionEditor({ options, correctAnswer, isMulti, onChange }: Mc
           : correctAnswer === opt.id;
 
         return (
-          <div key={opt.id} className={styles.optionRow}>
-            <input
-              type={isMulti ? 'checkbox' : 'radio'}
-              name="correctAnswer"
-              checked={isCorrect}
-              onChange={() => toggleCorrect(opt.id)}
-              className={styles.optionRadio}
-              aria-label={`Mark "${opt.text}" as correct`}
-            />
-            <input
-              type="text"
-              value={opt.text}
-              onChange={(e) => updateText(opt.id, e.target.value)}
-              className={styles.optionInput}
-            />
-            {options.length > 2 && (
-              <button
-                type="button"
-                className={styles.removeOption}
-                onClick={() => removeOption(opt.id)}
-                aria-label={`Remove option "${opt.text}"`}
-              >
-                &times;
-              </button>
-            )}
+          <div key={opt.id} className={styles.optionContainer}>
+            <div className={styles.optionRow}>
+              <input
+                type={isMulti ? 'checkbox' : 'radio'}
+                name="correctAnswer"
+                checked={isCorrect}
+                onChange={() => toggleCorrect(opt.id)}
+                className={styles.optionRadio}
+                aria-label={`Mark "${opt.text}" as correct`}
+              />
+              <input
+                type="text"
+                value={opt.text}
+                onChange={(e) => updateText(opt.id, e.target.value)}
+                className={styles.optionInput}
+              />
+              {options.length > 2 && (
+                <button
+                  type="button"
+                  className={styles.removeOption}
+                  onClick={() => removeOption(opt.id)}
+                  aria-label={`Remove option "${opt.text}"`}
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+            <div className={styles.optionImageUpload}>
+              <ImageUpload
+                value={opt.image ?? ''}
+                onChange={(url) => updateImage(opt.id, url)}
+                label="Option image (optional)"
+              />
+            </div>
           </div>
         );
       })}

@@ -10,6 +10,7 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import { EditorToolbar } from './EditorToolbar';
+import { sanitizeHtml } from '@/utils/sanitize';
 import styles from './RichTextEditor.module.css';
 
 interface RichTextEditorProps {
@@ -46,7 +47,9 @@ export function RichTextEditor({
     content,
     onUpdate: ({ editor: e }) => {
       if (!isInternalUpdate.current) {
-        onChange(e.getHTML());
+        const rawHtml = e.getHTML();
+        const sanitized = sanitizeHtml(rawHtml);
+        onChange(sanitized);
       }
     },
     editorProps: {

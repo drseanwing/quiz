@@ -259,7 +259,7 @@ describe('ImageMapPlayer', () => {
 
   it('shows hint text', () => {
     render(<ImageMapPlayer options={{ image: 'https://example.com/img.png' }} answer={null} onChange={vi.fn()} disabled={false} />);
-    expect(screen.getByText('Click on the image to mark your answer')).toBeInTheDocument();
+    expect(screen.getByText('Click on the image or use arrow keys to position and Enter to select')).toBeInTheDocument();
   });
 
   it('shows fallback message when no image', () => {
@@ -358,7 +358,7 @@ describe('QuestionRenderer', () => {
 
   it('renders question type label for MC', () => {
     render(<QuestionRenderer question={makeQuestion()} questionIndex={0} totalQuestions={5} answer={null} onChange={vi.fn()} />);
-    expect(screen.getByText('Multiple Choice')).toBeInTheDocument();
+    expect(screen.getByText('Multiple Choice (Single)')).toBeInTheDocument();
   });
 
   it('renders prompt HTML', () => {
@@ -404,7 +404,7 @@ describe('QuestionRenderer', () => {
 
   it('renders ImageMapPlayer for IMAGE_MAP type', () => {
     render(<QuestionRenderer question={makeQuestion({ type: QuestionType.IMAGE_MAP, options: { image: 'https://example.com/img.png' } })} questionIndex={0} totalQuestions={1} answer={null} onChange={vi.fn()} />);
-    expect(screen.getByText('Click on the image to mark your answer')).toBeInTheDocument();
+    expect(screen.getByText('Click on the image or use arrow keys to position and Enter to select')).toBeInTheDocument();
   });
 
   it('renders FeedbackDisplay when feedback provided', () => {
@@ -426,8 +426,8 @@ describe('QuestionRenderer', () => {
 
   it('shows type labels for all question types', () => {
     const labels: [QuestionType, string][] = [
-      [QuestionType.MULTIPLE_CHOICE_SINGLE, 'Multiple Choice'],
-      [QuestionType.MULTIPLE_CHOICE_MULTI, 'Multiple Select'],
+      [QuestionType.MULTIPLE_CHOICE_SINGLE, 'Multiple Choice (Single)'],
+      [QuestionType.MULTIPLE_CHOICE_MULTI, 'Multiple Choice (Multi)'],
       [QuestionType.TRUE_FALSE, 'True / False'],
       [QuestionType.SLIDER, 'Slider'],
       [QuestionType.DRAG_ORDER, 'Drag to Order'],

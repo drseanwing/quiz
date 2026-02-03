@@ -17,19 +17,34 @@ import uploadRoutes from './uploads';
 import quizRoutes from './quizzes';
 import attemptRoutes from './attempts';
 import adminRoutes from './admin';
+import { Cache } from '@/utils/cache';
 
 const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 const router = Router();
+
+// Cache for health check DB ping (10 seconds TTL)
+const healthCache = new Cache<'ok' | 'error'>();
+const HEALTH_CACHE_KEY = 'health:db';
+const HEALTH_CACHE_TTL = 10;
 
 /**
  * Health check endpoint — verifies API + database connectivity
  */
 router.get('/health', async (_req: Request, res: Response) => {
-  let dbStatus: 'ok' | 'error' = 'ok';
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    dbStatus = 'error';
+  // Check cache first
+  let dbStatus = healthCache.get(HEALTH_CACHE_KEY);
+
+  if (!dbStatus) {
+    // Cache miss - perform DB check
+    dbStatus = 'ok';
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch {
+      dbStatus = 'error';
+    }
+
+    // Cache the result
+    healthCache.set(HEALTH_CACHE_KEY, dbStatus, HEALTH_CACHE_TTL);
   }
 
   const healthy = dbStatus === 'ok';

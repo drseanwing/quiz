@@ -25,10 +25,21 @@ const STATUS_OPTIONS = [
   { value: QuestionBankStatus.ARCHIVED, label: 'Archived' },
 ];
 
+const SORT_OPTIONS = [
+  { value: 'updatedAt:desc', label: 'Recently Updated' },
+  { value: 'createdAt:desc', label: 'Recently Created' },
+  { value: 'title:asc', label: 'Name (A-Z)' },
+  { value: 'title:desc', label: 'Name (Z-A)' },
+  { value: 'questionCount:desc', label: 'Most Questions' },
+  { value: 'questionCount:asc', label: 'Least Questions' },
+  { value: 'status:asc', label: 'Status (A-Z)' },
+];
+
 export function QuestionBankListPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [sortOption, setSortOption] = useState('updatedAt:desc');
   const [page, setPage] = useState(1);
   const [importOpen, setImportOpen] = useState(false);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,14 +53,21 @@ export function QuestionBankListPage() {
     };
   }, [search]);
 
+  const [sortBy, sortOrder] = sortOption.split(':') as [
+    'title' | 'createdAt' | 'updatedAt' | 'status' | 'questionCount',
+    'asc' | 'desc'
+  ];
+
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.questionBanks({ search: debouncedSearch, status: statusFilter, page }),
+    queryKey: queryKeys.questionBanks({ search: debouncedSearch, status: statusFilter, page, sortBy, sortOrder }),
     queryFn: () =>
       listQuestionBanks({
         search: debouncedSearch || undefined,
         status: (statusFilter as QuestionBankStatus) || undefined,
         page,
         pageSize: 12,
+        sortBy,
+        sortOrder,
       }),
   });
 
@@ -88,6 +106,21 @@ export function QuestionBankListPage() {
           aria-label="Filter by status"
         >
           {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={sortOption}
+          onChange={(e) => {
+            setSortOption(e.target.value);
+            setPage(1);
+          }}
+          className={styles.sortSelect}
+          aria-label="Sort by"
+        >
+          {SORT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

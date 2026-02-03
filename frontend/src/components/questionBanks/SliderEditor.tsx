@@ -13,6 +13,20 @@ export interface SliderEditorProps {
 
 export function SliderEditor({ options, correctAnswer, onChange }: SliderEditorProps) {
   const answer = (correctAnswer as Record<string, number>) || { value: 50, tolerance: 5 };
+  const tickMode = options.tickMode as string || 'auto';
+  const customTicks = (options.customTicks as number[]) || [];
+
+  function handleTickModeChange(mode: string) {
+    onChange({ ...options, tickMode: mode }, correctAnswer);
+  }
+
+  function handleCustomTicksChange(ticks: string) {
+    const tickArray = ticks
+      .split(',')
+      .map(t => Number(t.trim()))
+      .filter(n => !isNaN(n));
+    onChange({ ...options, customTicks: tickArray }, correctAnswer);
+  }
 
   return (
     <div className={styles.optionEditor}>
@@ -65,6 +79,69 @@ export function SliderEditor({ options, correctAnswer, onChange }: SliderEditorP
         />
         <label htmlFor="showTicks" className={styles.smallLabel}>Show tick marks on slider</label>
       </div>
+      {Boolean(options.showTicks) && (
+        <div style={{ marginTop: 'var(--space-md)', marginBottom: 'var(--space-md)' }}>
+          <label className={styles.smallLabel}>Tick Mark Configuration</label>
+          <div style={{ marginBottom: 'var(--space-sm)', marginTop: 'var(--space-xs)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-xs)' }}>
+              <input
+                type="radio"
+                name="tickMode"
+                value="auto"
+                checked={tickMode === 'auto'}
+                onChange={(e) => handleTickModeChange(e.target.value)}
+                className={styles.optionRadio}
+              />
+              <span className={styles.smallLabel}>Automatic (based on step)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-xs)' }}>
+              <input
+                type="radio"
+                name="tickMode"
+                value="interval"
+                checked={tickMode === 'interval'}
+                onChange={(e) => handleTickModeChange(e.target.value)}
+                className={styles.optionRadio}
+              />
+              <span className={styles.smallLabel}>Custom interval</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+              <input
+                type="radio"
+                name="tickMode"
+                value="custom"
+                checked={tickMode === 'custom'}
+                onChange={(e) => handleTickModeChange(e.target.value)}
+                className={styles.optionRadio}
+              />
+              <span className={styles.smallLabel}>Custom positions</span>
+            </label>
+          </div>
+          {tickMode === 'interval' && (
+            <div className={styles.sliderField}>
+              <label className={styles.smallLabel}>Tick Interval</label>
+              <input
+                type="number"
+                value={Number(options.tickInterval ?? 10)}
+                onChange={(e) => onChange({ ...options, tickInterval: Number(e.target.value) }, correctAnswer)}
+                className={styles.optionInput}
+              />
+            </div>
+          )}
+          {tickMode === 'custom' && (
+            <div className={styles.sliderField}>
+              <label className={styles.smallLabel}>Custom Tick Positions (comma-separated)</label>
+              <input
+                type="text"
+                value={customTicks.join(', ')}
+                onChange={(e) => handleCustomTicksChange(e.target.value)}
+                className={styles.optionInput}
+                placeholder="e.g., 0, 25, 50, 75, 100"
+              />
+            </div>
+          )}
+        </div>
+      )}
       <label className={styles.optionLabel}>Correct Answer</label>
       <div className={styles.sliderGrid}>
         <div className={styles.sliderField}>

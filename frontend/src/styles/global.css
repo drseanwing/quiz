@@ -153,6 +153,35 @@ img {
   }
 }
 
+/* ─── High Contrast Mode ────────────────────────────────────────────────── */
+
+@media (prefers-contrast: more) {
+  /* Enhance focus indicators */
+  :focus-visible,
+  a:focus-visible {
+    outline: 4px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  /* Stronger button borders */
+  button {
+    border-width: 2px;
+  }
+
+  /* Enhanced link underlines */
+  a {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  /* Stronger borders for form elements */
+  input,
+  textarea,
+  select {
+    border-width: 2px;
+  }
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

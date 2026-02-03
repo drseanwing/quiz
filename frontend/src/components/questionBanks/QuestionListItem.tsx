@@ -4,6 +4,8 @@
  */
 
 import { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { IQuestion } from '@/types';
 import { TYPE_LABELS } from '@/lib/constants';
 import { Button } from '@/components/common/Button';
@@ -34,11 +36,26 @@ export function QuestionListItem({
 }: QuestionListItemProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   const promptPreview = stripHtml(question.prompt).slice(0, 120);
 
   return (
-    <div className={styles.item}>
-      <div className={styles.dragHandle} aria-label="Drag to reorder">
+    <div ref={setNodeRef} style={style} className={styles.item}>
+      <div className={styles.dragHandle} aria-label="Drag to reorder" {...attributes} {...listeners}>
         <span className={styles.dragIcon}>&#8942;&#8942;</span>
       </div>
 

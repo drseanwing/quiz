@@ -23,6 +23,12 @@ const mockPrisma = {
     update: jest.fn(),
     updateMany: jest.fn(),
   },
+  refreshToken: {
+    create: jest.fn().mockResolvedValue({}),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  },
   $transaction: jest.fn(),
 };
 
@@ -35,8 +41,17 @@ jest.mock('@/services/emailService', () => ({
   sendPasswordResetEmail: jest.fn().mockResolvedValue(true),
 }));
 
+// Mock lockout utilities
+jest.mock('@/utils/lockout', () => ({
+  isLockedOut: jest.fn().mockResolvedValue(false),
+  recordFailedAttempt: jest.fn().mockResolvedValue({ attempts: 1, lockedUntil: null, firstAttemptAt: new Date() }),
+  clearFailedAttempts: jest.fn().mockResolvedValue(undefined),
+  getLockoutRemaining: jest.fn().mockResolvedValue(0),
+}));
+
 import { registerUser, loginUser, refreshAccessToken } from '@/services/authService';
 import { hashPassword } from '@/utils/password';
+import * as lockout from '@/utils/lockout';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -104,7 +119,7 @@ describe('registerUser', () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
     mockPrisma.user.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
       id: 'user-1',
-      email: data.email,
+      email: (data.email as string).toLowerCase(),
       firstName: data.firstName,
       surname: data.surname,
       role: 'USER',

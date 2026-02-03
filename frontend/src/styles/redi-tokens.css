@@ -24,9 +24,20 @@
   /* Neutral Colours */
   --redi-black: #000000;
   --redi-dark-gray: #333333;
-  --redi-medium-gray: #666666;
+  --redi-medium-gray: #595959; /* Changed from #666666 for better contrast (7:1 ratio) */
   --redi-light-gray: #F5F5F5;
   --redi-white: #FFFFFF;
+
+  /* Gray Scale (for consistent usage across components) */
+  --gray-100: #F5F5F5;
+  --gray-200: #E0E0E0;
+  --gray-300: #9E9E9E; /* Changed from #BDBDBD for better contrast */
+  --gray-400: #757575; /* Changed from #9E9E9E for better contrast */
+  --gray-500: #616161; /* Changed from #757575 for better contrast */
+  --gray-600: #595959; /* Changed from #616161 for better contrast (7:1 ratio) */
+  --gray-700: #424242;
+  --gray-800: #333333;
+  --gray-900: #212121;
 
   /* Semantic Colours */
   --redi-error: #DC3545;
@@ -104,10 +115,48 @@
   --spacing-xl: var(--space-xl);
 
   --color-navy: var(--redi-navy);
+  --navy: var(--redi-navy);
   --color-teal: var(--redi-teal);
+  --teal: var(--redi-teal);
   --color-coral: var(--redi-coral);
+  --coral: var(--redi-coral);
   --color-text-secondary: var(--redi-medium-gray);
   --color-border: #E0E0E0;
   --color-surface: var(--redi-light-gray);
   --color-background: var(--redi-white);
+
+  /* Font size aliases */
+  --font-xs: var(--text-xs);
+  --font-sm: var(--text-sm);
+  --font-base: var(--text-base);
+  --font-lg: var(--text-lg);
+  --font-xl: var(--text-xl);
+  --font-2xl: var(--text-2xl);
+}
+
+/* High Contrast Mode - Enhanced colors for better accessibility */
+@media (prefers-contrast: more) {
+  :root {
+    /* Increase contrast for text colors */
+    --redi-dark-gray: #1a1a1a;
+    --redi-medium-gray: #4a4a4a;
+    --gray-300: #999999;
+    --gray-400: #737373;
+    --gray-500: #5a5a5a;
+    --gray-600: #4a4a4a;
+
+    /* Enhance brand colors for better contrast */
+    --redi-coral: #D14A53;
+    --redi-navy: #0f2340;
+    --redi-teal: #1f7a7a;
+
+    /* Stronger borders */
+    --color-border: #999999;
+
+    /* Higher contrast for semantic colors */
+    --redi-error: #c82333;
+    --redi-success: #1e7e34;
+    --redi-warning: #d39e00;
+    --redi-info: #117a8b;
+  }
 }
