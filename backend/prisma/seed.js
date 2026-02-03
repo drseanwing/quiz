@@ -4,13 +4,8 @@
  */
 
 const { PrismaClient, UserRole, QuestionBankStatus, FeedbackTiming, QuestionType, AttemptStatus } = require('@prisma/client');
-const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
-
-function uuid() {
-  return require('crypto').randomUUID();
-}
 
 async function main() {
   console.log('Seeding UAT data...\n');
@@ -21,7 +16,9 @@ async function main() {
     return;
   }
 
-  const passwordHash = await bcrypt.hash('Password1!', 12);
+  // Pre-computed bcrypt hash for "Password1!" with cost factor 12
+  // bcrypt native module hangs in Alpine production containers
+  const passwordHash = '$2b$12$dQ4YWOAESXf.TIp0ycl0K.Vn01BEbO6tgSvDF3QQhN2RWg/7AJTly';
 
   const admin = await prisma.user.create({
     data: {
