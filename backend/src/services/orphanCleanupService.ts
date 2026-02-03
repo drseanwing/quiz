@@ -159,8 +159,8 @@ export async function findOrphanedFiles(): Promise<OrphanFile[]> {
       filename,
       path: fileInfo.path,
       size: fileInfo.size,
-      uploadedAt: meta?.uploadedAt,
-      uploadedBy: meta?.uploadedBy,
+      ...(meta?.uploadedAt !== undefined && { uploadedAt: meta.uploadedAt }),
+      ...(meta?.uploadedBy !== undefined && { uploadedBy: meta.uploadedBy }),
     });
   }
 
