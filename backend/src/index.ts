@@ -122,7 +122,7 @@ if (config.nodeEnv === 'production') {
 
     // Non-API routes serve the SPA with cache-busting headers
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.sendFile(path.join(frontendDistPath, 'index.html'));
+    return res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
 } else {
   // Development mode - API only, return 404 for all routes

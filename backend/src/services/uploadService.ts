@@ -7,7 +7,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { uploadDir } from '@/config/upload';
-import { NotFoundError, ForbiddenError } from '@/middleware/errorHandler';
+import { NotFoundError, AuthorizationError } from '@/middleware/errorHandler';
 import logger from '@/config/logger';
 import prisma from '@/config/database';
 
@@ -46,7 +46,7 @@ export async function recordUpload(data: {
       mimetype: data.mimetype,
       size: data.size,
       uploadedById: data.uploadedById,
-      associatedEntity: data.associatedEntity,
+      associatedEntity: data.associatedEntity ?? null,
     },
   });
   logger.info('Upload recorded in database', { filename: data.filename, uploadedById: data.uploadedById });
@@ -73,7 +73,7 @@ export async function deleteImage(
     }
 
     if (upload.uploadedById !== userId) {
-      throw new ForbiddenError('You do not have permission to delete this file');
+      throw new AuthorizationError('You do not have permission to delete this file');
     }
   }
 

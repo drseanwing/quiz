@@ -16,7 +16,7 @@ import { Cache, buildCacheKey } from '@/utils/cache';
 /**
  * Safe question bank type (with creator info)
  */
-type QuestionBankWithCreator = {
+export type QuestionBankWithCreator = {
   id: string;
   title: string;
   description: string | null;
