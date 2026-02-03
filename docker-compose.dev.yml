@@ -8,8 +8,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
       target: development
     container_name: redi-quiz-backend-dev
     environment:

@@ -107,14 +107,25 @@ if (config.nodeEnv === 'production') {
     },
   }));
 
-  // SPA fallback - serve index.html for all non-API routes
-  app.get('*', (_req, res) => {
+  // Catch-all handler for SPA and API 404s
+  app.use((req, res) => {
+    // API routes should return JSON 404
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'The requested endpoint does not exist',
+        },
+      });
+    }
+
+    // Non-API routes serve the SPA with cache-busting headers
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
-}
-
-// 404 handler for API routes in development
-if (config.nodeEnv !== 'production') {
+} else {
+  // Development mode - API only, return 404 for all routes
   app.use((_req, res) => {
     res.status(404).json({
       success: false,
