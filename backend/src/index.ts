@@ -35,16 +35,16 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'none'"],
-        scriptSrc: ["'none'"],
-        styleSrc: ["'none'"],
-        imgSrc: ["'self'"],
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for React
+        imgSrc: ["'self'", 'data:', 'blob:'],
         connectSrc: ["'self'"],
-        fontSrc: ["'none'"],
+        fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameSrc: ["'none'"],
-        baseUri: ["'none'"],
-        formAction: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
       },
     },
     crossOriginEmbedderPolicy: false, // Allow uploaded images to load cross-origin
@@ -88,19 +88,43 @@ app.use('/uploads', authenticate, express.static(path.resolve(config.upload.dir)
 // General rate limiting
 app.use('/api', generalRateLimiter);
 
-// Routes
+// API Routes
 app.use('/api', routes);
 
-// 404 handler for undefined routes
-app.use((_req, res) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      code: 'NOT_FOUND',
-      message: 'The requested endpoint does not exist',
+// Serve frontend static files (production only)
+if (config.nodeEnv === 'production') {
+  const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
+
+  // Serve static assets with caching
+  app.use(express.static(frontendDistPath, {
+    maxAge: '1d',
+    immutable: true,
+    setHeaders: (res, filepath) => {
+      // Cache bust on index.html
+      if (filepath.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
     },
+  }));
+
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
-});
+}
+
+// 404 handler for API routes in development
+if (config.nodeEnv !== 'production') {
+  app.use((_req, res) => {
+    res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'The requested endpoint does not exist. Frontend should be served separately in development.',
+      },
+    });
+  });
+}
 
 // Error handling
 app.use(errorHandler);

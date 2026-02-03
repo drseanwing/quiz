@@ -16,9 +16,9 @@ RUN apk add --no-cache \
     openssl \
     openssl-dev
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy backend package files
+COPY ./backend/package*.json ./
+COPY ./backend/prisma ./prisma/
 
 # -----------------------------------------------------------------------------
 # Development Stage
@@ -28,8 +28,8 @@ FROM base AS development
 # Install all dependencies (including dev dependencies)
 RUN npm ci
 
-# Copy application code
-COPY . .
+# Copy backend application code
+COPY ./backend .
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -44,6 +44,32 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["npm", "run", "dev"]
 
 # -----------------------------------------------------------------------------
+# Frontend Build Stage
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS frontend-build
+
+WORKDIR /frontend
+
+# Accept build arguments for frontend environment variables
+ARG VITE_API_URL
+ARG VITE_APP_NAME
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_APP_NAME=$VITE_APP_NAME
+
+# Copy frontend package files
+COPY ./frontend/package*.json ./
+
+# Install frontend dependencies
+RUN npm ci
+
+# Copy frontend source
+COPY ./frontend ./
+
+# Build frontend
+RUN npm run build
+
+# -----------------------------------------------------------------------------
 # Build Stage
 # -----------------------------------------------------------------------------
 FROM base AS build
@@ -51,8 +77,8 @@ FROM base AS build
 # Install all dependencies
 RUN npm ci
 
-# Copy application code
-COPY . .
+# Copy backend application code
+COPY ./backend .
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -82,6 +108,9 @@ COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=build --chown=nodejs:nodejs /app/package*.json ./
 COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
+
+# Copy built frontend
+COPY --from=frontend-build --chown=nodejs:nodejs /frontend/dist ./frontend/dist
 
 # Create directories for uploads and logs
 RUN mkdir -p /app/uploads /app/logs && \
