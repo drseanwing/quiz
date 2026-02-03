@@ -8,6 +8,8 @@ services:
 
   backend:
     build:
+      context: .
+      dockerfile: ./backend/Dockerfile
       target: development
     container_name: redi-quiz-backend-dev
     environment:
@@ -25,25 +27,8 @@ services:
       - "9471:3000"  # Backend API - mapped to 9471
       - "9472:9229"  # Node.js debugger - mapped to 9472
 
-  frontend:
-    build:
-      target: development
-    container_name: redi-quiz-frontend-dev
-    environment:
-      NODE_ENV: development
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:9471/api}
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev
-    ports:
-      - "9473:5173"  # Frontend Vite dev server - mapped to 9473
-
-  nginx:
-    volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "9476:80"  # Nginx (optional in dev) - mapped to 9476
+  # In development, run frontend separately with: cd frontend && npm run dev
+  # The backend dev server only serves API routes in development mode
 
   # Prisma Studio for database management
   prisma-studio:

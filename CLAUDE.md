@@ -8,14 +8,21 @@ You are working on the **REdI Quiz Platform**, a comprehensive web-based assessm
 
 - **Backend**: Node.js 20, Express, TypeScript, Prisma ORM, PostgreSQL 16
 - **Frontend**: React 18, TypeScript, Vite, TanStack Query
-- **Infrastructure**: Docker, Docker Compose, Nginx
+- **Infrastructure**: Docker, Docker Compose
 - **Testing**: Jest (backend), Vitest (frontend)
+
+## Architecture
+
+**Single-Container Deployment**: The application uses a unified backend container that serves both the API and frontend static files:
+- In **production**, the backend container builds and serves the React frontend alongside API routes
+- In **development**, frontend and backend run separately (backend in container, frontend with `npm run dev`)
+- Host nginx handles SSL termination and proxies to the backend container
 
 ## Project Structure
 
 ```
 quiz/
-├── backend/          # Node.js/Express API
+├── backend/          # Node.js/Express API (serves frontend in production)
 │   ├── src/         # Source code
 │   │   ├── config/  # Configuration modules
 │   │   ├── middleware/
@@ -23,7 +30,8 @@ quiz/
 │   │   ├── services/  # Business logic
 │   │   ├── validators/
 │   │   └── types/
-│   └── prisma/      # Database schema & migrations
+│   ├── prisma/      # Database schema & migrations
+│   └── Dockerfile   # Multi-stage build (backend + frontend)
 ├── frontend/        # React SPA
 │   └── src/
 │       ├── components/
@@ -31,7 +39,7 @@ quiz/
 │       ├── hooks/
 │       ├── context/
 │       └── services/
-└── nginx/          # Reverse proxy config
+└── nginx/          # Legacy configs (not used in current architecture)
 ```
 
 ## Key Guidelines
@@ -70,15 +78,26 @@ quiz/
 
 1. **Starting Development**
    ```bash
-   # Development with hot-reload
+   # Start backend and database in development mode
    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
-   # Or run locally
-   cd backend && npm run dev
+   # Start frontend separately (in a new terminal)
    cd frontend && npm run dev
+
+   # Backend API: http://localhost:9471
+   # Frontend: http://localhost:5173
    ```
 
-2. **Database Changes**
+2. **Production Deployment**
+   ```bash
+   # Build and start (backend serves frontend)
+   docker-compose up -d
+
+   # Backend serves both API and frontend on port 3000
+   # Configure host nginx to proxy to backend:3000
+   ```
+
+3. **Database Changes**
    ```bash
    # Create migration
    cd backend
@@ -88,7 +107,7 @@ quiz/
    npx prisma migrate deploy
    ```
 
-3. **Before Committing**
+4. **Before Committing**
    ```bash
    # Backend
    cd backend
