@@ -4,7 +4,7 @@
  * @description Password hashing, verification, and strength validation
  */
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { config } from '@/config';
 import logger from '@/config/logger';
