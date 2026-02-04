@@ -180,8 +180,12 @@ async function start() {
 // Only auto-start when not running under a test runner
 if (process.env.NODE_ENV !== 'test') {
   start().catch((err) => {
+    // Always write to stderr so Docker logs captures fatal startup errors
+    // (Winston file transport may not flush before process.exit)
+    console.error('FATAL: Failed to start server:', err);
     logger.error('Failed to start server', { error: err });
-    process.exit(1);
+    // Give Winston a moment to flush before exiting
+    setTimeout(() => process.exit(1), 500);
   });
 }
 

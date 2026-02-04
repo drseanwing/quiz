@@ -112,8 +112,9 @@ COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
 # Copy built frontend
 COPY --from=frontend-build --chown=nodejs:nodejs /frontend/dist ./frontend/dist
 
-# Copy entrypoint script (runs migrations before starting the app)
+# Copy entrypoint and diagnostic scripts
 COPY --chown=nodejs:nodejs ./backend/docker-entrypoint.sh ./docker-entrypoint.sh
+COPY --chown=nodejs:nodejs ./backend/scripts/diagnose.js ./scripts/diagnose.js
 RUN chmod +x ./docker-entrypoint.sh
 
 # Create directories for uploads and logs
