@@ -25,6 +25,13 @@ function uuid() {
 async function main() {
   console.log('Seeding UAT data...\n');
 
+  // Idempotency check — skip if data already exists
+  const existing = await prisma.user.count();
+  if (existing > 0) {
+    console.log(`Database already has ${existing} users. Skipping seed.`);
+    return;
+  }
+
   // =========================================================================
   // USERS
   // =========================================================================

@@ -112,6 +112,10 @@ COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
 # Copy built frontend
 COPY --from=frontend-build --chown=nodejs:nodejs /frontend/dist ./frontend/dist
 
+# Copy entrypoint script (runs migrations before starting the app)
+COPY --chown=nodejs:nodejs ./backend/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 # Create directories for uploads and logs
 RUN mkdir -p /app/uploads /app/logs && \
     chown -R nodejs:nodejs /app/uploads /app/logs
@@ -122,12 +126,12 @@ USER nodejs
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+# Health check (increased start_period to allow for migrations)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start application
-CMD ["node", "dist/index.js"]
+# Start application via entrypoint (runs migrations, then starts node)
+CMD ["./docker-entrypoint.sh"]
