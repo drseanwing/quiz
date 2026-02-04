@@ -17,11 +17,11 @@ echo ""
 
 # Check if Docker is running
 if docker info > /dev/null 2>&1; then
-  # Running in Docker
+  # Running in Docker — use the plain JS seed script (tsx not available in prod)
   echo -e "${YELLOW}Running seed in Docker container...${NC}"
-  docker-compose exec backend npm run db:seed
+  docker-compose exec backend node prisma/seed.js
 else
-  # Running locally
+  # Running locally — tsx is available
   echo -e "${YELLOW}Running seed locally...${NC}"
   cd backend && npm run db:seed
 fi
@@ -32,11 +32,11 @@ if [ $? -eq 0 ]; then
   echo ""
   echo "Default admin account:"
   echo "  Email: admin@health.qld.gov.au"
-  echo "  Password: Admin123!"
+  echo "  Password: Password1!"
   echo ""
   echo -e "${YELLOW}⚠ IMPORTANT: Change the admin password immediately in production!${NC}"
 else
   echo ""
-  echo -e "${RED}✗ Seed failed${NC}"
+  echo -e "\033[0;31m✗ Seed failed\033[0m"
   exit 1
 fi
