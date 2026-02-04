@@ -77,20 +77,6 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  if (isLoading) {
-    return (
-      <div className={styles.loading}>
-        <Spinner size="md" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="error">Failed to load questions. Please try again.</Alert>
-    );
-  }
-
   const questions = data ?? [];
 
   const sorted = useMemo(() => {
@@ -104,6 +90,20 @@ export function QuestionList({ bankId, onEditQuestion, onAddQuestion }: Question
     });
     return copy;
   }, [questions, sortField, sortDir]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.loading}>
+        <Spinner size="md" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="error">Failed to load questions. Please try again.</Alert>
+    );
+  }
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
