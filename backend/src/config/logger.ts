@@ -40,8 +40,19 @@ const logger = winston.createLogger({
   ],
 });
 
-// Console output for development
-if (!config.isProduction || config.enableDebug) {
+// Console output — always enabled so Docker can capture logs via stdout/stderr.
+// In production use structured JSON at info level; in development use colorized output.
+if (config.isProduction && !config.enableDebug) {
+  logger.add(
+    new winston.transports.Console({
+      level: 'info',
+      format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        winston.format.json()
+      ),
+    })
+  );
+} else if (!config.isTest) {
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(
